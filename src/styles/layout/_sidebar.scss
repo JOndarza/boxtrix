@@ -1,6 +1,8 @@
 $app-sidebar-padding: 1rem;
 $app-sidebar-margin: 0.5rem;
 
+$app-sidebar-transition: all 0.5s ease-in;
+
 .app-sidebar {
     @extend .general-container-style;
 
@@ -43,21 +45,37 @@ $app-sidebar-margin: 0.5rem;
     overflow-x: hidden;
     overflow-y: auto;
 
-    ul {
-        li {
+    ul.sequence {
+        li.sequence-item {
             padding-top: 0.5rem;
             padding-bottom: 0.5rem;
             width: 100%;
             border: 1px solid transparent;
-            cursor: pointer;
 
-            &.selected,
-            &:hover {
-                border-color: white;
+
+            .detail {
+                display: flex;
+                justify-content: space-around;
+
+                transition: $app-sidebar-transition;
             }
+
+        }
+    }
+
+    ul.sequence li.sequence-item {
+
+        &:hover:not(.selected) {
+            cursor: pointer;
+        }
+
+        &.selected,
+        &:hover {
+            border-color: white;
         }
     }
 }
+
 
 .app-sidebar .sidebar-footer {
     button {

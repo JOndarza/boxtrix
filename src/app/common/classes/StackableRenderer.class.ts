@@ -1,12 +1,15 @@
+import { ContantsService } from '@shared/services/contants.service';
 import { BoxGeometry, Object3D } from 'three';
 import * as THREE from 'three';
 
-import { Box } from './Box.class';
 import { ColorScheme } from '../interfaces/ColorScheme';
+import { Box } from './Box.class';
 import { Container } from './Container.class';
 import { StackPlacement } from './StackPlacement.class';
 
 export class StackableRenderer {
+  constructor(private _constants: ContantsService) {}
+
   add(
     parent: Object3D,
     colorScheme: ColorScheme,
@@ -110,9 +113,9 @@ export class StackableRenderer {
 
       var material = new THREE.MeshStandardMaterial({
         color: sColor,
-        opacity: 0.7,
-        metalness: 0.2,
-        roughness: 1,
+        opacity: this._constants.BOX_OPACITY,
+        metalness: this._constants.BOX_METALNESS,
+        roughness: this._constants.BOX_ROUGHNESS,
         transparent: true,
         polygonOffset: true,
         polygonOffsetFactor: 1,

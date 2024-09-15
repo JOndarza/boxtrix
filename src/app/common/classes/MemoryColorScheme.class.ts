@@ -32,18 +32,7 @@ export class MemoryColorScheme implements ColorScheme {
 
   getPoint(point: Point): Color {
     // use same as before, for the
-    var id =
-      point.x +
-      'x' +
-      point.y +
-      'x' +
-      point.z +
-      ' ' +
-      point.dx +
-      'x' +
-      point.dy +
-      'x' +
-      point.dz;
+    var id = `${point.x}x${point.y}x${point.z} ${point.dx}x${point.dy}x${point.dz}`;
     var color = this._map.get(id);
     if (!color) {
       color = this._delegate.getPoint(point);

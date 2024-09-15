@@ -1,24 +1,16 @@
-import { EventEmitter, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { InputObject } from '@common/classes/InputObject';
 import { Stackable } from '@common/classes/Stackable.class';
 import { StackPlacement } from '@common/classes/StackPlacement.class';
-import { Order } from '@common/interfaces/output.interface';
-
+import { Order } from '@common/interfaces/Output.interface';
 import { BP3D } from 'binpackingjs';
+
+import { AppEvent, EventsService } from './events.service';
+
 const { Item, Bin, Packer } = BP3D;
 
 @Injectable({ providedIn: 'root' })
 export class ContextService {
-  private _ANGULAR_VELOCITY = 0.01;
-  public get ANGULAR_VELOCITY() {
-    return this._ANGULAR_VELOCITY;
-  }
-
-  private _GRID_SPACING = 1;
-  public get GRID_SPACING() {
-    return this._GRID_SPACING;
-  }
-
   private _input!: InputObject;
   public get input() {
     return this._input;
@@ -29,30 +21,15 @@ export class ContextService {
     return this._output;
   }
 
-  private _loaded = new EventEmitter();
-  public get loaded() {
-    return this._loaded;
-  }
-
-  private _raycast = new EventEmitter<string>();
-  public get raycast() {
-    return this._raycast;
-  }
-
-  private _clicked = new EventEmitter<string>();
-  public get clicked() {
-    return this._clicked;
-  }
-
   private _FACTOR = 5;
   private _FIX = 10 ** this._FACTOR;
+
+  constructor(private _events: EventsService) {}
 
   loadData(data: InputObject) {
     this._input = data;
 
-    this._output = this.logic();
-
-    console.log(this.output);
+    this._output = this.sort();
 
     this._input.containers.forEach((container) => {
       container.stack.placements = this.output.map((item, index) => {
@@ -77,23 +54,12 @@ export class ContextService {
       });
     });
 
-    let step = -1;
-    this.input.containers.forEach((x) => {
-      x.step = ++step;
-      x.stack.step = ++step;
-      x.stack.placements.forEach((p) => {
-        p.step = ++step;
-        p.stackable.step = p.step;
-        p.stackable.type = 'box';
-      });
-    });
+    this.fixSteps(this.input);
 
-    console.log(this.input);
-
-    this.loaded.emit();
+    this._events.get(AppEvent.LOADED).emit();
   }
 
-  private logic() {
+  private sort() {
     if (!this.input) return [];
 
     let packer = new Packer();
@@ -118,7 +84,7 @@ export class ContextService {
 
       packer.pack();
 
-      this.fixData(bin.items);
+      this.fixSortData(bin.items);
 
       return bin.items as Order[];
     });
@@ -126,22 +92,35 @@ export class ContextService {
     return sequence.flatMap((x) => x);
   }
 
-  private fixData(items: Order[]) {
+  private fixSortValues(value: number) {
+    return value / this._FIX;
+  }
+
+  private fixSortData(items: Order[]) {
     items?.forEach((element: Order) => {
-      element.depth = this.fixValues(element.depth);
-      element.height = this.fixValues(element.height);
-      element.width = this.fixValues(element.width);
-      element.weight = this.fixValues(element.weight);
+      element.depth = this.fixSortValues(element.depth);
+      element.height = this.fixSortValues(element.height);
+      element.width = this.fixSortValues(element.width);
+      element.weight = this.fixSortValues(element.weight);
 
       element.position = [
-        this.fixValues(element.position[0]),
-        this.fixValues(element.position[1]),
-        this.fixValues(element.position[2]),
+        this.fixSortValues(element.position[0]),
+        this.fixSortValues(element.position[1]),
+        this.fixSortValues(element.position[2]),
       ];
     });
   }
 
-  private fixValues(value: number) {
-    return value / this._FIX;
+  private fixSteps(input: InputObject) {
+    let step = -1;
+    input.containers.forEach((x) => {
+      x.step = ++step;
+      x.stack.step = x.step;
+      x.stack.placements.forEach((p) => {
+        p.step = ++step;
+        p.stackable.step = p.step;
+        p.stackable.type = 'box';
+      });
+    });
   }
 }
