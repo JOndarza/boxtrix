@@ -1,0 +1,325 @@
+{
+  "containers": [
+    {
+      "step": 0,
+      "id": "Box3",
+      "name": "Box3",
+      "dx": 5,
+      "dy": 9,
+      "dz": 5,
+      "loadDx": 0,
+      "loadDy": 0,
+      "loadDz": 0,
+      "stack": {
+        "step": 1,
+        "placements": [
+          {
+            "step": 2,
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "stackable": {
+              "step": 2,
+              "id": "product1",
+              "name": "product1",
+              "dx": 3,
+              "dy": 6,
+              "dz": 2,
+              "type": "box"
+            },
+            "points": [
+              {
+                "x": 0,
+                "y": 0,
+                "z": 2,
+                "dx": 7,
+                "dy": 5,
+                "dz": 2
+              },
+              {
+                "x": 0,
+                "y": 4,
+                "z": 0,
+                "dx": 7,
+                "dy": 1,
+                "dz": 4
+              },
+              {
+                "x": 3,
+                "y": 0,
+                "z": 0,
+                "dx": 4,
+                "dy": 5,
+                "dz": 4
+              }
+            ]
+          },
+          {
+            "step": 3,
+            "x": 3,
+            "y": 0,
+            "z": 0,
+            "stackable": {
+              "step": 3,
+              "id": "product4",
+              "name": "product4",
+              "dx": 4,
+              "dy": 3,
+              "dz": 2,
+              "type": "box"
+            },
+            "points": [
+              {
+                "x": 0,
+                "y": 0,
+                "z": 2,
+                "dx": 7,
+                "dy": 5,
+                "dz": 2
+              },
+              {
+                "x": 0,
+                "y": 4,
+                "z": 0,
+                "dx": 7,
+                "dy": 1,
+                "dz": 4
+              },
+              {
+                "x": 3,
+                "y": 3,
+                "z": 0,
+                "dx": 4,
+                "dy": 2,
+                "dz": 4
+              }
+            ]
+          },
+          {
+            "step": 4,
+            "x": 3,
+            "y": 3,
+            "z": 0,
+            "stackable": {
+              "step": 4,
+              "id": "product2",
+              "name": "product2",
+              "dx": 4,
+              "dy": 2,
+              "dz": 2,
+              "type": "box"
+            },
+            "points": [
+              {
+                "x": 0,
+                "y": 0,
+                "z": 2,
+                "dx": 7,
+                "dy": 5,
+                "dz": 2
+              },
+              {
+                "x": 0,
+                "y": 4,
+                "z": 0,
+                "dx": 3,
+                "dy": 1,
+                "dz": 4
+              }
+            ]
+          },
+          {
+            "step": 5,
+            "x": 0,
+            "y": 0,
+            "z": 2,
+            "stackable": {
+              "step": 5,
+              "id": "product7",
+              "name": "product7",
+              "dx": 3,
+              "dy": 4,
+              "dz": 2,
+              "type": "box"
+            },
+            "points": [
+              {
+                "x": 0,
+                "y": 4,
+                "z": 0,
+                "dx": 3,
+                "dy": 1,
+                "dz": 4
+              },
+              {
+                "x": 0,
+                "y": 4,
+                "z": 2,
+                "dx": 7,
+                "dy": 1,
+                "dz": 2
+              },
+              {
+                "x": 3,
+                "y": 0,
+                "z": 2,
+                "dx": 4,
+                "dy": 5,
+                "dz": 2
+              }
+            ]
+          },
+          {
+            "step": 6,
+            "x": 3,
+            "y": 0,
+            "z": 2,
+            "stackable": {
+              "step": 6,
+              "id": "product5",
+              "name": "product5",
+              "dx": 4,
+              "dy": 2,
+              "dz": 2,
+              "type": "box"
+            },
+            "points": [
+              {
+                "x": 0,
+                "y": 4,
+                "z": 0,
+                "dx": 3,
+                "dy": 1,
+                "dz": 4
+              },
+              {
+                "x": 0,
+                "y": 4,
+                "z": 2,
+                "dx": 7,
+                "dy": 1,
+                "dz": 2
+              },
+              {
+                "x": 3,
+                "y": 2,
+                "z": 2,
+                "dx": 4,
+                "dy": 3,
+                "dz": 2
+              }
+            ]
+          },
+          {
+            "step": 7,
+            "x": 3,
+            "y": 2,
+            "z": 2,
+            "stackable": {
+              "step": 7,
+              "id": "product8",
+              "name": "product8",
+              "dx": 4,
+              "dy": 2,
+              "dz": 2,
+              "type": "box"
+            },
+            "points": [
+              {
+                "x": 0,
+                "y": 4,
+                "z": 0,
+                "dx": 3,
+                "dy": 1,
+                "dz": 4
+              },
+              {
+                "x": 0,
+                "y": 4,
+                "z": 2,
+                "dx": 7,
+                "dy": 1,
+                "dz": 2
+              }
+            ]
+          },
+          {
+            "step": 8,
+            "x": 0,
+            "y": 4,
+            "z": 2,
+            "stackable": {
+              "step": 8,
+              "id": "product3",
+              "name": "product3",
+              "dx": 4,
+              "dy": 1,
+              "dz": 1,
+              "type": "box"
+            },
+            "points": [
+              {
+                "x": 0,
+                "y": 4,
+                "z": 0,
+                "dx": 3,
+                "dy": 1,
+                "dz": 2
+              },
+              {
+                "x": 0,
+                "y": 4,
+                "z": 3,
+                "dx": 7,
+                "dy": 1,
+                "dz": 1
+              },
+              {
+                "x": 4,
+                "y": 4,
+                "z": 2,
+                "dx": 3,
+                "dy": 1,
+                "dz": 2
+              }
+            ]
+          },
+          {
+            "step": 9,
+            "x": 0,
+            "y": 4,
+            "z": 3,
+            "stackable": {
+              "step": 9,
+              "id": "product6",
+              "name": "product6",
+              "dx": 4,
+              "dy": 1,
+              "dz": 1,
+              "type": "box"
+            },
+            "points": [
+              {
+                "x": 0,
+                "y": 4,
+                "z": 0,
+                "dx": 3,
+                "dy": 1,
+                "dz": 2
+              },
+              {
+                "x": 4,
+                "y": 4,
+                "z": 2,
+                "dx": 3,
+                "dy": 1,
+                "dz": 2
+              }
+            ]
+          }
+        ]
+      },
+      "type": "container"
+    }
+  ]
+}

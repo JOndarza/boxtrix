@@ -1,0 +1,24 @@
+// ********************************************
+// https://sass-guidelin.es/#the-7-1-pattern
+//
+// abstracts/
+// vendors/
+// base/
+// layout/
+// components/
+// pages/
+// themes/
+// ********************************************
+
+
+@import './abstracts/variables';
+
+@import './base/reset';
+@import './base/typography';
+
+@import './layout/canvas';
+@import './layout/header';
+@import './layout/footer';
+@import './layout/sidebar';
+
+@import './themes/theme';

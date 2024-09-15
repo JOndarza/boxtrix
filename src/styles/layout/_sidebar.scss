@@ -1,0 +1,71 @@
+$app-sidebar-padding: 1rem;
+$app-sidebar-margin: 0.5rem;
+
+.app-sidebar {
+    @extend .general-container-style;
+
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+
+    width: $sidebar-width;
+    height: calc(100vh - $app-sidebar-margin - $app-sidebar-padding);
+
+    color: white;
+
+    margin: $app-sidebar-margin;
+
+    top: 0;
+    left: 0;
+
+    h3 {
+        margin: 0;
+    }
+
+    .sidebar-header,
+    .sidebar-footer {
+        padding: $app-sidebar-padding;
+    }
+}
+
+.app-sidebar .sidebar-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.app-sidebar .sidebar-body {
+    padding: 0.5rem;
+    flex-grow: 1;
+    margin-top: $app-sidebar-margin;
+    margin-bottom: $app-sidebar-margin;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    ul {
+        li {
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            width: 100%;
+            border: 1px solid transparent;
+            cursor: pointer;
+
+            &.selected,
+            &:hover {
+                border-color: white;
+            }
+        }
+    }
+}
+
+.app-sidebar .sidebar-footer {
+    button {
+        width: 100%;
+        padding: 0.3rem;
+    }
+
+    button:not(:last-child) {
+        margin-bottom: 0.5rem;
+    }
+}

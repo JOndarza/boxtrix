@@ -1,0 +1,18 @@
+<div class="sidebar-header">
+  <h3>BoxTrix</h3>
+</div>
+
+<div class="sidebar-body">
+  <h3>Sequence</h3>
+  <ul>
+    @for (item of sequence; track $index) {
+    <li [class.selected]="item.selected" (click)="clicked(item.id)">
+      {{$index +1}} - {{item.name}} ({{item.w}}x{{item.h}}x{{item.d}}[cm])
+    </li>
+    }
+  </ul>
+</div>
+
+<div class="sidebar-footer">
+  <button (click)="load()">Load</button>
+</div>
