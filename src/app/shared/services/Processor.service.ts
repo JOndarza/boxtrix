@@ -28,7 +28,7 @@ export class ProcessorService {
     }
   }
 
-  private process(input: IInput) {
+  process(input: IInput) {
     this.cleanInput(input);
     this._events.get(AppEvent.LOADED).emit(this._bin.sort(input));
   }

@@ -4,9 +4,9 @@ import { debounceTime } from 'rxjs';
 import { AppEvent, EventsService } from '@shared/services/events.service';
 import { StackPlacement } from '@common/classes/StackPlacement.class';
 import { ProcessorService } from '@shared/services/Processor.service';
+import data from '@common/templates/input.json';
 
 type SidebarListType = StackPlacement & { selected: boolean };
-// import data from '@common/templates/input.json';
 
 @Component({
   selector: 'app-sidebar',
@@ -40,7 +40,9 @@ export class SidebarComponent implements OnInit, AfterViewInit {
       .subscribe(this.selectItem.bind(this));
   }
 
-  ngAfterViewInit(): void {}
+  ngAfterViewInit(): void {
+    this._processor.process(data as any);
+  }
 
   load(event: any) {
     const files = event.target.files;
