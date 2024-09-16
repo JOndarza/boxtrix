@@ -1,0 +1,70 @@
+{
+    "units": "cm",
+    "stages": [
+        {
+            "name": "STAGE1",
+            "width": 6,
+            "height": 9,
+            "depth": 9,
+            "detail": "Details STAGE1",
+            "items": [
+                {
+                    "name": "BOX2",
+                    "width": 2,
+                    "height": 3,
+                    "depth": 4,
+                    "detail": "Details BOX2"
+                },
+                {
+                    "name": "BOX3",
+                    "width": 4,
+                    "height": 2,
+                    "depth": 3,
+                    "detail": "Details BOX3"
+                },
+                {
+                    "name": "BOX4",
+                    "width": 2,
+                    "height": 2,
+                    "depth": 4,
+                    "detail": "Details BOX4"
+                },
+                {
+                    "name": "BOX5",
+                    "width": 2,
+                    "height": 4,
+                    "depth": 2,
+                    "detail": "Details BOX5"
+                },
+                {
+                    "name": "BOX6",
+                    "width": 4,
+                    "height": 2,
+                    "depth": 2,
+                    "detail": "Details BOX6"
+                },
+                {
+                    "name": "BOX7",
+                    "width": 1,
+                    "height": 1,
+                    "depth": 4,
+                    "detail": "Details BOX7"
+                },
+                {
+                    "name": "BOX8",
+                    "width": 1,
+                    "height": 4,
+                    "depth": 1,
+                    "detail": "Details BOX8"
+                },
+                {
+                    "name": "BOX1",
+                    "width": 5,
+                    "height": 9,
+                    "depth": 5,
+                    "detail": "Details BOX1"
+                }
+            ]
+        }
+    ]
+}

@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
+import { Container } from '@common/classes/Container.class';
 import { InputObject } from '@common/classes/InputObject';
 import { Stackable } from '@common/classes/Stackable.class';
-import { StackPlacement } from '@common/classes/StackPlacement.class';
-import { Order } from '@common/interfaces/Output.interface';
+import { IBin } from '@common/interfaces/output.interface';
 import { BP3D } from 'binpackingjs';
 
 import { AppEvent, EventsService } from './events.service';
+import { debounceTime } from 'rxjs';
 
 const { Item, Bin, Packer } = BP3D;
 
@@ -16,99 +17,62 @@ export class ContextService {
     return this._input;
   }
 
-  private _output!: Order[];
-  public get output() {
-    return this._output;
+  private _bin!: IBin;
+  public get bin() {
+    return this._bin;
   }
 
-  private _FACTOR = 5;
-  private _FIX = 10 ** this._FACTOR;
+  constructor(private _events: EventsService) {
+    this._events
+      .get<IBin>(AppEvent.LOADED)
+      .pipe(debounceTime(50))
+      .subscribe(this.load.bind(this));
+  }
 
-  constructor(private _events: EventsService) {}
+  private load(data: IBin) {
+    this._bin = data;
 
-  loadData(data: InputObject) {
-    this._input = data;
-
-    this._output = this.sort();
-
-    this._input.containers.forEach((container) => {
-      container.stack.placements = this.output.map((item, index) => {
-        const stackable = new Stackable(
-          item.name,
-          item.name,
-          index,
-          item.width,
-          item.height,
-          item.depth
+    this._input = {
+      containers: this._bin.stages.map((stage) => {
+        const container = new Container(
+          stage.id,
+          stage.name,
+          0,
+          stage.width,
+          stage.height,
+          stage.depth,
+          0,
+          0,
+          0
         );
 
-        stackable.rotate(item.rotationType);
+        stage.items.forEach((item) => {
+          const stackable = new Stackable(
+            item.name,
+            item.id,
+            0,
+            item.width,
+            item.height,
+            item.depth
+          );
 
-        return {
-          stackable,
-          step: index + 1,
-          x: item.position[0],
-          y: item.position[1],
-          z: item.position[2],
-        } as StackPlacement;
-      });
-    });
+          stackable.rotate(item.rotationType);
+
+          container.add({
+            stackable,
+            step: 0,
+            x: item.position[0],
+            y: item.position[1],
+            z: item.position[2],
+          });
+        });
+        return container;
+      }),
+    };
 
     this.fixSteps(this.input);
 
-    this._events.get(AppEvent.LOADED).emit();
-  }
-
-  private sort() {
-    if (!this.input) return [];
-
-    let packer = new Packer();
-
-    const sequence = this.input.containers.map((container) => {
-      let bin = new Bin(
-        container.name,
-        container.dx,
-        container.dy,
-        container.dz,
-        0
-      );
-
-      packer.addBin(bin);
-
-      container.stack.placements.forEach((x) => {
-        const stackable = x.stackable;
-        packer.addItem(
-          new Item(stackable.id, stackable.dx, stackable.dy, stackable.dz, 0)
-        );
-      });
-
-      packer.pack();
-
-      this.fixSortData(bin.items);
-
-      return bin.items as Order[];
-    });
-
-    return sequence.flatMap((x) => x);
-  }
-
-  private fixSortValues(value: number) {
-    return value / this._FIX;
-  }
-
-  private fixSortData(items: Order[]) {
-    items?.forEach((element: Order) => {
-      element.depth = this.fixSortValues(element.depth);
-      element.height = this.fixSortValues(element.height);
-      element.width = this.fixSortValues(element.width);
-      element.weight = this.fixSortValues(element.weight);
-
-      element.position = [
-        this.fixSortValues(element.position[0]),
-        this.fixSortValues(element.position[1]),
-        this.fixSortValues(element.position[2]),
-      ];
-    });
+    this._events.get(AppEvent.RENDERING).emit();
   }
 
   private fixSteps(input: InputObject) {

@@ -1,5 +1,1 @@
-export enum Units {
-    cm = 1,
-    m = 2,
-    in = 3
-}
+export type Units = 'cm' | 'm' | 'in';

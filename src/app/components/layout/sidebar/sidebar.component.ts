@@ -1,11 +1,12 @@
 import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { ContextService } from '@shared/services/context.service';
-import data from '@common/fakes/test01.json';
 import { debounceTime } from 'rxjs';
 import { AppEvent, EventsService } from '@shared/services/events.service';
 import { StackPlacement } from '@common/classes/StackPlacement.class';
+import { ProcessorService } from '@shared/services/Processor.service';
 
 type SidebarListType = StackPlacement & { selected: boolean };
+// import data from '@common/templates/input.json';
 
 @Component({
   selector: 'app-sidebar',
@@ -23,12 +24,13 @@ export class SidebarComponent implements OnInit, AfterViewInit {
 
   constructor(
     private _events: EventsService,
+    private _processor: ProcessorService,
     private _context: ContextService
   ) {}
 
   ngOnInit(): void {
     this._events
-      .get(AppEvent.LOADED)
+      .get(AppEvent.RENDERED)
       .pipe(debounceTime(500))
       .subscribe(this.populateSequence.bind(this));
 
@@ -38,12 +40,11 @@ export class SidebarComponent implements OnInit, AfterViewInit {
       .subscribe(this.selectItem.bind(this));
   }
 
-  ngAfterViewInit(): void {
-    this.load();
-  }
+  ngAfterViewInit(): void {}
 
-  load() {
-    this._context.loadData(data as any);
+  load(event: any) {
+    const files = event.target.files;
+    if (files?.length) this._processor.load(files[0]);
   }
 
   clicked(item: SidebarListType) {

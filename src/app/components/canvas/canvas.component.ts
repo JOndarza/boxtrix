@@ -72,7 +72,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.animate();
 
     this._events
-      .get(AppEvent.LOADED)
+      .get(AppEvent.RENDERING)
       .pipe(debounceTime(100))
       .subscribe(this.load.bind(this));
 
@@ -354,6 +354,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.addGrid(container.maxY, container.maxX);
 
     this.addLight();
+
+    this._events.get(AppEvent.RENDERED).emit();
   }
 
   private addContainer(mainGroup: THREE.Object3D, packaging: InputObject) {

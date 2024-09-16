@@ -1,7 +1,12 @@
 import { EventEmitter, Injectable } from '@angular/core';
 
 export const enum AppEvent {
+  LOADING = 'LOADING',
   LOADED = 'LOADED',
+
+  RENDERING = 'RENDERING',
+  RENDERED = 'RENDERED',
+
   RAYCAST = 'RAYCAST',
   CLICKED = 'CLICKED',
 }

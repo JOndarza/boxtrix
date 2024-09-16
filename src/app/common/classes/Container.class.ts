@@ -26,6 +26,6 @@ export class Container extends Stackable {
   }
 
   add(stackPlacement: StackPlacement): void {
-    this.stack.add(stackPlacement as any);
+    this.stack.add(stackPlacement);
   }
 }

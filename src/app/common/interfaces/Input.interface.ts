@@ -1,18 +1,7 @@
 import { Units } from '../enums/Units.enum';
+import { IIdentification, IMeasurements } from './Data.interface';
 
-export interface IIdentification {
-  id: string;
-  name: string;
-  detail?: string;
-}
-
-export interface IMeasurements {
-  width: number;
-  height: number;
-  deep: number;
-}
-
-export type IBox = IIdentification & IMeasurements & { stage: IStage[] };
+export type IBox = IIdentification & IMeasurements & { weight?: number };
 export type IStage = IIdentification & IMeasurements & { items: IBox[] };
 
 export interface IInput {
