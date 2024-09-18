@@ -19,7 +19,10 @@ export class BinPackingService {
       stage.items?.forEach((item) => (item.id = this.newId()));
     });
 
+    const labelBestFit = 'Best fit in';
+    console.time(labelBestFit);
     const data = this.logic(input);
+    console.timeEnd(labelBestFit);
 
     const bin = {
       units: input.units,
@@ -31,9 +34,14 @@ export class BinPackingService {
           id: stage.id,
           name: stage.name,
           detail: stage.detail,
-          width: binStage.width,
-          height: binStage.height,
-          depth: binStage.depth,
+          width: stage.width,
+          height: stage.height,
+          depth: stage.depth,
+          fixedIMeasurements: {
+            width: binStage.width,
+            height: binStage.height,
+            depth: binStage.depth,
+          },
           items: items.map((binItem) => {
             const item =
               stage.items.find((i) => i.id === binItem.name) || ({} as IBox);
@@ -59,29 +67,77 @@ export class BinPackingService {
 
     this.fixSortData(bin);
 
-    console.log('bin', bin);
     return bin;
   }
 
   private logic(input: IInput) {
-    let packer = new Packer();
+    const sequence: IBinStage[] = input.stages.map((stage) => {
+      const items = stage.items;
+      const counter = items.length;
 
-    const sequence = input.stages.map((stage) => {
-      let bin = new Bin(stage.name, stage.width, stage.height, stage.depth, 0);
-      packer.addBin(bin);
+      let minWidth = false;
+      let minHeight = false;
+      let minDepth = false;
 
-      stage.items.forEach((item) =>
-        packer.addItem(
-          new Item(item.id, item.width, item.height, item.depth, item.weight)
-        )
-      );
+      let width = stage.width;
+      let height = stage.height;
+      let depth = stage.depth;
 
-      packer.pack();
+      let firstIteration = true;
 
-      return bin as IBinStage;
+      let previous;
+      while (!minWidth || !minHeight || !minDepth) {
+        const s = {
+          name: stage.name,
+          width,
+          height,
+          depth,
+        } as IStage;
+        const organized = this.organize(s, items);
+
+        if (organized.items.length >= counter) {
+          if (!minWidth) --width;
+          else if (!minHeight) --height;
+          else if (!minDepth) --depth;
+
+          firstIteration = false;
+          previous = organized;
+        } else {
+          if (firstIteration) return organized;
+
+          if (!minWidth) {
+            minWidth = true;
+            ++width;
+          } else if (!minHeight) {
+            minHeight = true;
+            ++height;
+          } else if (!minDepth) {
+            minDepth = true;
+          }
+        }
+      }
+
+      return previous;
     });
 
     return sequence.flatMap((x) => x);
+  }
+
+  private organize(stage: IStage, items: IBox[]) {
+    let packer = new Packer();
+
+    let bin = new Bin(stage.name, stage.width, stage.height, stage.depth, 0);
+    packer.addBin(bin);
+
+    items.forEach((item) =>
+      packer.addItem(
+        new Item(item.id, item.width, item.height, item.depth, item.weight)
+      )
+    );
+
+    packer.pack();
+
+    return bin;
   }
 
   private fixSortValues(value: number) {
@@ -90,9 +146,17 @@ export class BinPackingService {
 
   private fixSortData(bin: IBin) {
     bin.stages.forEach((s) => {
-      s.depth = this.fixSortValues(s.depth);
-      s.height = this.fixSortValues(s.height);
-      s.width = this.fixSortValues(s.width);
+      if (s.fixedIMeasurements) {
+        s.fixedIMeasurements.depth = this.fixSortValues(
+          s.fixedIMeasurements.depth
+        );
+        s.fixedIMeasurements.height = this.fixSortValues(
+          s.fixedIMeasurements.height
+        );
+        s.fixedIMeasurements.width = this.fixSortValues(
+          s.fixedIMeasurements.width
+        );
+      }
 
       s.items.forEach((i) => {
         i.depth = this.fixSortValues(i.depth);

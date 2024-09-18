@@ -2,6 +2,9 @@ import { Injectable } from '@angular/core';
 import { IInput } from '@common/interfaces/Input.interface';
 import { AppEvent, EventsService } from './events.service';
 import { BinPackingService } from './BinPacking.service';
+import { orderBy } from 'lodash';
+import _ from 'lodash';
+import { IMeasurements } from '@common/interfaces/Data.interface';
 
 @Injectable({ providedIn: 'root' })
 export class ProcessorService {
@@ -39,6 +42,18 @@ export class ProcessorService {
     input.stages.forEach((x) => {
       if (!x.items) x.items = [];
     });
+
+    input.stages = _.orderBy(input.stages, this.getVolumen, 'desc');
+    input.stages.forEach(
+      (stage) =>
+        (stage.items = _.chain(stage.items)
+          .orderBy(this.getVolumen, 'desc')
+          .value())
+    );
+  }
+
+  private getVolumen(x: IMeasurements) {
+    return x.width * x.height * x.depth;
   }
 
   private loadJSON(file: File) {

@@ -6,6 +6,9 @@ import { ColorScheme } from '../interfaces/ColorScheme';
 import { Box } from './Box.class';
 import { Container } from './Container.class';
 import { StackPlacement } from './StackPlacement.class';
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
+import { FontLoader } from 'three/examples/jsm/loaders/FontLoader';
+import _ from 'lodash';
 
 export class StackableRenderer {
   constructor(private _constants: ContantsService) {}
@@ -135,6 +138,33 @@ export class StackableRenderer {
       box.position.x = stackPlacement.y + boxStackable.dy / 2 + x;
       box.position.y = stackPlacement.z + boxStackable.dz / 2 + y;
       box.position.z = stackPlacement.x + boxStackable.dx / 2 + z;
+
+      let up = new THREE.ArrowHelper(
+        box.up,
+        box.position,
+        _.chain([boxStackable.dy, boxStackable.dz, boxStackable.dx])
+          .orderBy((x) => x)
+          .first()
+          .value()/2,
+        0x42a5f5
+      );
+      parent.add(up);
+
+      // Cargar la fuente y crear el texto para los ejes
+      const loader = new FontLoader();
+      loader.load('helvetiker_regular.typeface.json', (font) => {
+        const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+
+        // Crear el texto para el eje X
+        const xTextGeometry = new TextGeometry(boxStackable.step.toString(), {
+          font: font,
+          size: 0.5,
+          depth: 0.1,
+        });
+        const xTextMesh = new THREE.Mesh(xTextGeometry, textMaterial);
+        xTextMesh.position.set(box.position.x, box.position.y, box.position.z); // Colocar la etiqueta cerca del final del eje X
+        parent.add(xTextMesh);
+      });
 
       box.userData = {
         step: boxStackable.step,

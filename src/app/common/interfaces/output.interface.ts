@@ -1,3 +1,4 @@
+import { IMeasurements } from './Data.interface';
 import { IBox, IInput, IStage } from './Input.interface';
 
 export interface IBinItem extends IBox {
@@ -8,6 +9,7 @@ export interface IBinItem extends IBox {
 
 export interface IBinStage extends IStage {
   items: IBinItem[];
+  fixedIMeasurements?: IMeasurements;
   outer?: IBinItem[];
 }
 

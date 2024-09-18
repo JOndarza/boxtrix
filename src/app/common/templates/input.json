@@ -9,6 +9,34 @@
             "detail": "Details STAGE1",
             "items": [
                 {
+                    "name": "BOX1A",
+                    "width": 5,
+                    "height": 9,
+                    "depth": 5,
+                    "detail": "Details BOX1"
+                },
+                {
+                    "name": "BOX1B",
+                    "width": 5,
+                    "height": 9,
+                    "depth": 5,
+                    "detail": "Details BOX1"
+                },
+                {
+                    "name": "BOX1C",
+                    "width": 5,
+                    "height": 9,
+                    "depth": 5,
+                    "detail": "Details BOX1"
+                },
+                {
+                    "name": "BOX1D",
+                    "width": 5,
+                    "height": 9,
+                    "depth": 5,
+                    "detail": "Details BOX1"
+                },
+                {
                     "name": "BOX2",
                     "width": 2,
                     "height": 3,
@@ -56,13 +84,6 @@
                     "height": 4,
                     "depth": 1,
                     "detail": "Details BOX8"
-                },
-                {
-                    "name": "BOX1",
-                    "width": 5,
-                    "height": 9,
-                    "depth": 5,
-                    "detail": "Details BOX1"
                 }
             ]
         }

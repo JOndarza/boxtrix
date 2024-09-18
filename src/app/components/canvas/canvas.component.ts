@@ -463,8 +463,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
     );
 
     grid.position.y = 0;
-    grid.position.x = size / 2 - this._contants.GRID_SPACING;
-    grid.position.z = size / 2 - this._contants.GRID_SPACING;
+    grid.position.x = size / 2;
+    grid.position.z = size / 2;
 
     this._scene.add(grid);
 
@@ -480,30 +480,30 @@ export class CanvasComponent implements OnInit, OnDestroy {
       const xTextGeometry = new TextGeometry('X', {
         font: font,
         size: 0.5,
-        height: 0.1,
+        depth: 0.1,
       });
       const xTextMesh = new THREE.Mesh(xTextGeometry, textMaterial);
-      xTextMesh.position.set(5.2, 0, 0); // Colocar la etiqueta cerca del final del eje X
+      xTextMesh.position.set(size, 0, 0); // Colocar la etiqueta cerca del final del eje X
       this._scene.add(xTextMesh);
 
       // Crear el texto para el eje Y
       const yTextGeometry = new TextGeometry('Y', {
         font: font,
         size: 0.5,
-        height: 0.1,
+        depth: 0.1,
       });
       const yTextMesh = new THREE.Mesh(yTextGeometry, textMaterial);
-      yTextMesh.position.set(0, 5.2, 0); // Colocar la etiqueta cerca del final del eje Y
+      yTextMesh.position.set(0, size, 0); // Colocar la etiqueta cerca del final del eje Y
       this._scene.add(yTextMesh);
 
       // Crear el texto para el eje Z
       const zTextGeometry = new TextGeometry('Z', {
         font: font,
         size: 0.5,
-        height: 0.1,
+        depth: 0.1,
       });
       const zTextMesh = new THREE.Mesh(zTextGeometry, textMaterial);
-      zTextMesh.position.set(0, 0, 5.2); // Colocar la etiqueta cerca del final del eje Z
+      zTextMesh.position.set(0, 0, size); // Colocar la etiqueta cerca del final del eje Z
       this._scene.add(zTextMesh);
     });
   }

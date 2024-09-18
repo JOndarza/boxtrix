@@ -46,6 +46,9 @@ $app-sidebar-transition: all 0.5s ease-in;
     overflow-y: auto;
 
     ul.sequence {
+        list-style: none;
+        padding: 0;
+
         li.sequence-item {
             padding-top: 0.5rem;
             padding-bottom: 0.5rem;
