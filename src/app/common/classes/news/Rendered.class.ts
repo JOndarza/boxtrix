@@ -6,7 +6,8 @@ import {
 } from '@common/interfaces/Data.interface';
 import { ColorRepresentation } from 'three';
 
-import { Measurements, Position, RotationType } from './Bases.class';
+import { Measurements, Position } from './Bases.class';
+import { Rotation } from '../../enums/Rotation.enum';
 
 export class Rendered implements IIdentification {
   protected _id!: string;
@@ -34,7 +35,7 @@ export class Rendered implements IIdentification {
     return this._means;
   }
 
-  protected _rotation!: RotationType;
+  protected _rotation!: Rotation;
   public get rotation() {
     return this._rotation;
   }
@@ -56,7 +57,7 @@ export class Rendered implements IIdentification {
     meta: {
       position: IPosition;
       means: IMeasurements;
-      rotation: RotationType;
+      rotation: Rotation;
     }
   ) {
     this._id = id || newId();
@@ -65,7 +66,7 @@ export class Rendered implements IIdentification {
 
     this._position = new Position(meta.position);
     this._means = new Measurements(meta.means);
-    this.setRotation(meta.rotation || RotationType.RotationType_WHD);
+    this.setRotation(meta.rotation || Rotation.WHD);
     this.setColor('#FFF');
   }
 
@@ -73,7 +74,7 @@ export class Rendered implements IIdentification {
     this._color = color;
   }
 
-  setRotation(rotation: RotationType) {
+  setRotation(rotation: Rotation) {
     this._rotation = rotation;
     this.fixMeans();
   }
@@ -90,26 +91,26 @@ export class Rendered implements IIdentification {
     } as IMeasurements;
 
     switch (this.rotation) {
-      case RotationType.RotationType_HWD:
+      case Rotation.HWD:
         means.width = this.means.height;
         means.height = this.means.width;
         break;
-      case RotationType.RotationType_HDW:
+      case Rotation.HDW:
         means.width = this.means.height;
         means.height = this.means.depth;
         means.depth = this.means.width;
 
         break;
-      case RotationType.RotationType_DHW:
+      case Rotation.DHW:
         means.width = this.means.depth;
         means.depth = this.means.width;
         break;
-      case RotationType.RotationType_DWH:
+      case Rotation.DWH:
         means.width = this.means.depth;
         means.height = this.means.width;
         means.depth = this.means.height;
         break;
-      case RotationType.RotationType_WDH:
+      case Rotation.WDH:
         means.height = this.means.depth;
         means.depth = this.means.height;
         break;

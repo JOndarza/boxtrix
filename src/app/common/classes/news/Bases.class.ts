@@ -1,16 +1,4 @@
-import {
-  IMeasurements,
-  IPosition,
-} from '@common/interfaces/Data.interface';
-
-export const enum RotationType {
-  RotationType_WHD = 0,
-  RotationType_HWD = 1,
-  RotationType_HDW = 2,
-  RotationType_DHW = 3,
-  RotationType_DWH = 4,
-  RotationType_WDH = 5,
-}
+import { IMeasurements, IPosition } from '@common/interfaces/Data.interface';
 
 export class Position implements IPosition {
   protected _x!: number;
@@ -64,6 +52,8 @@ export class Measurements implements IMeasurements {
     this._height = means.height;
     this._depth = means.depth;
   }
+
+  getVolumen() {
+    return this.width * this.height * this.depth;
+  }
 }
-
-

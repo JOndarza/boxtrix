@@ -3,9 +3,9 @@
     "stages": [
         {
             "name": "STAGE1",
-            "width": 9,
-            "height": 5,
-            "depth": 18,
+            "width": 11,
+            "height": 9,
+            "depth": 11,
             "detail": "Details STAGE1",
             "items": [
                 {

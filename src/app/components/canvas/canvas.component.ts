@@ -24,7 +24,7 @@ import { TextManager } from '@shared/services/TextManager.service';
 import { BoxTrixContainer } from '@common/classes/news/Container.class';
 import { RenderedController } from '@common/classes/news/Rendered.controller';
 import { IMeasurements, IPosition } from '@common/interfaces/Data.interface';
-import { RotationType } from '@common/classes/news/Bases.class';
+import { Rotation } from '@common/enums/Rotation.enum';
 
 export const enum KeyCode {
   A = 65,
@@ -502,7 +502,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       type: 'container',
       means: item.means,
       position: item.position,
-      rotation: RotationType.RotationType_WHD,
+      rotation: Rotation.WHD,
     });
     clone.setColor('#FF0');
 

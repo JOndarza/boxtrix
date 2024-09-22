@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { IInput } from '@common/interfaces/Input.interface';
 import { AppEvent, EventsService } from './events.service';
-import { BinPackingService } from './BinPacking.service';
+import { BinPackingService } from './algorithms/binpackingjs/BinPacking.service';
 import { orderBy } from 'lodash';
 import _ from 'lodash';
 import { IMeasurements } from '@common/interfaces/Data.interface';
+import { newId } from '@common/functions/id.function';
 
 @Injectable({ providedIn: 'root' })
 export class ProcessorService {
@@ -31,9 +32,20 @@ export class ProcessorService {
     }
   }
 
-  process(input: IInput) {
+  sort(input: IInput) {
     this.cleanInput(input);
-    this._events.get(AppEvent.LOADED).emit(this._bin.sort(input));
+
+    input.stages.forEach((stage) => {
+      stage.id = newId();
+      stage.items?.forEach((item) => (item.id = newId()));
+    });
+
+    const labelTime = 'Algorithm in';
+    console.time(labelTime);
+    const data = this._bin.sort(input);
+    console.timeEnd(labelTime);
+
+    this._events.get(AppEvent.LOADED).emit(data);
   }
 
   private cleanInput(input: IInput) {
@@ -42,18 +54,6 @@ export class ProcessorService {
     input.stages.forEach((x) => {
       if (!x.items) x.items = [];
     });
-
-    input.stages = _.orderBy(input.stages, this.getVolumen, 'desc');
-    input.stages.forEach(
-      (stage) =>
-        (stage.items = _.chain(stage.items)
-          .orderBy(this.getVolumen, 'desc')
-          .value())
-    );
-  }
-
-  private getVolumen(x: IMeasurements) {
-    return x.width * x.height * x.depth;
   }
 
   private loadJSON(file: File) {
@@ -65,7 +65,7 @@ export class ProcessorService {
     // Cuando el archivo ha sido leído
     reader.onload = () => {
       const json = JSON.parse(reader.result as string);
-      this.process(json as IInput);
+      this.sort(json as IInput);
     };
 
     // Manejar errores de lectura

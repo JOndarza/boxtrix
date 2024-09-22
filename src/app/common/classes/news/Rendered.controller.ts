@@ -1,7 +1,8 @@
 import { IMeasurements, IPosition } from '@common/interfaces/Data.interface';
 
-import { RotationType } from './Bases.class';
+import { Rotation } from '../../enums/Rotation.enum';
 import { Rendered } from './Rendered.class';
+import _ from 'lodash';
 
 export type RenderType = 'container' | 'box';
 
@@ -19,6 +20,14 @@ export class RenderedController extends Rendered {
   protected _globalStep!: number;
   public get globalStep() {
     return this._globalStep;
+  }
+
+  private _selected: boolean = false;
+  public get selected() {
+    return this._selected;
+  }
+  public set selected(v: boolean) {
+    this._selected = v;
   }
 
   get itemCount() {
@@ -46,7 +55,7 @@ export class RenderedController extends Rendered {
       type: RenderType;
       position: IPosition;
       means: IMeasurements;
-      rotation: RotationType;
+      rotation: Rotation;
     }
   ) {
     super(id, name, detail, meta);
@@ -63,11 +72,23 @@ export class RenderedController extends Rendered {
     this._globalStep = step;
   }
 
-  protected setItems(...items: RenderedController[]) {
+  setItems(items: RenderedController[]) {
     this._items = items;
+
+    this.orderItems();
   }
 
-  protected addItem(item: RenderedController) {
+  addItem(item: RenderedController) {
     this._items.push(item);
+
+    this.orderItems();
+  }
+
+  protected orderItems() {
+    this._items = _.orderBy(
+      this._items,
+      (s) => Math.sqrt(s.position.x ** 2 + s.position.y ** 2 + s.position.z ** 2),
+      'asc'
+    );
   }
 }

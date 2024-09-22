@@ -1,10 +1,14 @@
 import { IMeasurements, IPosition } from '@common/interfaces/Data.interface';
-import { IBinItem } from '@common/interfaces/output.interface';
 import randomColor from 'randomcolor';
 
 import { RenderedController } from './Rendered.controller';
 
 export class BoxTrixContainer extends RenderedController {
+  protected _unffitedItems: RenderedController[];
+  get unffitedItems() {
+    return this._unffitedItems;
+  }
+
   constructor(
     id: string,
     name: string,
@@ -13,29 +17,39 @@ export class BoxTrixContainer extends RenderedController {
   ) {
     super(id, name, detail, { type: 'container', ...meta, rotation: 0 });
     this._items = [];
+    this._unffitedItems = [];
   }
 
   /**
    * @param items has to be an array of IBinItem ordered by their position in the container
    */
-  setData(items: IBinItem[]) {
-    const collection = items.map((item, index) => {
-      const data = this.getDataItem(item);
-      data.setLocalStep(index);
-      return data;
+  override setItems(items: RenderedController[]) {
+    items.forEach((item, index) => {
+      item.setLocalStep(index);
+      item.setColor(randomColor());
     });
-    this.setItems(...collection);
+    this._items = items;
+
+    this.orderItems();
   }
 
   /**
    * @param item has to be an IBinItem, step is the index of the item in the container
    */
-  setItem(item: IBinItem) {
-    const data = this.getDataItem(item);
-    data.setLocalStep(this._items.length);
-    data.setColor(randomColor());
+  override addItem(item: RenderedController) {
+    item.setLocalStep(this.itemCount);
+    item.setColor(randomColor());
+    this._items.push(item);
 
-    this.addItem(data);
+    this.orderItems();
+  }
+
+  setUnfittedItems(items: RenderedController[]) {
+    items.forEach((item, index) => {
+      item.setLocalStep(index);
+      item.setColor(randomColor());
+    });
+    this._unffitedItems = items;
   }
 
   setGlobalSteps(previousStep: number) {
@@ -47,22 +61,5 @@ export class BoxTrixContainer extends RenderedController {
   getItemByStep(step: number) {
     if (step > this.maxSteps && step < this.minSteps) return undefined;
     return this._items.find((item) => item.localStep === step);
-  }
-
-  private getDataItem(item: IBinItem) {
-    const data = new RenderedController(item.id, item.name, item.detail || '', {
-      type: 'box',
-      position: {
-        x: item.position[0],
-        y: item.position[1],
-        z: item.position[2],
-      },
-      means: item,
-      rotation: item.rotationType,
-    });
-
-    data.setColor(randomColor());
-
-    return data;
   }
 }

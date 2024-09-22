@@ -20,8 +20,10 @@ $app-sidebar-transition: all 0.5s ease-in;
     top: 0;
     left: 0;
 
-    h3 {
+    h3,
+    h5 {
         margin: 0;
+        width: fit-content;
     }
 
     .sidebar-header,
@@ -42,12 +44,19 @@ $app-sidebar-transition: all 0.5s ease-in;
     margin-top: $app-sidebar-margin;
     margin-bottom: $app-sidebar-margin;
 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
     overflow-x: hidden;
     overflow-y: auto;
 
     ul.sequence {
+        width: 100%;
         list-style: none;
         padding: 0;
+        margin: 0;
+        margin-bottom: 1rem;
 
         li.sequence-item {
             padding-top: 0.5rem;
@@ -64,6 +73,7 @@ $app-sidebar-transition: all 0.5s ease-in;
             }
 
         }
+
     }
 
     ul.sequence li.sequence-item {

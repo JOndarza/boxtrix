@@ -3,41 +3,37 @@
 </div>
 
 <div class="sidebar-body">
-  <h3>Sequence</h3>
-  <ul class="sequence">
-    @for (item of sequence; track $index) {
-    <li
-      class="sequence-item"
-      [class.selected]="item.selected"
-      (click)="clicked(item)"
-    >
-      <div>{{$index +1}} - {{item.name}}</div>
-      <div class="detail">
-        <!-- {{item.stackable.id}} -->
-        <!-- POSITION -->
-        <div>
-          Position
-          <ul class="position">
-            <li>X: {{item.position.x}}</li>
-            <li>Y: {{item.position.y}}</li>
-            <li>Z: {{item.position.z}}</li>
-          </ul>
-        </div>
-        <!-- MEASUREMENTS -->
-        <div>
-          Meas [cm]
-          <ul class="dimensions">
-            <li>W: {{item.means.width}}</li>
-            <li>H: {{item.means.height}}</li>
-            <li>D: {{item.means.depth}}</li>
-          </ul>
-        </div>
-      </div>
-    </li>
-    }
-  </ul>
+  <ng-template
+    [ngTemplateOutlet]="listTemp"
+    [ngTemplateOutletContext]="{context: { title: 'Fitted', collection: detail.fitted }}"
+  ></ng-template>
+
+  <ng-template
+    [ngTemplateOutlet]="listTemp"
+    [ngTemplateOutletContext]="{context: { title: 'Unfitted', collection: detail.unfitted }}"
+  ></ng-template>
 </div>
 
 <div class="sidebar-footer">
   <input type="file" (change)="load($event)" />
 </div>
+
+<ng-template #listTemp let-context="context">
+  @if (context.collection?.length) {
+
+  <h3>{{context.title}}</h3>
+  <h5>{{context.collection?.length}} item's</h5>
+
+  <ul class="sequence">
+    @for (item of context.collection; track $index) {
+    <li
+      class="sequence-item"
+      [class.selected]="item.selected"
+      (click)="clicked(item)"
+    >
+      <div>{{item.name}}</div>
+    </li>
+    }
+  </ul>
+  }
+</ng-template>
