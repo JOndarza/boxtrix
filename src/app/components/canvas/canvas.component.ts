@@ -26,6 +26,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
+import { TextManager } from '@shared/services/TextManager.service';
 
 export const enum KeyCode {
   A = 65,
@@ -62,6 +63,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     private _events: EventsService,
     private _focus: FocusManagerService,
     private _rewind: RewindManagerService,
+    private _text: TextManager,
     private _context: ContextService
   ) {
     this._stackableRenderer = new StackableRenderer(this._contants);
@@ -471,41 +473,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
     const axesHelper = new THREE.AxesHelper(50);
     this._scene.add(axesHelper);
 
-    // Cargar la fuente y crear el texto para los ejes
-    const loader = new FontLoader();
-    loader.load('helvetiker_regular.typeface.json', (font) => {
-      const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-
-      // Crear el texto para el eje X
-      const xTextGeometry = new TextGeometry('X', {
-        font: font,
-        size: 0.5,
-        depth: 0.1,
-      });
-      const xTextMesh = new THREE.Mesh(xTextGeometry, textMaterial);
-      xTextMesh.position.set(size, 0, 0); // Colocar la etiqueta cerca del final del eje X
-      this._scene.add(xTextMesh);
-
-      // Crear el texto para el eje Y
-      const yTextGeometry = new TextGeometry('Y', {
-        font: font,
-        size: 0.5,
-        depth: 0.1,
-      });
-      const yTextMesh = new THREE.Mesh(yTextGeometry, textMaterial);
-      yTextMesh.position.set(0, size, 0); // Colocar la etiqueta cerca del final del eje Y
-      this._scene.add(yTextMesh);
-
-      // Crear el texto para el eje Z
-      const zTextGeometry = new TextGeometry('Z', {
-        font: font,
-        size: 0.5,
-        depth: 0.1,
-      });
-      const zTextMesh = new THREE.Mesh(zTextGeometry, textMaterial);
-      zTextMesh.position.set(0, 0, size); // Colocar la etiqueta cerca del final del eje Z
-      this._scene.add(zTextMesh);
-    });
+    this._text.addTo(
+      this._scene,
+      { label: 'X', position: { x: size } },
+      { label: 'Y', position: { y: size } },
+      { label: 'Z', position: { z: size } }
+    );
   }
 
   private addLight() {

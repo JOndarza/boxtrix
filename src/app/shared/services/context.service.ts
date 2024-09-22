@@ -3,12 +3,9 @@ import { Container } from '@common/classes/Container.class';
 import { InputObject } from '@common/classes/InputObject';
 import { Stackable } from '@common/classes/Stackable.class';
 import { IBin } from '@common/interfaces/output.interface';
-import { BP3D } from 'binpackingjs';
 
 import { AppEvent, EventsService } from './events.service';
 import { debounceTime } from 'rxjs';
-
-const { Item, Bin, Packer } = BP3D;
 
 @Injectable({ providedIn: 'root' })
 export class ContextService {

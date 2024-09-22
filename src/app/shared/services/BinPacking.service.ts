@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { newId } from '@common/functions/id.function';
 import { IBox, IInput, IStage } from '@common/interfaces/Input.interface';
 import { IBin, IBinItem, IBinStage } from '@common/interfaces/output.interface';
 import { BP3D } from 'binpackingjs';
@@ -15,8 +16,8 @@ export class BinPackingService {
     if (!input) return {} as IBin;
 
     input.stages.forEach((stage) => {
-      stage.id = this.newId();
-      stage.items?.forEach((item) => (item.id = this.newId()));
+      stage.id = newId();
+      stage.items?.forEach((item) => (item.id = newId()));
     });
 
     const labelBestFit = 'Best fit in';
@@ -176,15 +177,6 @@ export class BinPackingService {
         (s) => Math.sqrt(s.position[0] ** 2 + s.position[2] ** 2),
         'asc'
       );
-    });
-  }
-
-  private newId() {
-    // First character is an 'a', it's good practice to tag id to begin with a letter
-    return 'axxxxxxxxxxx'.replace(/[x]/g, () => {
-      // eslint-disable-next-line no-bitwise
-      const val = (Math.random() * 16) | 0;
-      return val.toString(16);
     });
   }
 }
