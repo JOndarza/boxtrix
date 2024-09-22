@@ -29,8 +29,9 @@ export class BinPackingService {
       units: input.units,
       stages: data.map((binStage) => {
         const stage =
-          input.stages.find((s) => s.name === binStage.name) || ({} as IStage);
-        const { items } = binStage;
+          input.stages.find((s) => s.name === binStage.organized.name) ||
+          ({} as IStage);
+        const { items } = binStage.organized;
         const s = {
           id: stage.id,
           name: stage.name,
@@ -38,12 +39,12 @@ export class BinPackingService {
           width: stage.width,
           height: stage.height,
           depth: stage.depth,
-          fixedIMeasurements: {
-            width: binStage.width,
-            height: binStage.height,
-            depth: binStage.depth,
+          fixedIMeans: {
+            width: binStage.minWidth,
+            height: binStage.minHeigh,
+            depth: binStage.minDepth,
           },
-          items: items.map((binItem) => {
+          items: items.map((binItem: any) => {
             const item =
               stage.items.find((i) => i.id === binItem.name) || ({} as IBox);
 
@@ -72,7 +73,7 @@ export class BinPackingService {
   }
 
   private logic(input: IInput) {
-    const sequence: IBinStage[] = input.stages.map((stage) => {
+    const sequence = input.stages.map((stage) => {
       const items = stage.items;
       const counter = items.length;
 
@@ -104,7 +105,14 @@ export class BinPackingService {
           firstIteration = false;
           previous = organized;
         } else {
-          if (firstIteration) return organized;
+          if (firstIteration) {
+            return {
+              organized,
+              minWidth: width,
+              minHeigh: height,
+              minDepth: depth,
+            };
+          }
 
           if (!minWidth) {
             minWidth = true;
@@ -114,12 +122,20 @@ export class BinPackingService {
             ++height;
           } else if (!minDepth) {
             minDepth = true;
+            ++depth;
           }
         }
       }
 
-      return previous;
+      return {
+        organized: previous,
+        minWidth: width,
+        minHeigh: height,
+        minDepth: depth,
+      };
     });
+
+    console.log(sequence);
 
     return sequence.flatMap((x) => x);
   }
@@ -132,7 +148,7 @@ export class BinPackingService {
 
     items.forEach((item) =>
       packer.addItem(
-        new Item(item.id, item.width, item.height, item.depth, item.weight)
+        new Item(item.id, item.width, item.height, item.depth, item.weight || 1)
       )
     );
 
@@ -147,18 +163,6 @@ export class BinPackingService {
 
   private fixSortData(bin: IBin) {
     bin.stages.forEach((s) => {
-      if (s.fixedIMeasurements) {
-        s.fixedIMeasurements.depth = this.fixSortValues(
-          s.fixedIMeasurements.depth
-        );
-        s.fixedIMeasurements.height = this.fixSortValues(
-          s.fixedIMeasurements.height
-        );
-        s.fixedIMeasurements.width = this.fixSortValues(
-          s.fixedIMeasurements.width
-        );
-      }
-
       s.items.forEach((i) => {
         i.depth = this.fixSortValues(i.depth);
         i.height = this.fixSortValues(i.height);

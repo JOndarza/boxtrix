@@ -50,6 +50,7 @@ export class Rendered implements IIdentification {
   }
 
   constructor(
+    id: string,
     name: string,
     detail: string,
     meta: {
@@ -58,7 +59,7 @@ export class Rendered implements IIdentification {
       rotation: RotationType;
     }
   ) {
-    this.setId();
+    this._id = id || newId();
     this._name = name;
     this._detail = detail;
 
@@ -77,8 +78,8 @@ export class Rendered implements IIdentification {
     this.fixMeans();
   }
 
-  protected setId(id?: string) {
-    this._id = id || newId();
+  setFixedMeans(means: IMeasurements) {
+    this._fixedMeans = means;
   }
 
   private fixMeans() {
@@ -114,6 +115,6 @@ export class Rendered implements IIdentification {
         break;
     }
 
-    this._fixedMeans = means;
+    this.setFixedMeans(means);
   }
 }

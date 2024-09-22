@@ -5,8 +5,9 @@ import { AppEvent, EventsService } from '@shared/services/events.service';
 import { StackPlacement } from '@common/classes/StackPlacement.class';
 import { ProcessorService } from '@shared/services/Processor.service';
 import data from '@common/templates/input.json';
+import { RenderedController } from '@common/classes/news/Rendered.controller';
 
-type SidebarListType = StackPlacement & { selected: boolean };
+type SidebarListType = RenderedController & { selected: boolean };
 
 @Component({
   selector: 'app-sidebar',
@@ -50,18 +51,18 @@ export class SidebarComponent implements OnInit, AfterViewInit {
   }
 
   clicked(item: SidebarListType) {
-    this._events.get(AppEvent.CLICKED).emit(item.stackable.id);
+    this._events.get(AppEvent.CLICKED).emit(item.id);
   }
 
   private populateSequence() {
-    const a = this._context.input.containers
-      .map((x) => x.stack.placements.map((p) => p))
+    const a = this._context.containers
+      .map((x) => x.items.map((p) => p))
       .flatMap((x) => x);
 
     this._sequence = a as SidebarListType[];
   }
 
   private selectItem(id: string) {
-    this.sequence?.forEach((x) => (x.selected = x.stackable.id === id));
+    this.sequence?.forEach((x) => (x.selected = x.id === id));
   }
 }

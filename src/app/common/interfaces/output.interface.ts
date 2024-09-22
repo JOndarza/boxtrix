@@ -9,7 +9,7 @@ export interface IBinItem extends IBox {
 
 export interface IBinStage extends IStage {
   items: IBinItem[];
-  fixedIMeasurements?: IMeasurements;
+  fixedIMeans?: IMeasurements;
   outer?: IBinItem[];
 }
 

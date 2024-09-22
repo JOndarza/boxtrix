@@ -34,8 +34,12 @@ export class RenderedController extends Rendered {
   }
 
   protected _items: RenderedController[];
+  get items() {
+    return this._items;
+  }
 
   constructor(
+    id: string,
     name: string,
     detail: string,
     meta: {
@@ -45,7 +49,7 @@ export class RenderedController extends Rendered {
       rotation: RotationType;
     }
   ) {
-    super(name, detail, meta);
+    super(id, name, detail, meta);
     this._type = meta.type;
 
     this._items = [];

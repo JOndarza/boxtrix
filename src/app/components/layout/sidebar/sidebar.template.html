@@ -11,25 +11,25 @@
       [class.selected]="item.selected"
       (click)="clicked(item)"
     >
-      <div>{{$index +1}} - {{item.stackable.name}}</div>
+      <div>{{$index +1}} - {{item.name}}</div>
       <div class="detail">
         <!-- {{item.stackable.id}} -->
         <!-- POSITION -->
         <div>
           Position
           <ul class="position">
-            <li>X: {{item.x}}</li>
-            <li>Y: {{item.y}}</li>
-            <li>Z: {{item.z}}</li>
+            <li>X: {{item.position.x}}</li>
+            <li>Y: {{item.position.y}}</li>
+            <li>Z: {{item.position.z}}</li>
           </ul>
         </div>
         <!-- MEASUREMENTS -->
         <div>
           Meas [cm]
           <ul class="dimensions">
-            <li>W: {{item.stackable.dx}}</li>
-            <li>H: {{item.stackable.dy}}</li>
-            <li>D: {{item.stackable.dz}}</li>
+            <li>W: {{item.means.width}}</li>
+            <li>H: {{item.means.height}}</li>
+            <li>D: {{item.means.depth}}</li>
           </ul>
         </div>
       </div>
@@ -39,5 +39,5 @@
 </div>
 
 <div class="sidebar-footer">
-  <input type="file" (change)="load($event)">
+  <input type="file" (change)="load($event)" />
 </div>

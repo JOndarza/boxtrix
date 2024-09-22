@@ -5,14 +5,9 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
-import { Box } from '@common/classes/Box.class';
-import { Container } from '@common/classes/Container.class';
-import { InputObject } from '@common/classes/InputObject';
 import { MemoryColorScheme } from '@common/classes/MemoryColorScheme.class';
-import { Point } from '@common/classes/Point.class';
 import { RandomColorScheme } from '@common/classes/RandomColorScheme.class';
 import { StackableRenderer } from '@common/classes/StackableRenderer.class';
-import { StackPlacement } from '@common/classes/StackPlacement.class';
 import { ContantsService } from '@shared/services/contants.service';
 import { ContextService } from '@shared/services/context.service';
 import { AppEvent, EventsService } from '@shared/services/events.service';
@@ -23,10 +18,13 @@ import {
 import { RewindManagerService } from '@shared/services/rewindManager.service';
 import { debounceTime } from 'rxjs';
 import * as THREE from 'three';
+import { BoxGeometry } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
-import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
 import { TextManager } from '@shared/services/TextManager.service';
+import { BoxTrixContainer } from '@common/classes/news/Container.class';
+import { RenderedController } from '@common/classes/news/Rendered.controller';
+import { IMeasurements, IPosition } from '@common/interfaces/Data.interface';
+import { RotationType } from '@common/classes/news/Bases.class';
 
 export const enum KeyCode {
   A = 65,
@@ -339,7 +337,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   //#region Models
   private load() {
-    if (!this._context.input) return;
+    if (!this._context.containers) return;
 
     this._scene.clear();
 
@@ -349,111 +347,22 @@ export class CanvasComponent implements OnInit, OnDestroy {
     for (var i = 0; i < this._visibleContainers.length; i++)
       mainGroup.remove(this._visibleContainers[i]);
 
-    const container = this.addContainer(mainGroup, this._context.input);
+    const data = this.addContainers(mainGroup, this._context.containers);
 
-    this._camera.position.z = container.maxY * 2;
-    this._camera.position.y = container.maxZ * 1.25;
-    this._camera.position.x = container.maxX * 2;
+    this._camera.position.z = data.maxY * 2;
+    this._camera.position.y = data.maxZ * 1.25;
+    this._camera.position.x = data.maxX * 2;
 
-    this.addGrid(container.maxY, container.maxX);
+    this.addGrid(data.maxX, data.maxZ);
 
     this.addLight();
 
     this._events.get(AppEvent.RENDERED).emit();
   }
 
-  private addContainer(mainGroup: THREE.Object3D, packaging: InputObject) {
-    var maxX = 0;
-    var maxY = 0;
-    var maxZ = 0;
-
-    var minStep = -1;
-    var maxStep = -1;
-
-    packaging.containers.forEach((origin) => {
-      const container = new Container(
-        origin.name,
-        origin.id,
-        origin.step,
-        origin.dx,
-        origin.dy,
-        origin.dz,
-        origin.loadDx,
-        origin.loadDy,
-        origin.loadDz
-      );
-
-      if (container.step < minStep || minStep == -1) minStep = container.step;
-      if (container.step > maxStep || maxStep == -1) maxStep = container.step;
-
-      origin.stack.placements.forEach((placement) => {
-        const stackable = placement.stackable;
-
-        if (stackable.step < minStep || minStep == -1) minStep = stackable.step;
-        if (stackable.step > maxStep || maxStep == -1) maxStep = stackable.step;
-
-        var points = placement.points?.map(
-          (x) => new Point(x.x, x.y, x.z, x.dx, x.dy, x.dz)
-        );
-
-        switch (stackable.type) {
-          case 'box':
-            var box = new Box(
-              stackable.name,
-              stackable.id,
-              stackable.step,
-              stackable.dx,
-              stackable.dy,
-              stackable.dz
-            );
-
-            container.add(
-              new StackPlacement(
-                box,
-                placement.step,
-                placement.x,
-                placement.y,
-                placement.z,
-                points
-              )
-            );
-            break;
-        }
-      });
-
-      const maxStepNumber = maxStep + 1;
-      this._rewind.set(maxStepNumber, 1, maxStepNumber);
-      let x = 0;
-      const visibleContainer = this._stackableRenderer.add(
-        mainGroup,
-        this._memoryColorScheme,
-        new StackPlacement(container, 0, x, 0, 0),
-        0,
-        0,
-        0
-      );
-      this._visibleContainers.push(visibleContainer);
-
-      if (x + container.dx > maxX) {
-        maxX = x + container.dx;
-      }
-      if (container.dy > maxY) {
-        maxY = container.dy;
-      }
-      if (container.dz > maxZ) {
-        maxZ = container.dz;
-      }
-
-      x += container.dx + this._contants.GRID_SPACING;
-      x = x - (x % this._contants.GRID_SPACING);
-    });
-
-    return { maxX, maxY, maxZ };
-  }
-
-  private addGrid(maxY: number, maxX: number) {
+  private addGrid(maxX: number, maxZ: number) {
     var size =
-      Math.max(maxY, maxX) +
+      Math.max(maxZ, maxX) +
       this._contants.GRID_SPACING +
       this._contants.GRID_SPACING;
 
@@ -464,8 +373,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
       0x42a5f5
     );
 
-    grid.position.y = 0;
     grid.position.x = size / 2;
+    grid.position.y = 0;
     grid.position.z = size / 2;
 
     this._scene.add(grid);
@@ -475,9 +384,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
     this._text.addTo(
       this._scene,
-      { label: 'X', position: { x: size } },
-      { label: 'Y', position: { y: size } },
-      { label: 'Z', position: { z: size } }
+      { label: 'X', position: { x: size, y: 0, z: 0 } },
+      { label: 'Y', position: { x: 0, y: size, z: 0 } },
+      { label: 'Z', position: { x: 0, y: 0, z: size } }
     );
   }
 
@@ -487,4 +396,152 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   //#endregion Models
+
+  //#region
+  private fixOrderPosition(position: IPosition) {
+    return { x: position.x, y: position.y, z: position.z };
+  }
+
+  private fixOrderMeans(position: IMeasurements) {
+    return {
+      width: position.width,
+      height: position.height,
+      depth: position.depth,
+    };
+  }
+
+  private getFixedData(item: RenderedController) {
+    const position = this.fixOrderPosition(item.position);
+    const means = this.fixOrderMeans(item.fixedMeans);
+
+    return { position, means };
+  }
+
+  private getFixedDataOnParent(
+    item: RenderedController,
+    parent?: RenderedController
+  ) {
+    const fix = this.getFixedData(item);
+
+    const position: IPosition = {
+      x: fix.position.x,
+      y: fix.position.y,
+      z: fix.position.z,
+    };
+
+    position.x += fix.means.width / 2;
+    position.y += fix.means.height / 2;
+    position.z += fix.means.depth / 2;
+
+    if (parent) {
+      const fixParent = this.getFixedData(parent);
+      position.x -= fixParent.means.width / 2;
+      position.y -= fixParent.means.height / 2;
+      position.z -= fixParent.means.depth / 2;
+    }
+
+    return { position, means: fix.means };
+  }
+
+  private drawWire(item: RenderedController) {
+    const fix = this.getFixedData(item);
+
+    var mat = new THREE.LineBasicMaterial({ color: item.color });
+    var geometry = new THREE.EdgesGeometry(
+      new BoxGeometry(fix.means.width, fix.means.height, fix.means.depth)
+    );
+
+    var obj3d = new THREE.LineSegments(geometry, mat);
+
+    obj3d.uuid = item.id;
+    obj3d.name = item.name;
+    obj3d.position.x = fix.position?.x || 0 + fix.means.width / 2;
+    obj3d.position.y = fix.position?.y || 0 + fix.means.height / 2;
+    obj3d.position.z = fix.position?.z || 0 + fix.means.depth / 2;
+
+    return { obj3d, ...fix };
+  }
+
+  private drawBox(item: RenderedController, parent?: RenderedController) {
+    const data = this.getFixedDataOnParent(item, parent);
+
+    var mat = new THREE.MeshStandardMaterial({
+      color: item.color,
+      opacity: this._contants.BOX_OPACITY,
+      metalness: this._contants.BOX_METALNESS,
+      roughness: this._contants.BOX_ROUGHNESS,
+      transparent: true,
+      polygonOffset: true,
+      polygonOffsetFactor: 1,
+      polygonOffsetUnits: 1,
+    });
+    mat.color.convertSRGBToLinear();
+
+    var geometry = new BoxGeometry(
+      data.means.width,
+      data.means.height,
+      data.means.depth
+    );
+    var obj3d = new THREE.Mesh(geometry, mat);
+
+    obj3d.uuid = item.id;
+    obj3d.name = item.name;
+    obj3d.position.x = data.position.x;
+    obj3d.position.y = data.position.y;
+    obj3d.position.z = data.position.z;
+
+    return { obj3d, ...data };
+  }
+
+  private drawContainer(parent: THREE.Object3D, item: RenderedController) {
+    item.setColor('#F00');
+    let fixed = this.drawWire(item);
+    parent.add(fixed.obj3d);
+
+    const clone = new RenderedController('', '', '', {
+      type: 'container',
+      means: item.means,
+      position: item.position,
+      rotation: RotationType.RotationType_WHD,
+    });
+    clone.setColor('#FF0');
+
+    let normal = this.drawWire(clone);
+    parent.add(normal.obj3d);
+
+    return fixed;
+  }
+
+  private addContainers(
+    mainGroup: THREE.Object3D,
+    containers: BoxTrixContainer[]
+  ) {
+    let maxX = 0;
+    let maxY = 0;
+    let maxZ = 0;
+
+    containers.forEach((origin) => {
+      const parent = this.drawContainer(mainGroup, origin);
+
+      origin.items.forEach((item) => {
+        const boxData = this.drawBox(item, origin);
+        parent.obj3d.add(boxData.obj3d);
+
+        const size = 0.5;
+        const offset = -size / 2;
+        this._text.addTo(boxData.obj3d, {
+          label: item.globalStep.toString(),
+          geometryParameters: { size },
+          position: { x: offset, y: offset, z: offset },
+        });
+      });
+
+      if (origin.means.width > maxX) maxX = origin.means.width;
+      if (origin.means.height > maxY) maxY = origin.means.height;
+      if (origin.means.depth > maxZ) maxZ = origin.means.depth;
+    });
+
+    return { maxX, maxY, maxZ };
+  }
+  //#endregion
 }

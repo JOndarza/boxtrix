@@ -13,17 +13,17 @@ export const enum RotationType {
 }
 
 export class Position implements IPosition {
-  protected _x?: number;
+  protected _x!: number;
   public get x() {
     return this._x;
   }
 
-  protected _y?: number;
+  protected _y!: number;
   public get y() {
     return this._y;
   }
 
-  protected _z?: number;
+  protected _z!: number;
   public get z() {
     return this._z;
   }
