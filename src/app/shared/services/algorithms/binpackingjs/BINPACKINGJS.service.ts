@@ -9,6 +9,7 @@ import { BP3D } from 'binpackingjs';
 
 import { IAlgorithmService } from '../_interfaces/algorithm.service.interface';
 import { BINPACKINGJS_BESTFIT, BINPACKINGJS_CONTAINER } from './_common';
+import { Measurements } from '../../../../common/classes/news/Bases.class';
 
 const { Item, Bin, Packer } = BP3D;
 
@@ -200,69 +201,49 @@ export class BINPACKINGJSService implements IAlgorithmService {
   }
 
   private findBestFit(stage: IStage): BINPACKINGJS_BESTFIT {
-    const items = stage.items;
-    const counter = items.length;
+    const originalItems = stage.items;
+    let first = this.mainLogic(stage, originalItems);
+
+    const means = {
+      width: stage.width,
+      height: stage.height,
+      depth: stage.depth,
+    } as IMeasurements;
+
+    if (first.items.length < originalItems.length)
+      return { organized: first, ...means };
 
     let minWidth = false;
     let minHeight = false;
     let minDepth = false;
 
-    let width = stage.width;
-    let height = stage.height;
-    let depth = stage.depth;
-
-    let firstCheck = true;
-    let first = {} as BINPACKINGJS_CONTAINER;
     let previous = {} as BINPACKINGJS_CONTAINER;
 
     while (!minWidth || !minHeight || !minDepth) {
-      const clone = {
-        id: stage.id,
-        name: stage.name,
-        width,
-        height,
-        depth,
-      } as IStage;
+      const clone = { id: stage.id, name: stage.name, ...means } as IStage;
+      const organized = this.mainLogic(clone, originalItems);
 
-      const organized = this.mainLogic(clone, items);
-      if (firstCheck) first = organized;
+      if (organized.items.length >= originalItems.length) {
+        if (!minWidth) --means.width;
+        else if (!minHeight) --means.height;
+        else if (!minDepth) --means.depth;
 
-      if (organized.items.length >= counter) {
-        if (!minWidth) --width;
-        else if (!minHeight) --height;
-        else if (!minDepth) --depth;
-
-        firstCheck = false;
         previous = organized;
       } else {
-        if (firstCheck) {
-          return {
-            organized,
-            width,
-            height,
-            depth,
-          };
-        }
-
         if (!minWidth) {
           minWidth = true;
-          ++width;
+          ++means.width;
         } else if (!minHeight) {
           minHeight = true;
-          ++height;
+          ++means.height;
         } else if (!minDepth) {
           minDepth = true;
-          ++depth;
+          ++means.depth;
         }
       }
     }
 
-    return {
-      organized: previous,
-      width,
-      height,
-      depth,
-    };
+    return { organized: previous, ...means };
   }
 }
 
