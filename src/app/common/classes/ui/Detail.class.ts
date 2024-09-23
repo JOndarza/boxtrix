@@ -17,10 +17,8 @@ export class Detail {
     this._unfitted = [];
   }
 
-  load(data: BoxTrixContainer[]) {
-    this._fitted = data.map((x) => x.items.map((p) => p)).flatMap((x) => x);
-    this._unfitted = data
-      .map((x) => x.unffitedItems.map((p) => p))
-      .flatMap((x) => x);
+  load(data: BoxTrixContainer) {
+    this._fitted = data.items;
+    this._unfitted = data.unffited;
   }
 }

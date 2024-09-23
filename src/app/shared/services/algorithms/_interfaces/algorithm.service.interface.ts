@@ -1,6 +1,6 @@
 import { BoxTrixContainer } from '@common/classes/news/Container.class';
-import { IInput } from '@common/interfaces/Input.interface';
+import { IStage } from '@common/interfaces/Input.interface';
 
 export interface IAlgorithmService {
-  sort(input: IInput): BoxTrixContainer[];
+  sort(input: IStage): BoxTrixContainer;
 }

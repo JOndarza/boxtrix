@@ -337,7 +337,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   //#region Models
   private load() {
-    if (!this._context.containers) return;
+    if (!this._context.container) return;
 
     this._scene.clear();
 
@@ -347,7 +347,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
     for (var i = 0; i < this._visibleContainers.length; i++)
       mainGroup.remove(this._visibleContainers[i]);
 
-    const data = this.addContainers(mainGroup, this._context.containers);
+    const data = this.addContainer(mainGroup, this._context.container);
+    this._context.container.unffited.forEach((x) =>
+      this.addContainer(mainGroup, x)
+    );
 
     this._camera.position.z = data.maxY * 2;
     this._camera.position.y = data.maxZ * 1.25;
@@ -455,9 +458,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
     obj3d.uuid = item.id;
     obj3d.name = item.name;
-    obj3d.position.x = fix.position?.x || 0 + fix.means.width / 2;
-    obj3d.position.y = fix.position?.y || 0 + fix.means.height / 2;
-    obj3d.position.z = fix.position?.z || 0 + fix.means.depth / 2;
+    obj3d.position.x = fix.position.x + fix.means.width / 2;
+    obj3d.position.y = fix.position.y + fix.means.height / 2;
+    obj3d.position.z = fix.position.z + fix.means.depth / 2;
 
     return { obj3d, ...fix };
   }
@@ -512,34 +515,29 @@ export class CanvasComponent implements OnInit, OnDestroy {
     return fixed;
   }
 
-  private addContainers(
-    mainGroup: THREE.Object3D,
-    containers: BoxTrixContainer[]
-  ) {
+  private addContainer(parent: THREE.Object3D, container: BoxTrixContainer) {
     let maxX = 0;
     let maxY = 0;
     let maxZ = 0;
 
-    containers.forEach((origin) => {
-      const parent = this.drawContainer(mainGroup, origin);
+    const obj = this.drawContainer(parent, container);
 
-      origin.items.forEach((item) => {
-        const boxData = this.drawBox(item, origin);
-        parent.obj3d.add(boxData.obj3d);
+    container.items.forEach((item) => {
+      const boxData = this.drawBox(item, container);
+      obj.obj3d.add(boxData.obj3d);
 
-        const size = 0.5;
-        const offset = -size / 2;
-        this._text.addTo(boxData.obj3d, {
-          label: item.globalStep.toString(),
-          geometryParameters: { size },
-          position: { x: offset, y: offset, z: offset },
-        });
+      const size = 0.5;
+      const offset = -size / 2;
+      this._text.addTo(boxData.obj3d, {
+        label: item.globalStep.toString(),
+        geometryParameters: { size },
+        position: { x: offset, y: offset, z: offset },
       });
-
-      if (origin.means.width > maxX) maxX = origin.means.width;
-      if (origin.means.height > maxY) maxY = origin.means.height;
-      if (origin.means.depth > maxZ) maxZ = origin.means.depth;
     });
+
+    if (container.means.width > maxX) maxX = container.means.width;
+    if (container.means.height > maxY) maxY = container.means.height;
+    if (container.means.depth > maxZ) maxZ = container.means.depth;
 
     return { maxX, maxY, maxZ };
   }

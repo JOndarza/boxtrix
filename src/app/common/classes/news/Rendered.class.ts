@@ -40,7 +40,7 @@ export class Rendered implements IIdentification {
     return this._rotation;
   }
 
-  protected _fixedMeans!: IMeasurements;
+  protected _fixedMeans!: Measurements;
   public get fixedMeans() {
     return this._fixedMeans;
   }
@@ -66,6 +66,7 @@ export class Rendered implements IIdentification {
 
     this._position = new Position(meta.position);
     this._means = new Measurements(meta.means);
+    this._fixedMeans = new Measurements(meta.means);
     this.setRotation(meta.rotation || Rotation.WHD);
     this.setColor('#FFF');
   }
@@ -77,10 +78,6 @@ export class Rendered implements IIdentification {
   setRotation(rotation: Rotation) {
     this._rotation = rotation;
     this.fixMeans();
-  }
-
-  setFixedMeans(means: IMeasurements) {
-    this._fixedMeans = means;
   }
 
   private fixMeans() {
@@ -116,6 +113,6 @@ export class Rendered implements IIdentification {
         break;
     }
 
-    this.setFixedMeans(means);
+    this.fixedMeans.set(means);
   }
 }

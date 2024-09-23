@@ -7,9 +7,9 @@ import { Detail } from '@common/classes/ui/Detail.class';
 
 @Injectable({ providedIn: 'root' })
 export class ContextService {
-  private _containers!: BoxTrixContainer[];
-  public get containers() {
-    return this._containers;
+  private _container!: BoxTrixContainer;
+  public get container() {
+    return this._container;
   }
 
   private _detail: Detail;
@@ -19,16 +19,16 @@ export class ContextService {
 
   constructor(private _events: EventsService) {
     this._events
-      .get<BoxTrixContainer[]>(AppEvent.LOADED)
+      .get<BoxTrixContainer>(AppEvent.LOADED)
       .pipe(debounceTime(50))
       .subscribe(this.load.bind(this));
 
     this._detail = new Detail();
   }
 
-  private load(data: BoxTrixContainer[]) {
-    this._containers = data;
-    this._detail.load(this.containers);
+  private load(data: BoxTrixContainer) {
+    this._container = data;
+    this._detail.load(this.container);
     this._events.get(AppEvent.RENDERING).emit();
   }
 }
