@@ -200,35 +200,39 @@ export class BINPACKINGJSService implements IAlgorithmService {
     return bin;
   }
 
-  private findBestFit(stage: IStage): BINPACKINGJS_BESTFIT {
-    const originalItems = stage.items;
-    let first = this.mainLogic(stage, originalItems);
+  private findBestFit(original: IStage): BINPACKINGJS_BESTFIT {
+    let items = original.items;
+    let sorted = this.mainLogic(original, items);
 
-    const means = {
-      width: stage.width,
-      height: stage.height,
-      depth: stage.depth,
-    } as IMeasurements;
-
-    if (first.items.length < originalItems.length)
-      return { organized: first, ...means };
+    if (sorted.items.length < items.length)
+      items = items.filter((x) => sorted.items.find((y) => y.name === x.id));
 
     let minWidth = false;
     let minHeight = false;
     let minDepth = false;
 
+    const means = {
+      width: original.width,
+      height: original.height,
+      depth: original.depth,
+    } as IMeasurements;
+
     let previous = {} as BINPACKINGJS_CONTAINER;
 
     while (!minWidth || !minHeight || !minDepth) {
-      const clone = { id: stage.id, name: stage.name, ...means } as IStage;
-      const organized = this.mainLogic(clone, originalItems);
+      const stage = {
+        id: original.id,
+        name: original.name,
+        ...means,
+      } as IStage;
+      sorted = this.mainLogic(stage, items);
 
-      if (organized.items.length >= originalItems.length) {
+      if (sorted.items.length >= items.length) {
         if (!minWidth) --means.width;
         else if (!minHeight) --means.height;
         else if (!minDepth) --means.depth;
 
-        previous = organized;
+        previous = sorted;
       } else {
         if (!minWidth) {
           minWidth = true;
