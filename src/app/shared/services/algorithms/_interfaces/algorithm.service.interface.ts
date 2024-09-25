@@ -1,4 +1,4 @@
-import { BoxTrixContainer } from '@common/classes/news/Container.class';
+import { BoxTrixContainer } from '@common/classes/rendered/Container.class';
 import { IStage } from '@common/interfaces/Input.interface';
 
 export interface IAlgorithmService {

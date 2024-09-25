@@ -15,7 +15,12 @@ export class BoxTrixContainer extends RenderedController {
     detail: string,
     meta: { position: IPosition; means: IMeasurements }
   ) {
-    super(id, name, detail, { type: 'container', ...meta, rotation: 0 });
+    super(id, name, detail, {
+      type: 'container',
+      ...meta,
+      targable: false,
+      rotation: 0,
+    });
     this._items = [];
     this._unffited = [];
   }

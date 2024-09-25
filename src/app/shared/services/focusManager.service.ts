@@ -1,72 +1,41 @@
 import { Injectable } from '@angular/core';
-import { Color, ColorRepresentation } from 'three';
+import { RenderedController } from '@common/classes/rendered/Rendered.controller';
+import { Color, Mesh, Object3D } from 'three';
+
+import { ContantsService } from './contants.service';
 import { AppEvent, EventsService } from './events.service';
 
-export const enum FocusedItem {
-  RAYCAST = 'RAYCAST',
-  CLICKED = 'CLICKED',
-}
-
-export class Render {
+@Injectable({ providedIn: 'root' })
+export class FocusManagerService {
+  private _obj3D!: Object3D;
   public get obj3D() {
     return this._obj3D;
   }
 
-  constructor(private _obj3D: any) {}
+  constructor(
+    private _contants: ContantsService,
+    private _events: EventsService
+  ) {}
 
-  changeColorEmissive(color: ColorRepresentation) {
-    if (!this.obj3D) return;
+  set(obj3D: Object3D) {
+    if (this.obj3D) this.select(false);
 
-    this.obj3D.material.emissive = new Color(color);
+    this._obj3D = obj3D;
+    this.select(true);
+
+    this._events.get(AppEvent.CLICKED).emit();
   }
-}
 
-export class FocusedData {
-  public get render() {
-    return this._render;
-  }
+  private select(selected: boolean) {
+    const color = selected
+      ? this._contants.BOX_COLOR_RAYCAST
+      : this._contants.BOX_COLOR_UNSET;
 
-  constructor(private _render: Render) {}
-
-  getObj3D() {
-    return this.render?.obj3D;
-  }
-}
-
-@Injectable({ providedIn: 'root' })
-export class FocusManagerService {
-  private _map: any = {};
-
-  constructor(private _events: EventsService) {}
-
-  set(item: FocusedItem, obj3D: any) {
-    const data = (this._map[item] = new FocusedData(new Render(obj3D)));
-
-    let event = this.type2Event(item);
-    if (event) {
-      const id = obj3D?.uuid ?? undefined;
-      this._events.get(event).emit(id);
+    if (this.obj3D instanceof Mesh) {
+      const material = this.obj3D.material;
+      material.emissive = new Color(color);
     }
 
-    return data;
-  }
-
-  get(item: FocusedItem): FocusedData {
-    return this._map[item];
-  }
-
-  getObj3D(item: FocusedItem) {
-    return this.get(item)?.getObj3D();
-  }
-
-  private type2Event(item: FocusedItem) {
-    switch (item) {
-      case FocusedItem.RAYCAST:
-        return AppEvent.RAYCAST;
-      case FocusedItem.CLICKED:
-        return AppEvent.CLICKED;
-      default:
-        return undefined;
-    }
+    (this.obj3D.userData as RenderedController).selected = selected;
   }
 }

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { BoxTrixContainer } from '@common/classes/news/Container.class';
-import { RenderedController } from '@common/classes/news/Rendered.controller';
+import { BoxTrixContainer } from '@common/classes/rendered/Container.class';
+import { RenderedController } from '@common/classes/rendered/Rendered.controller';
 import { Rotation } from '@common/enums/Rotation.enum';
 import { newId } from '@common/functions/id.function';
 import { IMeasurements } from '@common/interfaces/Data.interface';
@@ -142,6 +142,7 @@ export class BINPACKINGJSService implements IAlgorithmService {
         item.detail || '',
         {
           type: 'box',
+          targable:true,
           position: {
             x: binItem.position[0],
             y: binItem.position[1],
@@ -161,6 +162,7 @@ export class BINPACKINGJSService implements IAlgorithmService {
         (x) =>
           new RenderedController(x.id, x.name, x.detail || '', {
             type: 'box',
+            targable:true,
             position: {
               x: 0,
               y: 0,

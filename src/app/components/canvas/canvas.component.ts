@@ -8,17 +8,14 @@ import {
 import { ContantsService } from '@shared/services/contants.service';
 import { ContextService } from '@shared/services/context.service';
 import { AppEvent, EventsService } from '@shared/services/events.service';
-import {
-  FocusedItem,
-  FocusManagerService,
-} from '@shared/services/focusManager.service';
+import { FocusManagerService } from '@shared/services/focusManager.service';
 import { debounceTime } from 'rxjs';
 import * as THREE from 'three';
 import { BoxGeometry } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { TextManager } from '@shared/services/TextManager.service';
-import { BoxTrixContainer } from '@common/classes/news/Container.class';
-import { RenderedController } from '@common/classes/news/Rendered.controller';
+import { BoxTrixContainer } from '@common/classes/rendered/Container.class';
+import { RenderedController } from '@common/classes/rendered/Rendered.controller';
 import { IMeasurements, IPosition } from '@common/interfaces/Data.interface';
 import { Rotation } from '@common/enums/Rotation.enum';
 import { RewindManagerService } from '@shared/services/RewindManager.service';
@@ -44,13 +41,11 @@ export class CanvasComponent implements OnInit, OnDestroy {
   private _camera!: THREE.PerspectiveCamera;
   private _controls!: OrbitControls;
   private _frameId!: number;
-  private _points = false;
 
   private _delta = 0;
   private _mainGroup!: THREE.Object3D;
   private _raycaster = new THREE.Raycaster();
   private _pointer = new THREE.Vector2();
-  private _visibleContainers = new Array();
 
   constructor(
     private _contants: ContantsService,
@@ -72,9 +67,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
       .subscribe(this.load.bind(this));
 
     this._events
-      .get<string>(AppEvent.CLICKED)
+      .get(AppEvent.CLICKED)
       .pipe(debounceTime(50))
-      .subscribe(this.selectByCLick.bind(this));
+      .subscribe(this.selectItem.bind(this));
 
     this._rewind.updated
       .pipe(debounceTime(50))
@@ -112,12 +107,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this._controls.dampingFactor = 0.25;
     this._controls.enableZoom = true;
     this._controls.autoRotate = false;
-    this._controls.keys = {
-      LEFT: '37', //left arrow
-      UP: '38', // up arrow
-      RIGHT: '39', // right arrow
-      BOTTOM: '40', // down arrow
-    };
 
     this._controls.addEventListener('change', () => {
       if (this._renderer) this._renderer.render(this._scene, this._camera);
@@ -127,13 +116,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this._scene.add(this._mainGroup);
 
     window.addEventListener('resize', this.onWindowResize.bind(this), false);
-    document.addEventListener('keyup', this.onDocumentKeyUp.bind(this), false);
-    document.addEventListener(
-      'keydown',
-      this.onDocumentKeyDown.bind(this),
-      false
-    );
-    document.addEventListener('mousemove', this.onMouseMove.bind(this), false);
+    document.addEventListener('keydown', this.onKeyDown.bind(this), false);
+    document.addEventListener('click', this.onMouseMove.bind(this), false);
   }
 
   // HACK: TO WOTK
@@ -141,7 +125,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this._controls.update();
 
     this._delta += 0.01;
-    this.handleIntersection();
 
     this.renderScene();
     this._frameId = requestAnimationFrame(this.animate);
@@ -162,15 +145,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this._renderer.setSize(width, height);
   }
 
-  private onDocumentKeyDown(event: { which: any }) {
+  private onKeyDown(event: { which: any }) {
     var keyCode = event.which;
     switch (keyCode) {
-      case KeyCode.W: {
-        break;
-      }
-      case KeyCode.S: {
-        break;
-      }
       case KeyCode.D: {
         this._rewind.forward();
 
@@ -178,38 +155,29 @@ export class CanvasComponent implements OnInit, OnDestroy {
       }
       case KeyCode.A: {
         this._rewind.back();
-
-        break;
-      }
-      case 80: {
-        this._points = !this._points;
-        if (this._points) {
-          console.log('Show points');
-        } else {
-          console.log('Hide points');
-        }
-
-        this.handleStepNumber();
-        this.renderScene();
-
-        break;
-      }
-      default: {
         break;
       }
     }
   }
 
-  private onDocumentKeyUp(event: { which: any }) {}
-
   private onMouseMove(event: MouseEvent): void {
-    event.preventDefault();
-
     this._pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
     this._pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+    this._raycaster.setFromCamera(this._pointer, this._camera);
+
+    const intersects = this._raycaster.intersectObject(this._mainGroup, true);
+    if (!intersects.length) return;
+
+    const filter = intersects.filter(
+      (x) => (x.object.userData as RenderedController)?.targetable
+    );
+    if (!filter.length) return;
+
+    this._focus.set(filter[0].object);
   }
 
-  handleStepNumber() {
+  private handleStepNumber() {
     this._mainGroup.children.forEach((x) =>
       this.checkVisivility(x, x.userData as RenderedController)
     );
@@ -228,79 +196,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
     );
   }
 
-  private handleIntersection(): void {
-    this._raycaster.setFromCamera(this._pointer, this._camera);
+  private selectItem() {}
 
-    let target = null;
-    for (var i = 0; i < this._visibleContainers.length; i++) {
-      for (var k = 0; k < this._visibleContainers[i].children.length; k++) {
-        var intersects = this._raycaster.intersectObjects(
-          this._visibleContainers[i].children[k].children
-        );
-        if (intersects.length > 0) {
-          target = intersects[0].object;
-        }
-      }
-    }
-
-    this.selectRaycast(target);
-  }
-
-  selectRaycast(target: THREE.Object3D<THREE.Object3DEventMap> | null) {
-    const obj3DRAYCAST = this._focus.getObj3D(FocusedItem.RAYCAST);
-
-    if (!target) {
-      if (obj3DRAYCAST) {
-        this._focus
-          .get(FocusedItem.RAYCAST)
-          .render.changeColorEmissive(this._contants.BOX_COLOR_UNSET);
-        this._focus.set(FocusedItem.RAYCAST, null);
-      }
-      return;
-    }
-
-    if (obj3DRAYCAST != target) {
-      if (obj3DRAYCAST)
-        this._focus
-          .get(FocusedItem.RAYCAST)
-          .render.changeColorEmissive(this._contants.BOX_COLOR_UNSET);
-
-      this._focus
-        .set(FocusedItem.RAYCAST, target)
-        .render.changeColorEmissive(this._contants.BOX_COLOR_RAYCAST);
-    }
-
-    this._focus.set(FocusedItem.CLICKED, null);
-  }
-
-  selectClicked(target: THREE.Object3D | null) {
-    const obj3DCLICKED = this._focus.getObj3D(FocusedItem.CLICKED);
-    if (!target || obj3DCLICKED === target) return;
-
-    if (obj3DCLICKED)
-      this._focus
-        .get(FocusedItem.CLICKED)
-        .render.changeColorEmissive(this._contants.BOX_COLOR_UNSET);
-
-    this._focus
-      .set(FocusedItem.CLICKED, target)
-      .render.changeColorEmissive(this._contants.BOX_COLOR_CLICKED);
-  }
-
-  selectByCLick(id: string) {
-    let target = null;
-
-    for (var i = 0; i < this._visibleContainers.length; i++) {
-      for (var k = 0; k < this._visibleContainers[i].children.length; k++) {
-        const children = this._visibleContainers[i].children[k].children;
-        if ((target = children.find((x: any) => x.uuid == id))) {
-          break;
-        }
-      }
-    }
-
-    this.selectClicked(target);
-  }
   //#endregion THREE
 
   //#region Models
@@ -312,9 +209,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
     const mainGroup = new THREE.Object3D();
     this._scene.add(mainGroup);
     this._mainGroup = mainGroup;
-
-    for (var i = 0; i < this._visibleContainers.length; i++)
-      mainGroup.remove(this._visibleContainers[i]);
 
     const data = this.addContainer(mainGroup, this._context.container);
     this._context.container.unffited.forEach((x) =>
@@ -472,6 +366,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
     const clone = new RenderedController('', '', '', {
       type: 'container',
+      targable: false,
       means: item.means,
       position: item.position,
       rotation: Rotation.WHD,

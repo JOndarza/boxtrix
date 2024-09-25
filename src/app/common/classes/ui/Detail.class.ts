@@ -1,5 +1,5 @@
-import { BoxTrixContainer } from '../news/Container.class';
-import { RenderedController } from '../news/Rendered.controller';
+import { BoxTrixContainer } from '../rendered/Container.class';
+import { RenderedController } from '../rendered/Rendered.controller';
 
 export class Detail {
   private _fitted: RenderedController[];

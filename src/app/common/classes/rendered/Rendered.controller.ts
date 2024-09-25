@@ -30,6 +30,11 @@ export class RenderedController extends Rendered {
     this._selected = v;
   }
 
+  private _targetable!: boolean;
+  public get targetable(): boolean {
+    return this._targetable;
+  }
+
   get itemCount() {
     return this._items.length;
   }
@@ -53,6 +58,7 @@ export class RenderedController extends Rendered {
     detail: string,
     meta: {
       type: RenderType;
+      targable: boolean;
       position: IPosition;
       means: IMeasurements;
       rotation: Rotation;
@@ -60,6 +66,7 @@ export class RenderedController extends Rendered {
   ) {
     super(id, name, detail, meta);
     this._type = meta.type;
+    this._targetable = meta.targable;
 
     this._items = [];
   }
@@ -87,7 +94,8 @@ export class RenderedController extends Rendered {
   protected orderItems() {
     this._items = _.orderBy(
       this._items,
-      (s) => Math.sqrt(s.position.x ** 2 + s.position.y ** 2 + s.position.z ** 2),
+      (s) =>
+        Math.sqrt(s.position.x ** 2 + s.position.y ** 2 + s.position.z ** 2),
       'asc'
     );
   }

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BoxTrixContainer } from '@common/classes/news/Container.class';
+import { BoxTrixContainer } from '@common/classes/rendered/Container.class';
 import { debounceTime } from 'rxjs';
 
 import { AppEvent, EventsService } from './events.service';
