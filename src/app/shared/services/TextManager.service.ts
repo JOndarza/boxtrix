@@ -80,7 +80,7 @@ export class TextManager {
   }
 
   private setGeometry(
-    obj3D: Object3D,
+    parent: Object3D,
     text: IText,
     render: { font: Font; material: MeshBasicMaterial }
   ) {
@@ -95,6 +95,6 @@ export class TextManager {
       text.position?.y || 0,
       text.position?.z || 0
     );
-    obj3D.add(mesh);
+    parent.add(mesh);
   }
 }

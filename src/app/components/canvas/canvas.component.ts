@@ -5,9 +5,6 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
-import { MemoryColorScheme } from '@common/classes/MemoryColorScheme.class';
-import { RandomColorScheme } from '@common/classes/RandomColorScheme.class';
-import { StackableRenderer } from '@common/classes/StackableRenderer.class';
 import { ContantsService } from '@shared/services/contants.service';
 import { ContextService } from '@shared/services/context.service';
 import { AppEvent, EventsService } from '@shared/services/events.service';
@@ -15,7 +12,6 @@ import {
   FocusedItem,
   FocusManagerService,
 } from '@shared/services/focusManager.service';
-import { RewindManagerService } from '@shared/services/rewindManager.service';
 import { debounceTime } from 'rxjs';
 import * as THREE from 'three';
 import { BoxGeometry } from 'three';
@@ -25,10 +21,14 @@ import { BoxTrixContainer } from '@common/classes/news/Container.class';
 import { RenderedController } from '@common/classes/news/Rendered.controller';
 import { IMeasurements, IPosition } from '@common/interfaces/Data.interface';
 import { Rotation } from '@common/enums/Rotation.enum';
+import { RewindManagerService } from '@shared/services/RewindManager.service';
+import _ from 'lodash';
 
 export const enum KeyCode {
   A = 65,
   D = 68,
+  W = 87,
+  S = 83,
 }
 
 @Component({
@@ -44,7 +44,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
   private _camera!: THREE.PerspectiveCamera;
   private _controls!: OrbitControls;
   private _frameId!: number;
-  private _shouldAnimate!: boolean;
   private _points = false;
 
   private _delta = 0;
@@ -53,9 +52,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
   private _pointer = new THREE.Vector2();
   private _visibleContainers = new Array();
 
-  private _stackableRenderer: StackableRenderer;
-  private _memoryColorScheme: MemoryColorScheme;
-
   constructor(
     private _contants: ContantsService,
     private _events: EventsService,
@@ -63,10 +59,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     private _rewind: RewindManagerService,
     private _text: TextManager,
     private _context: ContextService
-  ) {
-    this._stackableRenderer = new StackableRenderer(this._contants);
-    this._memoryColorScheme = new MemoryColorScheme(new RandomColorScheme());
-  }
+  ) {}
 
   //#region THREE
   ngOnInit(): void {
@@ -82,6 +75,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
       .get<string>(AppEvent.CLICKED)
       .pipe(debounceTime(50))
       .subscribe(this.selectByCLick.bind(this));
+
+    this._rewind.updated
+      .pipe(debounceTime(50))
+      .subscribe(this.handleStepNumber.bind(this));
   }
 
   ngOnDestroy(): void {
@@ -143,9 +140,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
   private animate = (): void => {
     this._controls.update();
 
-    // Rotate orbit
-    this._mainGroup.rotation.z += this._contants.ANGULAR_VELOCITY;
-
     this._delta += 0.01;
     this.handleIntersection();
 
@@ -169,27 +163,21 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   private onDocumentKeyDown(event: { which: any }) {
-    this._shouldAnimate = false;
     var keyCode = event.which;
     switch (keyCode) {
-      case 87: {
-        this._mainGroup.rotation.y += 0.1;
+      case KeyCode.W: {
         break;
       }
-      case 83: {
-        this._mainGroup.rotation.y -= 0.1;
+      case KeyCode.S: {
         break;
       }
       case KeyCode.D: {
         this._rewind.forward();
 
-        this.handleStepNumber();
-
         break;
       }
       case KeyCode.A: {
         this._rewind.back();
-        this.handleStepNumber();
 
         break;
       }
@@ -212,10 +200,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     }
   }
 
-  private onDocumentKeyUp(event: { which: any }) {
-    var keyCode = event.which;
-    this._shouldAnimate = true;
-  }
+  private onDocumentKeyUp(event: { which: any }) {}
 
   private onMouseMove(event: MouseEvent): void {
     event.preventDefault();
@@ -225,39 +210,22 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   handleStepNumber() {
-    for (var i = 0; i < this._visibleContainers.length; i++) {
-      var visibleContainer = this._visibleContainers[i];
+    this._mainGroup.children.forEach((x) =>
+      this.checkVisivility(x, x.userData as RenderedController)
+    );
+  }
 
-      var visibleContainerUserData = visibleContainer.userData;
-      visibleContainer.visible =
-        visibleContainerUserData.step < this._rewind.stepNumber;
-
-      this._stackableRenderer.removePoints(visibleContainer);
-      if (this._points) {
-        this._stackableRenderer.addPoints(
-          visibleContainer,
-          this._memoryColorScheme,
-          this._rewind.stepNumber
-        );
-      }
-
-      for (var k = 0; k < this._visibleContainers[i].children.length; k++) {
-        var container = this._visibleContainers[i].children[k];
-        var containerUserData = container.userData;
-
-        container.visible = containerUserData.step < this._rewind.stepNumber;
-
-        var stackables = container.children;
-        for (var j = 0; j < stackables.length; j++) {
-          var stackable = stackables[j];
-          var userData = stackables[j].userData;
-
-          if (userData.type === 'box') {
-            stackable.visible = userData.step < this._rewind.stepNumber;
-          }
-        }
-      }
+  private checkVisivility(obj: THREE.Object3D, data: RenderedController) {
+    if (!data || _.isEmpty(data)) {
+      obj.visible = true;
+      return;
     }
+
+    obj.visible = data.globalStep === 1 || data.globalStep <= this._rewind.step;
+
+    obj.children?.forEach((x) =>
+      this.checkVisivility(x, x.userData as RenderedController)
+    );
   }
 
   private handleIntersection(): void {
@@ -343,6 +311,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
     const mainGroup = new THREE.Object3D();
     this._scene.add(mainGroup);
+    this._mainGroup = mainGroup;
 
     for (var i = 0; i < this._visibleContainers.length; i++)
       mainGroup.remove(this._visibleContainers[i]);
@@ -515,29 +484,32 @@ export class CanvasComponent implements OnInit, OnDestroy {
     return fixed;
   }
 
-  private addContainer(parent: THREE.Object3D, container: BoxTrixContainer) {
+  private addContainer(parent: THREE.Object3D, data: BoxTrixContainer) {
     let maxX = 0;
     let maxY = 0;
     let maxZ = 0;
 
-    const obj = this.drawContainer(parent, container);
+    const container = this.drawContainer(parent, data);
 
-    container.items.forEach((item) => {
-      const boxData = this.drawBox(item, container);
-      obj.obj3d.add(boxData.obj3d);
+    data.items.forEach((item) => {
+      const box = this.drawBox(item, data);
+      box.obj3d.userData = item;
+      container.obj3d.add(box.obj3d);
 
       const size = 0.5;
       const offset = -size / 2;
-      this._text.addTo(boxData.obj3d, {
+      this._text.addTo(box.obj3d, {
         label: item.globalStep.toString(),
         geometryParameters: { size },
         position: { x: offset, y: offset, z: offset },
       });
     });
 
-    if (container.means.width > maxX) maxX = container.means.width;
-    if (container.means.height > maxY) maxY = container.means.height;
-    if (container.means.depth > maxZ) maxZ = container.means.depth;
+    if (data.means.width > maxX) maxX = data.means.width;
+    if (data.means.height > maxY) maxY = data.means.height;
+    if (data.means.depth > maxZ) maxZ = data.means.depth;
+
+    container.obj3d.userData = data;
 
     return { maxX, maxY, maxZ };
   }

@@ -7,4 +7,53 @@
     bottom: 0;
     right: 0;
     padding: 1rem;
+
+    width: 100%;
+}
+
+
+.step-controls {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+
+    .step-buttons {
+        display: flex;
+        flex-direction: row;
+
+        .step-button {
+            color: white;
+            cursor: pointer;
+            background-color: transparent;
+            border: none;
+            align-items: center;
+            border-radius: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: center;
+
+            &.main {
+                ng-icon {
+                    --ng-icon__size: 3rem !important;
+                }
+            }
+
+            &.secundary {
+                ng-icon {
+                    --ng-icon__size: 2.5rem !important;
+                }
+            }
+
+            ng-icon {
+                border: 1px solid white;
+                border-radius: 50px;
+            }
+
+            .step-button-text {
+                padding-top: 0.75rem;
+            }
+        }
+    }
 }

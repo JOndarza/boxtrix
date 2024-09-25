@@ -1,3 +1,32 @@
-<div>
-  <div class="right">Boxes: XY</div>
-</div>
+<ng-template [ngTemplateOutlet]="panelTemp"> </ng-template>
+
+<ng-template #panelTemp>
+  <div class="step-controls">
+    <div class="step-buttons">
+      <button class="step-button" (click)="first()">
+        <ng-icon name="matSkipPrevious"></ng-icon>
+        <span class="step-button-text">First</span>
+      </button>
+
+      <button class="step-button secundary" (click)="back()">
+        <ng-icon name="matFastRewind"></ng-icon>
+        <span class="step-button-text">Back</span>
+      </button>
+
+      <button class="step-button main" (click)="play()">
+        <ng-icon name="matPlayArrow"></ng-icon>
+        <span class="step-button-text">Play</span>
+      </button>
+
+      <button class="step-button secundary" (click)="forward()">
+        <ng-icon name="matFastForward"></ng-icon>
+        <span class="step-button-text">Forward</span>
+      </button>
+
+      <button class="step-button" (click)="last()">
+        <ng-icon name="matSkipNext"></ng-icon>
+        <span class="step-button-text">Last</span>
+      </button>
+    </div>
+  </div>
+</ng-template>

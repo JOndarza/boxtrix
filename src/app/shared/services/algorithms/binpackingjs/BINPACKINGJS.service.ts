@@ -9,7 +9,6 @@ import { BP3D } from 'binpackingjs';
 
 import { IAlgorithmService } from '../_interfaces/algorithm.service.interface';
 import { BINPACKINGJS_BESTFIT, BINPACKINGJS_CONTAINER } from './_common';
-import { Measurements } from '../../../../common/classes/news/Bases.class';
 
 const { Item, Bin, Packer } = BP3D;
 
@@ -51,7 +50,6 @@ export class BINPACKINGJSService implements IAlgorithmService {
       items,
     } as IStage;
     const container = this.findBestFit(stageFocus);
-    console.log(container);
 
     unffitedColleccion?.push(container);
 
@@ -106,10 +104,6 @@ export class BINPACKINGJSService implements IAlgorithmService {
     container.setItems(items.fitted);
 
     container.fixedMeans.set(data);
-
-    console.log(container.means);
-    console.log(container.fixedMeans);
-    console.log('---');
 
     container.setGlobalStep(0);
     container.setGlobalSteps(0);
