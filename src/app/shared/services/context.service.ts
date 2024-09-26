@@ -1,17 +1,17 @@
 import { Injectable } from '@angular/core';
-import { BoxTrixContainer } from '@common/classes/rendered/Container.class';
+import { Project } from '@common/classes/rendered/Project.class';
+import { Detail } from '@common/classes/ui/Detail.class';
+import _ from 'lodash';
 import { debounceTime } from 'rxjs';
 
 import { AppEvent, EventsService } from './events.service';
-import { Detail } from '@common/classes/ui/Detail.class';
 import { RewindManagerService } from './RewindManager.service';
-import _ from 'lodash';
 
 @Injectable({ providedIn: 'root' })
 export class ContextService {
-  private _container!: BoxTrixContainer;
-  public get container() {
-    return this._container;
+  private _project!: Project;
+  public get project() {
+    return this._project;
   }
 
   private _detail: Detail;
@@ -24,16 +24,16 @@ export class ContextService {
     private _events: EventsService
   ) {
     this._events
-      .get<BoxTrixContainer>(AppEvent.LOADED)
+      .get<Project>(AppEvent.LOADED)
       .pipe(debounceTime(50))
       .subscribe(this.load.bind(this));
 
     this._detail = new Detail();
   }
 
-  private load(data: BoxTrixContainer) {
-    this._container = data;
-    this._detail.load(this.container);
+  private load(data: Project) {
+    this._project = data;
+    // this._detail.load(this.container);
     this._rewind.set(1, 1, _.last(this._detail.fitted)?.globalStep ?? 1);
     this._events.get(AppEvent.RENDERING).emit();
   }

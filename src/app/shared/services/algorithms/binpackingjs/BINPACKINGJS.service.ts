@@ -1,59 +1,26 @@
 import { Injectable } from '@angular/core';
-import { BoxTrixContainer } from '@common/classes/rendered/Container.class';
+import { Container } from '@common/classes/rendered/Container.class copy';
+import { Project } from '@common/classes/rendered/Project.class';
 import { RenderedController } from '@common/classes/rendered/Rendered.controller';
-import { Rotation } from '@common/enums/Rotation.enum';
-import { newId } from '@common/functions/id.function';
 import { IMeasurements } from '@common/interfaces/Data.interface';
-import { IBox, IStage } from '@common/interfaces/Input.interface';
+import { IBox, IProjectInput } from '@common/interfaces/Input.interface';
 import { BP3D } from 'binpackingjs';
+import _ from 'lodash';
 
-import { IAlgorithmService } from '../_interfaces/algorithm.service.interface';
+import { IAlgorithmServiceV2 } from '../_interfaces/algorithm.service.interface';
 import { BINPACKINGJS_BESTFIT, BINPACKINGJS_CONTAINER } from './_common';
+import { newId } from '@common/functions/id.function';
 
 const { Item, Bin, Packer } = BP3D;
 
 @Injectable({ providedIn: 'root' })
-export class BINPACKINGJSService implements IAlgorithmService {
+export class BINPACKINGJSService implements IAlgorithmServiceV2 {
   private _FACTOR = 5;
   private _FIX = 10 ** this._FACTOR;
 
-  sort(stage: IStage) {
-    const data = this.getData(stage);
-    this.fixSortData(data);
-    return this.mapContainer(stage.id, stage, data);
-  }
-
-  private getData(stage: IStage) {
-    const unfitted: BINPACKINGJS_BESTFIT[] = [];
-    const data = this.findBestFit(stage);
-
-    this.getContainerUnffitedItems(stage, data, unfitted);
-    data.unffited = unfitted;
-
-    return data;
-  }
-
-  private getContainerUnffitedItems(
-    stage: IStage,
-    fitted: BINPACKINGJS_BESTFIT,
-    unffitedColleccion: BINPACKINGJS_BESTFIT[]
-  ) {
-    if (!stage || fitted.organized.items.length >= stage.items?.length) return;
-
-    const items = stage.items.filter(
-      (item) => !fitted.organized.items.find((x) => x.name === item.id)
-    );
-
-    const stageFocus = {
-      ...stage,
-      id: `${stage.id}-${newId()}`,
-      items,
-    } as IStage;
-    const container = this.findBestFit(stageFocus);
-
-    unffitedColleccion?.push(container);
-
-    this.getContainerUnffitedItems(stageFocus, container, unffitedColleccion);
+  sort(input: IProjectInput) {
+    const containers = this.mapContainers(input);
+    return new Project(containers);
   }
 
   //#region Fixing
@@ -84,57 +51,54 @@ export class BINPACKINGJSService implements IAlgorithmService {
   //#endregion Fixing
 
   //#region Maps
-  private mapContainer(id: string, stage: IStage, data: BINPACKINGJS_BESTFIT) {
-    const container = new BoxTrixContainer(
-      id,
-      stage?.name || '',
-      stage?.detail || '',
-      {
-        position: { x: 0, y: 0, z: 0 },
-        means: {
-          width: stage?.width || 1,
-          height: stage?.height || 1,
-          depth: stage?.depth || 1,
-        },
-      }
-    );
+  private mapContainers(input: IProjectInput) {
+    const containers = _.chain(input.containers)
+      .map(
+        (x) =>
+          new Container(x.id, x.name, x.detail, {
+            means: x,
+            position: x,
+          })
+      )
+      .orderBy((x) => x.means.getVolumen(), 'desc')
+      .value();
 
-    const items = this.mapItems(stage, data);
+    let unfitted = input.boxes;
+    let previous: Container | null = null;
 
-    container.setItems(items.fitted);
+    for (let i = 0; i < containers.length; i++) {
+      const container = containers[i];
 
-    container.fixedMeans.set(data);
+      const data = this.findBestFit(container, unfitted);
+      this.fixSortData(data);
 
-    container.setGlobalStep(0);
-    container.setGlobalSteps(0);
+      const items = this.mapItems(data, input.boxes);
+      container.setItems(items);
 
-    container.setUnfitted(this.getUnffited(stage, data));
+      container.fixedMeans.set(data);
+      container.setGlobalStep(i);
+      container.setGlobalSteps(previous?.itemCount ?? 0);
 
-    return container;
+      unfitted = this.getUnffited(data, unfitted);
+      if (!unfitted.length) break;
+
+      previous = container;
+    }
+
+    const unfittedContainer = this.getContainerUnfitted(unfitted);
+    if (unfittedContainer) {
+      unfittedContainer.setGlobalStep(containers.length + 1);
+      // HACK
+      unfittedContainer.setGlobalSteps((previous as any)?.itemCount ?? 0);
+      containers.push(unfittedContainer);
+    }
+
+    return containers;
   }
 
-  private getUnffited(stage: IStage, data: BINPACKINGJS_BESTFIT) {
-    const clone: IStage = Object.create(stage);
-
-    const unfitted = data.unffited?.map((x, index) => {
-      clone.name = `${stage.name} - Unfit ${index + 1}`;
-      const container = this.mapContainer(clone.id + newId('-'), clone, x);
-
-      const offset = 2;
-      const _x = (clone?.width + offset) * (index + 1);
-      container.position.set({ x: -_x, y: 0, z: 0 });
-      container.fixedMeans.set(x);
-
-      return container;
-    });
-
-    return unfitted || [];
-  }
-
-  private mapItems(stage: IStage, data: BINPACKINGJS_BESTFIT) {
-    const fitted = data.organized.items.map((binItem) => {
-      const item =
-        stage.items.find((i) => i.id === binItem.name) || ({} as IBox);
+  private mapItems(data: BINPACKINGJS_BESTFIT, allItems: IBox[]) {
+    return data.organized.items.map((binItem) => {
+      const item = allItems.find((i) => i.id === binItem.name) || ({} as IBox);
 
       const data = new RenderedController(
         item.id,
@@ -142,7 +106,7 @@ export class BINPACKINGJSService implements IAlgorithmService {
         item.detail || '',
         {
           type: 'box',
-          targable:true,
+          targable: true,
           position: {
             x: binItem.position[0],
             y: binItem.position[1],
@@ -155,34 +119,69 @@ export class BINPACKINGJSService implements IAlgorithmService {
 
       return data;
     });
-
-    const unffited = stage.items
-      .filter((x) => !data.organized.items.find((y) => y.name === x.id))
-      .map(
-        (x) =>
-          new RenderedController(x.id, x.name, x.detail || '', {
-            type: 'box',
-            targable:true,
-            position: {
-              x: 0,
-              y: 0,
-              z: 0,
-            },
-            means: x,
-            rotation: Rotation.WHD,
-          })
-      );
-
-    return { fitted, unffited };
   }
 
+  private getUnffited(data: BINPACKINGJS_BESTFIT, items: IBox[]) {
+    return items.filter(
+      (x) => !data.organized.items.find((y) => y.name === x.id)
+    );
+  }
+
+  private getContainerUnfitted(unfitted: IBox[]) {
+    if (!unfitted.length) return null;
+
+    const volumen = unfitted.reduce(
+      (acc, curr) => acc + curr.width * curr.height * curr.depth,
+      0
+    );
+
+    const factor = Math.pow(volumen, 1 / 3);
+    const means = {
+      width:
+        factor +
+        _.chain(unfitted)
+          .map((x) => x.width)
+          .max()
+          .value(),
+      height:
+        factor +
+        _.chain(unfitted)
+          .map((x) => x.height)
+          .max()
+          .value(),
+      depth:
+        factor +
+        _.chain(unfitted)
+          .map((x) => x.depth)
+          .max()
+          .value(),
+    } as IMeasurements;
+
+    const container = new Container(newId(), 'UNFITTED', 'UNFITTED', {
+      means,
+      position: { x: 0, y: 0, z: 0 },
+    });
+
+    const data = this.findBestFit(container, unfitted);
+    container.fixedMeans.set(data);
+    container.means.set(data);
+    container.setItems(this.mapItems(data, unfitted));
+
+    return container;
+  }
   //#endregion Maps
 
   //#region Algorithm
-  private mainLogic(stage: IStage, items: IBox[]): BINPACKINGJS_CONTAINER {
+  private mainLogic(stage: Container, items: IBox[]): BINPACKINGJS_CONTAINER {
     let packer = new Packer();
 
-    let bin = new Bin(stage.id, stage.width, stage.height, stage.depth, 0);
+    let bin = new Bin(
+      stage.id,
+      stage.means.width,
+      stage.means.height,
+      stage.means.depth,
+      0
+    );
     packer.addBin(bin);
 
     items.forEach((item) =>
@@ -196,8 +195,10 @@ export class BINPACKINGJSService implements IAlgorithmService {
     return bin;
   }
 
-  private findBestFit(original: IStage): BINPACKINGJS_BESTFIT {
-    let items = original.items;
+  private findBestFit(
+    original: Container,
+    items: IBox[]
+  ): BINPACKINGJS_BESTFIT {
     let sorted = this.mainLogic(original, items);
 
     if (sorted.items.length < items.length)
@@ -208,19 +209,19 @@ export class BINPACKINGJSService implements IAlgorithmService {
     let minDepth = false;
 
     const means = {
-      width: original.width,
-      height: original.height,
-      depth: original.depth,
+      width: original.means.width,
+      height: original.means.height,
+      depth: original.means.depth,
     } as IMeasurements;
 
     let previous = {} as BINPACKINGJS_CONTAINER;
 
     while (!minWidth || !minHeight || !minDepth) {
-      const stage = {
-        id: original.id,
-        name: original.name,
-        ...means,
-      } as IStage;
+      const stage = new Container(original.id, original.name, original.detail, {
+        means,
+        position: { x: 0, y: 0, z: 0 },
+      });
+
       sorted = this.mainLogic(stage, items);
 
       if (sorted.items.length >= items.length) {

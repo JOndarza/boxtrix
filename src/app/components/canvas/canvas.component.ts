@@ -20,6 +20,7 @@ import { IMeasurements, IPosition } from '@common/interfaces/Data.interface';
 import { Rotation } from '@common/enums/Rotation.enum';
 import { RewindManagerService } from '@shared/services/RewindManager.service';
 import _ from 'lodash';
+import { Project } from '@common/classes/rendered/Project.class';
 
 export const enum KeyCode {
   A = 65,
@@ -202,7 +203,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   //#region Models
   private load() {
-    if (!this._context.container) return;
+    if (!this._context.project) return;
 
     this._scene.clear();
 
@@ -210,16 +211,13 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this._scene.add(mainGroup);
     this._mainGroup = mainGroup;
 
-    const data = this.addContainer(mainGroup, this._context.container);
-    this._context.container.unffited.forEach((x) =>
-      this.addContainer(mainGroup, x)
-    );
+    const data = this.setScene(mainGroup, this._context.project);
 
-    this._camera.position.z = data.maxY * 2;
-    this._camera.position.y = data.maxZ * 1.25;
-    this._camera.position.x = data.maxX * 2;
+    this._camera.position.z = data.max.height * 2;
+    this._camera.position.y = data.max.depth * 1.25;
+    this._camera.position.x = data.max.width * 2;
 
-    this.addGrid(data.maxX, data.maxZ);
+    this.addGrid(data.max.width, data.max.depth);
 
     this.addLight();
 
@@ -227,10 +225,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   private addGrid(maxX: number, maxZ: number) {
-    var size =
-      Math.max(maxZ, maxX) +
-      this._contants.GRID_SPACING +
-      this._contants.GRID_SPACING;
+    var size = Math.floor(Math.max(maxZ, maxX));
 
     let grid = new THREE.GridHelper(
       size,
@@ -261,6 +256,62 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this._scene.add(ambientLight);
   }
 
+  private setScene(
+    parent: THREE.Object3D,
+    data: Project
+  ): { min: IMeasurements; max: IMeasurements } {
+    data.containers.forEach((c) => {
+      const container = this.drawContainer(parent, c);
+      c.setObj3D(container.obj3d);
+
+      c.items.forEach((item) => {
+        const box = this.drawBox(item, c);
+        box.obj3d.userData = item;
+        container.obj3d.add(box.obj3d);
+
+        const size = 0.5;
+        const offset = -size / 2;
+        this._text.addTo(box.obj3d, {
+          label: item.globalStep.toString(),
+          geometryParameters: { size },
+          position: { x: offset, y: offset, z: offset },
+        });
+
+        item.setObj3D(box.obj3d);
+      });
+    });
+
+    return {
+      min: {
+        width: _.chain(data.containers)
+          .map((x) => x.means.width)
+          .min()
+          .value(),
+        height: _.chain(data.containers)
+          .map((x) => x.means.height)
+          .min()
+          .value(),
+        depth: _.chain(data.containers)
+          .map((x) => x.means.depth)
+          .min()
+          .value(),
+      },
+      max: {
+        width: _.chain(data.containers)
+          .map((x) => x.means.width)
+          .max()
+          .value(),
+        height: _.chain(data.containers)
+          .map((x) => x.means.height)
+          .max()
+          .value(),
+        depth: _.chain(data.containers)
+          .map((x) => x.means.depth)
+          .max()
+          .value(),
+      },
+    };
+  }
   //#endregion Models
 
   //#region
@@ -377,36 +428,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
     parent.add(normal.obj3d);
 
     return fixed;
-  }
-
-  private addContainer(parent: THREE.Object3D, data: BoxTrixContainer) {
-    let maxX = 0;
-    let maxY = 0;
-    let maxZ = 0;
-
-    const container = this.drawContainer(parent, data);
-
-    data.items.forEach((item) => {
-      const box = this.drawBox(item, data);
-      box.obj3d.userData = item;
-      container.obj3d.add(box.obj3d);
-
-      const size = 0.5;
-      const offset = -size / 2;
-      this._text.addTo(box.obj3d, {
-        label: item.globalStep.toString(),
-        geometryParameters: { size },
-        position: { x: offset, y: offset, z: offset },
-      });
-    });
-
-    if (data.means.width > maxX) maxX = data.means.width;
-    if (data.means.height > maxY) maxY = data.means.height;
-    if (data.means.depth > maxZ) maxZ = data.means.depth;
-
-    container.obj3d.userData = data;
-
-    return { maxX, maxY, maxZ };
   }
   //#endregion
 }

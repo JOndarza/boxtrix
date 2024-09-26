@@ -4,7 +4,7 @@ import {
   IMeasurements,
   IPosition,
 } from '@common/interfaces/Data.interface';
-import { ColorRepresentation } from 'three';
+import { ColorRepresentation, Object3D } from 'three';
 
 import { Measurements, Position } from './Bases.class';
 import { Rotation } from '../../enums/Rotation.enum';
@@ -50,6 +50,11 @@ export class Rendered implements IIdentification {
     return this._color;
   }
 
+  private _obj3D!: Object3D;
+  public get obj3D() {
+    return this._obj3D;
+  }
+
   constructor(
     id: string,
     name: string,
@@ -78,6 +83,11 @@ export class Rendered implements IIdentification {
   setRotation(rotation: Rotation) {
     this._rotation = rotation;
     this.fixMeans();
+  }
+
+  setObj3D(obj3D: Object3D) {
+    obj3D.userData = this;
+    this._obj3D = obj3D;
   }
 
   private fixMeans() {
