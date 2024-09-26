@@ -1,4 +1,4 @@
-import { BoxTrixContainer } from '../rendered/Container.class';
+import { Project } from '../rendered/Project.class';
 import { RenderedController } from '../rendered/Rendered.controller';
 
 export class Detail {
@@ -7,18 +7,11 @@ export class Detail {
     return this._fitted;
   }
 
-  private _unfitted: RenderedController[];
-  public get unfitted() {
-    return this._unfitted;
-  }
-
   constructor() {
     this._fitted = [];
-    this._unfitted = [];
   }
 
-  load(data: BoxTrixContainer) {
+  load(data: Project) {
     this._fitted = data.items;
-    this._unfitted = data.unffited;
   }
 }

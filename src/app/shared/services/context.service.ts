@@ -33,7 +33,7 @@ export class ContextService {
 
   private load(data: Project) {
     this._project = data;
-    // this._detail.load(this.container);
+    this._detail.load(this.project);
     this._rewind.set(1, 1, _.last(this._detail.fitted)?.globalStep ?? 1);
     this._events.get(AppEvent.RENDERING).emit();
   }

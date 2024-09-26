@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { RenderedController } from '@common/classes/rendered/Rendered.controller';
-import data from '@common/templates/inputV2.json';
+import data from '@common/templates/input.json';
 import { ContextService } from '@shared/services/context.service';
 import { AppEvent, EventsService } from '@shared/services/events.service';
 import { ProcessorService } from '@shared/services/Processor.service';

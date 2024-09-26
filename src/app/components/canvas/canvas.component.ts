@@ -14,7 +14,6 @@ import * as THREE from 'three';
 import { BoxGeometry } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { TextManager } from '@shared/services/TextManager.service';
-import { BoxTrixContainer } from '@common/classes/rendered/Container.class';
 import { RenderedController } from '@common/classes/rendered/Rendered.controller';
 import { IMeasurements, IPosition } from '@common/interfaces/Data.interface';
 import { Rotation } from '@common/enums/Rotation.enum';

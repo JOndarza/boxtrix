@@ -1,20 +1,20 @@
 import { Injectable } from '@angular/core';
-import { Container } from '@common/classes/rendered/Container.class copy';
+import { Container } from '@common/classes/rendered/Container.class';
 import { Project } from '@common/classes/rendered/Project.class';
 import { RenderedController } from '@common/classes/rendered/Rendered.controller';
+import { newId } from '@common/functions/id.function';
 import { IMeasurements } from '@common/interfaces/Data.interface';
 import { IBox, IProjectInput } from '@common/interfaces/Input.interface';
 import { BP3D } from 'binpackingjs';
 import _ from 'lodash';
 
-import { IAlgorithmServiceV2 } from '../_interfaces/algorithm.service.interface';
+import { IAlgorithmService } from '../_interfaces/algorithm.service.interface';
 import { BINPACKINGJS_BESTFIT, BINPACKINGJS_CONTAINER } from './_common';
-import { newId } from '@common/functions/id.function';
 
 const { Item, Bin, Packer } = BP3D;
 
 @Injectable({ providedIn: 'root' })
-export class BINPACKINGJSService implements IAlgorithmServiceV2 {
+export class BINPACKINGJSService implements IAlgorithmService {
   private _FACTOR = 5;
   private _FIX = 10 ** this._FACTOR;
 

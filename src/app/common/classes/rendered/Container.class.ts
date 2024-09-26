@@ -3,16 +3,11 @@ import randomColor from 'randomcolor';
 
 import { RenderedController } from './Rendered.controller';
 
-export class BoxTrixContainer extends RenderedController {
-  protected _unffited: BoxTrixContainer[];
-  get unffited() {
-    return this._unffited;
-  }
-
+export class Container extends RenderedController {
   constructor(
     id: string,
     name: string,
-    detail: string,
+    detail: string | undefined,
     meta: { position: IPosition; means: IMeasurements }
   ) {
     super(id, name, detail, {
@@ -22,7 +17,6 @@ export class BoxTrixContainer extends RenderedController {
       rotation: 0,
     });
     this._items = [];
-    this._unffited = [];
   }
 
   /**
@@ -47,14 +41,6 @@ export class BoxTrixContainer extends RenderedController {
     this._items.push(item);
 
     this.orderItems();
-  }
-
-  setUnfitted(items: BoxTrixContainer[]) {
-    items.forEach((item, index) => {
-      item.setLocalStep(index);
-      item.setColor(randomColor());
-    });
-    this._unffited = items;
   }
 
   setGlobalSteps(previousStep: number) {

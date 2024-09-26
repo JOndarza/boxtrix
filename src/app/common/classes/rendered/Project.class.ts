@@ -1,4 +1,4 @@
-import { Container } from './Container.class copy';
+import { Container } from './Container.class';
 import { RenderedController } from './Rendered.controller';
 
 export class Project {
