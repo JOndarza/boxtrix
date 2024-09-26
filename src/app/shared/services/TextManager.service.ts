@@ -87,6 +87,7 @@ export class TextManager {
     const geometry = new TextGeometry(text.label, {
       font: render.font,
       ...this._textGeometryParameters,
+      ...text.geometryParameters,
     });
 
     const mesh = new Mesh(geometry, render.material);

@@ -9,7 +9,7 @@ export class ContantsService {
   }
 
   //#region GRID
-  private _GRID_SPACING = 100;
+  private _GRID_SPACING = 10;
   public get GRID_SPACING() {
     return this._GRID_SPACING;
   }

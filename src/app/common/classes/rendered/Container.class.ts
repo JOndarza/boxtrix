@@ -2,6 +2,7 @@ import { IMeasurements, IPosition } from '@common/interfaces/Data.interface';
 import randomColor from 'randomcolor';
 
 import { RenderedController } from './Rendered.controller';
+import _ from 'lodash';
 
 export class Container extends RenderedController {
   constructor(
@@ -23,24 +24,24 @@ export class Container extends RenderedController {
    * @param items has to be an array of IBinItem ordered by their position in the container
    */
   override setItems(items: RenderedController[]) {
+    this._items = items;
+    this.orderItems();
+
     items.forEach((item, index) => {
       item.setLocalStep(index);
       item.setColor(randomColor());
     });
-    this._items = items;
-
-    this.orderItems();
   }
 
   /**
    * @param item has to be an IBinItem, step is the index of the item in the container
    */
   override addItem(item: RenderedController) {
-    item.setLocalStep(this.itemCount);
-    item.setColor(randomColor());
     this._items.push(item);
-
     this.orderItems();
+
+    item.setLocalStep(this.itemCount - 1);
+    item.setColor(randomColor());
   }
 
   setGlobalSteps(previousStep: number) {
@@ -52,5 +53,21 @@ export class Container extends RenderedController {
   getItemByStep(step: number) {
     if (step > this.maxSteps && step < this.minSteps) return undefined;
     return this._items.find((item) => item.localStep === step);
+  }
+
+  protected orderItems() {
+    const items = this._items.sort(
+      (a, b) => this.getDistanceAtGlobalPosition(a) - this.getDistanceAtGlobalPosition(b)
+    );
+    this._items = items;
+
+    console.log(this.items.map((item) => item.name));
+  }
+
+  private getDistanceAtGlobalPosition(item: RenderedController) {
+    return Math.sqrt(
+      (item.position.x - this.position.x) ** 2 +
+        (item.position.z - this.position.z) ** 2
+    );
   }
 }

@@ -2,7 +2,6 @@ import { IMeasurements, IPosition } from '@common/interfaces/Data.interface';
 
 import { Rotation } from '../../enums/Rotation.enum';
 import { Rendered } from './Rendered.class';
-import _ from 'lodash';
 
 export type RenderType = 'container' | 'box';
 
@@ -81,22 +80,9 @@ export class RenderedController extends Rendered {
 
   setItems(items: RenderedController[]) {
     this._items = items;
-
-    this.orderItems();
   }
 
   addItem(item: RenderedController) {
     this._items.push(item);
-
-    this.orderItems();
-  }
-
-  protected orderItems() {
-    this._items = _.orderBy(
-      this._items,
-      (s) =>
-        Math.sqrt(s.position.x ** 2 + s.position.y ** 2 + s.position.z ** 2),
-      'asc'
-    );
   }
 }

@@ -18,8 +18,10 @@ import { RenderedController } from '@common/classes/rendered/Rendered.controller
 import { IMeasurements, IPosition } from '@common/interfaces/Data.interface';
 import { Rotation } from '@common/enums/Rotation.enum';
 import { RewindManagerService } from '@shared/services/RewindManager.service';
-import _ from 'lodash';
+import _, { min } from 'lodash';
 import { Project } from '@common/classes/rendered/Project.class';
+import { TextGeometryParameters } from 'three/examples/jsm/geometries/TextGeometry';
+import { IScene } from '@common/interfaces/Scene.interface';
 
 export const enum KeyCode {
   A = 65,
@@ -210,43 +212,63 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this._scene.add(mainGroup);
     this._mainGroup = mainGroup;
 
-    const data = this.setScene(mainGroup, this._context.project);
+    this.setScene(mainGroup, this._context.project);
+    const data = this.getMinMax(this._context.project);
 
-    this._camera.position.z = data.max.height * 2;
-    this._camera.position.y = data.max.depth * 1.25;
-    this._camera.position.x = data.max.width * 2;
+    this._camera.position.x = data.means.width * 2;
+    this._camera.position.y = data.maxHeight * 1.25;
+    this._camera.position.z = data.means.depth * 2;
 
-    this.addGrid(data.max.width, data.max.depth);
+    this._camera.lookAt(
+      new THREE.Vector3(data.massCenter.x, data.massCenter.y, data.massCenter.z)
+    );
+
+    this.addGrid(data);
 
     this.addLight();
 
     this._events.get(AppEvent.RENDERED).emit();
   }
 
-  private addGrid(maxX: number, maxZ: number) {
-    var size = Math.floor(Math.max(maxZ, maxX));
+  private addGrid(data: IScene) {
+    let size = Math.floor(Math.max(data.means.width, data.means.depth));
 
     let grid = new THREE.GridHelper(
-      size,
+      size * 2,
       size / this._contants.GRID_SPACING,
       0x42a5f5,
       0x42a5f5
     );
 
-    grid.position.x = size / 2;
-    grid.position.y = 0;
-    grid.position.z = size / 2;
+    grid.position.x = data.massCenter.x;
+    grid.position.y = data.massCenter.y;
+    grid.position.z = data.massCenter.z;
 
     this._scene.add(grid);
 
-    const axesHelper = new THREE.AxesHelper(50);
+    size = data.maxHeight + data.maxHeight * 0.1;
+    const axesHelper = new THREE.AxesHelper(size);
+
     this._scene.add(axesHelper);
 
+    const geometryParameters = { size: 15, depth: 2 } as TextGeometryParameters;
     this._text.addTo(
       this._scene,
-      { label: 'X', position: { x: size, y: 0, z: 0 } },
-      { label: 'Y', position: { x: 0, y: size, z: 0 } },
-      { label: 'Z', position: { x: 0, y: 0, z: size } }
+      {
+        label: 'Width',
+        position: { x: size, y: 0, z: 0 },
+        geometryParameters,
+      },
+      {
+        label: 'Height',
+        position: { x: 0, y: size, z: 0 },
+        geometryParameters,
+      },
+      {
+        label: 'Depth',
+        position: { x: 0, y: 0, z: size },
+        geometryParameters,
+      }
     );
   }
 
@@ -255,10 +277,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this._scene.add(ambientLight);
   }
 
-  private setScene(
-    parent: THREE.Object3D,
-    data: Project
-  ): { min: IMeasurements; max: IMeasurements } {
+  private setScene(parent: THREE.Object3D, data: Project) {
     data.containers.forEach((c) => {
       const container = this.drawContainer(parent, c);
       c.setObj3D(container.obj3d);
@@ -268,48 +287,72 @@ export class CanvasComponent implements OnInit, OnDestroy {
         box.obj3d.userData = item;
         container.obj3d.add(box.obj3d);
 
-        const size = 0.5;
-        const offset = -size / 2;
+        const geometryParameters = {
+          size: 15,
+          depth: 2,
+        } as TextGeometryParameters;
+        const offset = -(geometryParameters?.size ?? 1) / 2;
+
         this._text.addTo(box.obj3d, {
           label: item.globalStep.toString(),
-          geometryParameters: { size },
           position: { x: offset, y: offset, z: offset },
+          geometryParameters,
         });
 
         item.setObj3D(box.obj3d);
       });
     });
+  }
 
-    return {
-      min: {
-        width: _.chain(data.containers)
-          .map((x) => x.means.width)
-          .min()
-          .value(),
-        height: _.chain(data.containers)
-          .map((x) => x.means.height)
-          .min()
-          .value(),
-        depth: _.chain(data.containers)
-          .map((x) => x.means.depth)
-          .min()
-          .value(),
-      },
-      max: {
-        width: _.chain(data.containers)
-          .map((x) => x.means.width)
-          .max()
-          .value(),
-        height: _.chain(data.containers)
-          .map((x) => x.means.height)
-          .max()
-          .value(),
-        depth: _.chain(data.containers)
-          .map((x) => x.means.depth)
-          .max()
-          .value(),
-      },
+  private getMinMax(data: Project): IScene {
+    const min = {
+      width: _.chain(data.containers)
+        .map((x) => x.position.x)
+        .min()
+        .value(),
+      height: _.chain(data.containers)
+        .map((x) => x.position.y)
+        .min()
+        .value(),
+      depth: _.chain(data.containers)
+        .map((x) => x.position.z)
+        .min()
+        .value(),
     };
+
+    const max = {
+      width: _.chain(data.containers)
+        .map((x) => x.position.x)
+        .max()
+        .value(),
+      height: _.chain(data.containers)
+        .map((x) => x.position.y)
+        .max()
+        .value(),
+      depth: _.chain(data.containers)
+        .map((x) => x.position.z)
+        .max()
+        .value(),
+    };
+
+    const maxHeight = _.chain(data.containers)
+      .map((x) => x.means.height)
+      .max()
+      .value();
+
+    const massCenter: IPosition = {
+      x: max.width,
+      y: max.height,
+      z: max.depth,
+    };
+
+    const means: IMeasurements = {
+      width: Math.abs(max.width) + Math.abs(min.width),
+      height: Math.abs(max.height) + Math.abs(min.height),
+      depth: Math.abs(max.depth) + Math.abs(min.depth),
+    };
+
+    return { minMeans: min, maxMeans: max, means, maxHeight, massCenter };
   }
   //#endregion Models
 

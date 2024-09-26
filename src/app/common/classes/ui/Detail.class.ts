@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { Project } from '../rendered/Project.class';
 import { RenderedController } from '../rendered/Rendered.controller';
 
@@ -12,6 +13,6 @@ export class Detail {
   }
 
   load(data: Project) {
-    this._fitted = data.items;
+    this._fitted = _.orderBy(data.items, (x) => x.globalStep, 'asc');
   }
 }

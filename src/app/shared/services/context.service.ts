@@ -25,7 +25,7 @@ export class ContextService {
   ) {
     this._events
       .get<Project>(AppEvent.LOADED)
-      .pipe(debounceTime(50))
+      .pipe(debounceTime(100))
       .subscribe(this.load.bind(this));
 
     this._detail = new Detail();
