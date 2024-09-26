@@ -20,7 +20,7 @@ export class Rendered implements IIdentification {
     return this._name;
   }
 
-  protected _detail!: string;
+  protected _detail?: string;
   public get detail() {
     return this._detail;
   }
@@ -53,7 +53,7 @@ export class Rendered implements IIdentification {
   constructor(
     id: string,
     name: string,
-    detail: string,
+    detail: string | undefined,
     meta: {
       position: IPosition;
       means: IMeasurements;

@@ -55,7 +55,7 @@ export class RenderedController extends Rendered {
   constructor(
     id: string,
     name: string,
-    detail: string,
+    detail: string | undefined,
     meta: {
       type: RenderType;
       targable: boolean;

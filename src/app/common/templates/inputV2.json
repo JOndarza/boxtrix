@@ -1,11 +1,28 @@
 {
     "units": "cm",
-    "name": "STAGE1",
-    "width": 5,
-    "height": 5,
-    "depth": 42,
-    "detail": "Details STAGE1",
-    "items": [
+    "containers": [
+        {
+            "name": "STAGE1",
+            "detail": "Details STAGE1",
+            "width": 150,
+            "height": 240,
+            "depth": 215,
+            "x": 0,
+            "y": 0,
+            "z": 0
+        },
+        {
+            "name": "STAGE2",
+            "detail": "Details STAGE2",
+            "width": 138,
+            "height": 240,
+            "depth": 135,
+            "x": 0,
+            "y": 0,
+            "z": 0
+        }
+    ],
+    "boxes": [
         {
             "name": "BOX1A",
             "width": 5,

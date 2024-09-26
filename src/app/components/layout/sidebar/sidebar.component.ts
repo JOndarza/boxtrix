@@ -1,6 +1,7 @@
 import { AfterViewInit, Component, OnInit } from '@angular/core';
-import { RenderedController } from '@common/classes/news/Rendered.controller';
+import { RenderedController } from '@common/classes/rendered/Rendered.controller';
 import data from '@common/templates/input.json';
+import dataV2 from '@common/templates/inputV2.json';
 import { ContextService } from '@shared/services/context.service';
 import { AppEvent, EventsService } from '@shared/services/events.service';
 import { ProcessorService } from '@shared/services/Processor.service';
@@ -33,6 +34,7 @@ export class SidebarComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     this._processor.sort(data as any);
+    this._processor.sortV2(dataV2 as any);
   }
 
   load(event: any) {
