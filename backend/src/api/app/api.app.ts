@@ -1,4 +1,5 @@
 import { APIBase } from '@api/common/api.base';
+import { OrganizeModule } from '@api/modules/Organize.module';
 import 'reflect-metadata';
 
 export class APIApp extends APIBase {
@@ -6,7 +7,9 @@ export class APIApp extends APIBase {
     super();
   }
 
-  configureRoutes() {}
+  configureRoutes() {
+    this.createModule(OrganizeModule);
+  }
 
   async afterInit(): Promise<void> {
     console.info('API ready.');

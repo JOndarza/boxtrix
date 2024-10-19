@@ -2,6 +2,7 @@ import { getVar } from '@environment/vars';
 import cors, { CorsOptions } from 'cors';
 import express, { Application, Router } from 'express';
 import morgan from 'morgan';
+import { ModuleBase } from './module.base';
 
 const portText = 'port';
 
@@ -57,5 +58,11 @@ export abstract class APIBase {
     this._core.use(cors(corsHeaders));
 
     this._core.use(this._router);
+  }
+
+  createModule<T extends ModuleBase>(type: new () => T) {
+    const module = new type();
+    module.setCore(this._core);
+    module.configureRoutes();;
   }
 }

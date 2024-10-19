@@ -1,6 +1,11 @@
 import dotenv from 'dotenv';
 
-export type EnvironmentVars = 'ORIGIN' | 'FRONTEND_ORIGIN' | 'TIMEZONE' | 'OPEN_IA_KEY';
+export type EnvironmentVars =
+  | 'ORIGIN'
+  | 'FRONTEND_ORIGIN'
+  | 'TIMEZONE'
+  | 'OPEN_IA_KEY'
+  | 'SERVER_JWT_PASS';
 
 export function configureVars() {
   setTimeZone();
