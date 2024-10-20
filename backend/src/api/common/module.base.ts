@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getVar } from '@environment/vars';
 import IoC from '@transversal/IoC/manager.ioc';
-import { Application, NextFunction, Request, Response } from 'express';
+import { NextFunction, Request, Response, Router } from 'express';
 import * as jwt from 'jsonwebtoken';
 
 const sessionJWTProp = 'session';
@@ -46,10 +46,10 @@ export function getSession(request: Request) {
 export abstract class ModuleBase {
   abstract endpoint: string;
 
-  private _core!: Application;
+  protected _router!: Router;
 
-  setCore(core: Application) {
-    this._core = core;
+  setRouter(router: Router) {
+    this._router = router;
   }
 
   abstract configureRoutes(): void;
@@ -85,8 +85,8 @@ export abstract class ModuleBase {
     };
 
     if (checkJWT)
-      this._core.get(this.getPath(method), authenticateJWT, logicGET);
-    else this._core.get(this.getPath(method), logicGET);
+      this._router.get(this.getPath(method), authenticateJWT, logicGET);
+    else this._router.get(this.getPath(method), logicGET);
   }
 
   public post<TService, TRequest, TResponse = any>(
@@ -121,8 +121,8 @@ export abstract class ModuleBase {
     };
 
     if (checkJWT) {
-      this._core.post(this.getPath(method), authenticateJWT, logicPOST);
-    } else this._core.post(this.getPath(method), logicPOST);
+      this._router.post(this.getPath(method), authenticateJWT, logicPOST);
+    } else this._router.post(this.getPath(method), logicPOST);
   }
 
   private getPath(method: string): string {

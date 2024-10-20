@@ -12,7 +12,10 @@ export class OrganizeModule extends ModuleBase {
     this.get<IOrganizeService, any>(
       SymbolOrganizeService,
       'test',
-      (service, request) => `HELLO WORD ${new Date().toJSON()}`,
+      (service, request) => {
+        // throw Error('Not implemented');
+        return `HELLO WORD ${new Date().toJSON()}`;
+      },
       false,
     );
 
@@ -22,7 +25,5 @@ export class OrganizeModule extends ModuleBase {
       (service, request) => service.sort(request),
       false,
     );
-
-    console.info('Ready...');
   }
 }
