@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { IPosition } from '@common/interfaces/Data.interface';
+import { IPosition } from '@common/dtos/Data.interface';
 import _ from 'lodash';
 import { ColorRepresentation, Mesh, MeshBasicMaterial, Object3D } from 'three';
 import {

@@ -1,4 +1,4 @@
-import { IMeasurements, IPosition } from '@common/interfaces/Data.interface';
+import { IMeasurements, IPosition } from '@common/dtos/Data.interface';
 
 export class Position implements IPosition {
   protected _x!: number;
@@ -57,5 +57,3 @@ export class Measurements implements IMeasurements {
     return this.width * this.height * this.depth;
   }
 }
-
-

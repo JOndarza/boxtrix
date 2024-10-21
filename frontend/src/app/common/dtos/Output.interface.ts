@@ -1,4 +1,4 @@
-import { Rotation } from '@domain/enums/Rotation.enum';
+import { Rotation } from '../enums/Rotation.enum';
 
 import { IIdentification, IMeasurements, IPosition } from './Data.interface';
 import { IArea } from './Input.interface';

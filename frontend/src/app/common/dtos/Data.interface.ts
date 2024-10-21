@@ -1,6 +1,6 @@
 export interface IIdentification {
   id: string;
-  name: string;
+  name?: string;
   detail?: string;
 }
 

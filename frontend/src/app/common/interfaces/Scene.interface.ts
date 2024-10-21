@@ -1,4 +1,4 @@
-import { IMeasurements, IPosition } from './Data.interface';
+import { IMeasurements, IPosition } from '../dtos/Data.interface';
 
 export interface IScene {
   minMeans: IMeasurements;

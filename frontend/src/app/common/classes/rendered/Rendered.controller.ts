@@ -1,9 +1,9 @@
-import { IMeasurements, IPosition } from '@common/interfaces/Data.interface';
+import { IMeasurements, IPosition } from '@common/dtos/Data.interface';
 
 import { Rotation } from '../../enums/Rotation.enum';
 import { Rendered } from './Rendered.class';
 
-export type RenderType = 'container' | 'box';
+export type RenderType = 'area' | 'box';
 
 export class RenderedController extends Rendered {
   protected _type: RenderType;
@@ -61,7 +61,7 @@ export class RenderedController extends Rendered {
       position: IPosition;
       means: IMeasurements;
       rotation: Rotation;
-    }
+    },
   ) {
     super(id, name, detail, meta);
     this._type = meta.type;

@@ -3,7 +3,7 @@ import {
   IIdentification,
   IMeasurements,
   IPosition,
-} from '@common/interfaces/Data.interface';
+} from '@common/dtos/Data.interface';
 import { ColorRepresentation, Object3D } from 'three';
 
 import { Measurements, Position } from './Bases.class';
@@ -63,7 +63,7 @@ export class Rendered implements IIdentification {
       position: IPosition;
       means: IMeasurements;
       rotation: Rotation;
-    }
+    },
   ) {
     this._id = id || newId();
     this._name = name;

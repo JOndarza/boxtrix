@@ -1,4 +1,4 @@
-import { Units } from '@domain/enums/Units.enum';
+import { Units } from '../enums/Units.enum';
 
 import { IIdentification, IMeasurements, IPosition } from './Data.interface';
 

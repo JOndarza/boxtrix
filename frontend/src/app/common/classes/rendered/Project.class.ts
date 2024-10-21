@@ -1,9 +1,9 @@
-import { Container } from './Container.class';
+import { Area } from './Area.class';
 import { RenderedController } from './Rendered.controller';
 
 export class Project {
-  public get containers() {
-    return this._containers;
+  public get areas() {
+    return this._areas;
   }
 
   private _items: RenderedController[];
@@ -11,9 +11,7 @@ export class Project {
     return this._items;
   }
 
-  constructor(private _containers: Container[]) {
-    this._items = this._containers
-      .map((container) => container.items)
-      .flatMap((item) => item);
+  constructor(private _areas: Area[]) {
+    this._items = this._areas.map((area) => area.items).flatMap((item) => item);
   }
 }

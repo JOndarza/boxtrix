@@ -8,6 +8,8 @@ export interface BINPACKINGJS_ITEM {
   width: number;
   height: number;
   depth: number;
+
+  weight: number;
 }
 
 export interface BINPACKINGJS_CONTAINER {

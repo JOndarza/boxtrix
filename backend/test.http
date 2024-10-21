@@ -1,0 +1,88 @@
+POST http://localhost:4200/organize/sort
+Content-Type: application/json
+
+{
+    "constraints": {
+        "units": "cm",
+        "stackable": true,
+        "maxStackHeight": 200,
+        "mustBeAccessible": false,  
+        "switchZforY": false
+    },
+    "areas": [
+        {
+            "id": "STAGE1",
+            "detail": "Details STAGE1",
+            "width": 150,
+            "height": 240,
+            "depth": 215,
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "startPoint": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+            }
+        },
+        {
+            "id": "STAGE2",
+            "detail": "Details STAGE2",
+            "width": 138,
+            "height": 240,
+            "depth": 135,
+            "x": -150,
+            "y": 0,
+            "z": 80,
+            "startPoint": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+            }
+        }
+    ],
+    "boxes": [
+        {
+            "id": "BOX1",
+            "width": 61.3,
+            "height": 31.5,
+            "depth": 80.8,
+            "weight": 5
+        },
+        {
+            "id": "BOX2",
+            "width": 72,
+            "height": 35,
+            "depth": 82.3,
+            "weight": 5
+        },
+        {
+            "id": "BOX3",
+            "width": 72,
+            "height": 48,
+            "depth": 82.3,
+            "weight": 5
+        },
+        {
+            "id": "BOX4",
+            "width": 73,
+            "height": 48,
+            "depth": 86.3,
+            "weight": 5
+        },
+        {
+            "id": "BOX5",
+            "width": 72.5,
+            "height": 46,
+            "depth": 88,
+            "weight": 5
+        },
+        {
+            "id": "BOX6",
+            "width": 78.7,
+            "height": 38.5,
+            "depth": 86.7,
+            "weight": 5
+        }
+    ]
+}

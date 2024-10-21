@@ -11,10 +11,10 @@ import {
   IOrganizedBox,
 } from '@domain/interfaces/structures/Output.interface';
 import { BP3D } from 'binpackingjs';
+import { injectable } from 'inversify';
 import _ from 'lodash';
 
 import { BINPACKINGJS_BESTFIT, BINPACKINGJS_CONTAINER } from './_common';
-import { injectable } from 'inversify';
 
 const { Item, Bin, Packer } = BP3D;
 
@@ -25,7 +25,7 @@ export class BINPACKINGJSService implements IOrganizeAlgorithmService {
 
   sort(input: IInput) {
     const areas = this.mapContainers(input);
-    return { id: 'BINPACKINGJS', areas };
+    return { id: 'algorithm_local', areas };
   }
 
   //#region Fixing
@@ -43,6 +43,7 @@ export class BINPACKINGJSService implements IOrganizeAlgorithmService {
         this.fixSortValues(i.position[1]),
         this.fixSortValues(i.position[2]),
       ];
+      i.weight = this.fixSortValues(i.weight);
     });
 
     data.unffited?.forEach((i) => this.fixSortData(i));
@@ -58,7 +59,14 @@ export class BINPACKINGJSService implements IOrganizeAlgorithmService {
   //#region Maps
   private mapContainers(input: IInput) {
     const areas = _.chain(input.areas)
-      .map((x) => ({ ...x }) as IOrganizedArea)
+      .map((x) => {
+        const maxStackHeight = input.constraints?.maxStackHeight;
+        const height =
+          !_.isNil(maxStackHeight) && maxStackHeight < x.height
+            ? maxStackHeight
+            : x.height;
+        return { ...x, height } as IOrganizedArea;
+      })
       .orderBy((x) => getVolumen(x), 'desc')
       .value();
 
@@ -73,7 +81,11 @@ export class BINPACKINGJSService implements IOrganizeAlgorithmService {
 
       const items = this.mapItems(data, input.boxes);
       area.boxes = items;
-      area.fixedMeans = data;
+      area.fixedMeans = {
+        width: data.width,
+        height: data.height,
+        depth: data.depth,
+      };
 
       unfitted = this.getUnffited(data, unfitted);
       if (!unfitted.length) break;
@@ -92,7 +104,9 @@ export class BINPACKINGJSService implements IOrganizeAlgorithmService {
       const item = allItems.find((i) => i.id === binItem.name) || ({} as IBox);
 
       return {
-        ...item,
+        id: item.id,
+        name: item.name,
+        detail: item.detail,
         position: {
           x: binItem.position[0],
           y: binItem.position[1],
@@ -152,11 +166,17 @@ export class BINPACKINGJSService implements IOrganizeAlgorithmService {
     } as IOrganizedArea;
 
     const data = this.findBestFit(area, unfitted);
+    this.fixSortData(data);
+
     area.width = data.width;
     area.height = data.height;
     area.depth = data.depth;
 
-    area.fixedMeans = data;
+    area.fixedMeans = {
+      width: data.width,
+      height: data.height,
+      depth: data.depth,
+    };
     area.boxes = this.mapItems(data, unfitted);
 
     return area;

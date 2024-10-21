@@ -1,18 +1,18 @@
-import { IMeasurements, IPosition } from '@common/interfaces/Data.interface';
+import { IMeasurements, IPosition } from '@common/dtos/Data.interface';
 import randomColor from 'randomcolor';
 
 import { RenderedController } from './Rendered.controller';
 import _ from 'lodash';
 
-export class Container extends RenderedController {
+export class Area extends RenderedController {
   constructor(
     id: string,
     name: string,
     detail: string | undefined,
-    meta: { position: IPosition; means: IMeasurements }
+    meta: { position: IPosition; means: IMeasurements },
   ) {
     super(id, name, detail, {
-      type: 'container',
+      type: 'area',
       ...meta,
       targable: false,
       rotation: 0,
@@ -46,7 +46,7 @@ export class Container extends RenderedController {
 
   setGlobalSteps(previousStep: number) {
     this._items.forEach((item) =>
-      item.setGlobalStep(previousStep + item.localStep + 1)
+      item.setGlobalStep(previousStep + item.localStep + 1),
     );
   }
 
@@ -57,17 +57,17 @@ export class Container extends RenderedController {
 
   protected orderItems() {
     const items = this._items.sort(
-      (a, b) => this.getDistanceAtGlobalPosition(a) - this.getDistanceAtGlobalPosition(b)
+      (a, b) =>
+        this.getDistanceAtGlobalPosition(a) -
+        this.getDistanceAtGlobalPosition(b),
     );
     this._items = items;
-
-    console.log(this.items.map((item) => item.name));
   }
 
   private getDistanceAtGlobalPosition(item: RenderedController) {
     return Math.sqrt(
       (item.position.x - this.position.x) ** 2 +
-        (item.position.z - this.position.z) ** 2
+        (item.position.z - this.position.z) ** 2,
     );
   }
 }

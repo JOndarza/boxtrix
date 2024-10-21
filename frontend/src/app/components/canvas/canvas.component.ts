@@ -15,7 +15,7 @@ import { BoxGeometry } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { TextManager } from '@shared/services/TextManager.service';
 import { RenderedController } from '@common/classes/rendered/Rendered.controller';
-import { IMeasurements, IPosition } from '@common/interfaces/Data.interface';
+import { IMeasurements, IPosition } from '@common/dtos/Data.interface';
 import { Rotation } from '@common/enums/Rotation.enum';
 import { RewindManagerService } from '@shared/services/RewindManager.service';
 import _, { min } from 'lodash';
@@ -55,7 +55,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     private _focus: FocusManagerService,
     private _rewind: RewindManagerService,
     private _text: TextManager,
-    private _context: ContextService
+    private _context: ContextService,
   ) {}
 
   //#region THREE
@@ -172,7 +172,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     if (!intersects.length) return;
 
     const filter = intersects.filter(
-      (x) => (x.object.userData as RenderedController)?.targetable
+      (x) => (x.object.userData as RenderedController)?.targetable,
     );
     if (!filter.length) return;
 
@@ -181,7 +181,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   private handleStepNumber() {
     this._mainGroup.children.forEach((x) =>
-      this.checkVisivility(x, x.userData as RenderedController)
+      this.checkVisivility(x, x.userData as RenderedController),
     );
   }
 
@@ -194,7 +194,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     obj.visible = data.globalStep === 1 || data.globalStep <= this._rewind.step;
 
     obj.children?.forEach((x) =>
-      this.checkVisivility(x, x.userData as RenderedController)
+      this.checkVisivility(x, x.userData as RenderedController),
     );
   }
 
@@ -220,7 +220,11 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this._camera.position.z = data.means.depth * 2;
 
     this._camera.lookAt(
-      new THREE.Vector3(data.massCenter.x, data.massCenter.y, data.massCenter.z)
+      new THREE.Vector3(
+        data.massCenter.x,
+        data.massCenter.y,
+        data.massCenter.z,
+      ),
     );
 
     this.addGrid(data);
@@ -237,7 +241,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       size * 2,
       size / this._contants.GRID_SPACING,
       0x42a5f5,
-      0x42a5f5
+      0x42a5f5,
     );
 
     grid.position.x = data.massCenter.x;
@@ -268,7 +272,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
         label: 'Depth',
         position: { x: 0, y: 0, z: size },
         geometryParameters,
-      }
+      },
     );
   }
 
@@ -278,7 +282,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   private setScene(parent: THREE.Object3D, data: Project) {
-    data.containers.forEach((c) => {
+    data.areas.forEach((c) => {
       const container = this.drawContainer(parent, c);
       c.setObj3D(container.obj3d);
 
@@ -306,36 +310,36 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   private getMinMax(data: Project): IScene {
     const min = {
-      width: _.chain(data.containers)
+      width: _.chain(data.areas)
         .map((x) => x.position.x)
         .min()
         .value(),
-      height: _.chain(data.containers)
+      height: _.chain(data.areas)
         .map((x) => x.position.y)
         .min()
         .value(),
-      depth: _.chain(data.containers)
+      depth: _.chain(data.areas)
         .map((x) => x.position.z)
         .min()
         .value(),
     };
 
     const max = {
-      width: _.chain(data.containers)
+      width: _.chain(data.areas)
         .map((x) => x.position.x)
         .max()
         .value(),
-      height: _.chain(data.containers)
+      height: _.chain(data.areas)
         .map((x) => x.position.y)
         .max()
         .value(),
-      depth: _.chain(data.containers)
+      depth: _.chain(data.areas)
         .map((x) => x.position.z)
         .max()
         .value(),
     };
 
-    const maxHeight = _.chain(data.containers)
+    const maxHeight = _.chain(data.areas)
       .map((x) => x.means.height)
       .max()
       .value();
@@ -378,7 +382,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   private getFixedDataOnParent(
     item: RenderedController,
-    parent?: RenderedController
+    parent?: RenderedController,
   ) {
     const fix = this.getFixedData(item);
 
@@ -407,7 +411,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
     var mat = new THREE.LineBasicMaterial({ color: item.color });
     var geometry = new THREE.EdgesGeometry(
-      new BoxGeometry(fix.means.width, fix.means.height, fix.means.depth)
+      new BoxGeometry(fix.means.width, fix.means.height, fix.means.depth),
     );
 
     var obj3d = new THREE.LineSegments(geometry, mat);
@@ -439,7 +443,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     var geometry = new BoxGeometry(
       data.means.width,
       data.means.height,
-      data.means.depth
+      data.means.depth,
     );
     var obj3d = new THREE.Mesh(geometry, mat);
 
@@ -458,7 +462,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     parent.add(fixed.obj3d);
 
     const clone = new RenderedController('', '', '', {
-      type: 'container',
+      type: 'area',
       targable: false,
       means: item.means,
       position: item.position,

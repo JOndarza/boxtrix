@@ -67,7 +67,8 @@
               "buildTarget": "orden-cajas:build:production"
             },
             "development": {
-              "buildTarget": "orden-cajas:build:development"
+              "buildTarget": "orden-cajas:build:development",
+              "port": 4100
             }
           },
           "defaultConfiguration": "development"
