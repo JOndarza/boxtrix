@@ -1,4 +1,5 @@
-import { EventEmitter, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
+import { Subject } from 'rxjs';
 
 export const enum AppEvent {
   LOADING = 'LOADING',
@@ -13,10 +14,10 @@ export const enum AppEvent {
 
 @Injectable({ providedIn: 'root' })
 export class EventsService {
-  private map: any = {};
+  private map: Record<string, Subject<any>> = {};
 
-  get<T = any>(event: AppEvent): EventEmitter<T> {
+  get<T = void>(event: AppEvent): Subject<T> {
     const obj = this.map[event];
-    return obj ? obj : (this.map[event] = new EventEmitter());
+    return obj ? obj : (this.map[event] = new Subject<T>());
   }
 }

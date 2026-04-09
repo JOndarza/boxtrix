@@ -15,8 +15,8 @@ import {
 } from '@ng-icons/material-icons/baseline';
 import { ProcessorService } from '@shared/services/Processor.service';
 
-import { ComponetsModule } from './components/components.module';
-import { ComunicationService } from '@common/services/comunication.service';
+import { ComponentsModule } from './components/components.module';
+import { CommunicationService } from '@common/services/communication.service';
 import { environment } from 'environment/environment';
 
 // https://fonts.google.com/icons?icon.query=skip
@@ -24,7 +24,7 @@ import { environment } from 'environment/environment';
 
 @Component({
   standalone: true,
-  imports: [RouterOutlet, ComponetsModule, NgIconComponent],
+  imports: [RouterOutlet, ComponentsModule, NgIconComponent],
   viewProviders: [
     OrganizeService,
     ProcessorService,
@@ -47,7 +47,7 @@ import { environment } from 'environment/environment';
   },
 })
 export class AppComponent {
-  constructor(private _comunication: ComunicationService) {
+  constructor(private _comunication: CommunicationService) {
     this._comunication.setOriginAPI(environment.originApi);
   }
 }

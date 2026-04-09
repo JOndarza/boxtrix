@@ -53,7 +53,7 @@ export class Measurements implements IMeasurements {
     this._depth = means.depth;
   }
 
-  getVolumen() {
+  getVolume() {
     return this.width * this.height * this.depth;
   }
 }

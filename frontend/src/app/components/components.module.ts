@@ -22,4 +22,4 @@ import { NgIconComponent } from '@ng-icons/core';
     CanvasComponent,
   ],
 })
-export class ComponetsModule {}
+export class ComponentsModule {}

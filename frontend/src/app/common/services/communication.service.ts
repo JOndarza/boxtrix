@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { StorageService } from './storage.service';
 
 @Injectable({ providedIn: 'root' })
-export class ComunicationService {
+export class CommunicationService {
   public readonly ID_SESSION = 'authorization';
 
   private _api?: string;

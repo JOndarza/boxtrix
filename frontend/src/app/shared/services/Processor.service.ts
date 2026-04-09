@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { OrganizeService } from '@common/api/services/Organize.service';
 import { Area } from '@common/classes/rendered/Area.class';
 import { Project } from '@common/classes/rendered/Project.class';
@@ -21,7 +22,7 @@ export class ProcessorService {
       throw Error('Without file.');
     }
 
-    this._events.get(AppEvent.LOADING).emit();
+    this._events.get(AppEvent.LOADING).next();
 
     switch (file.type) {
       case 'application/json':
@@ -34,7 +35,7 @@ export class ProcessorService {
     }
   }
 
-  sort(input: IInput) {
+  async sort(input: IInput) {
     this.cleanInput(input);
 
     input.id = newId();
@@ -50,12 +51,15 @@ export class ProcessorService {
     const labelTime = 'Algorithm in';
     console.time(labelTime);
 
-    this._organize.sort(input).subscribe((x) => {
-      const project = this.handle(input, x);
+    try {
+      const output = await firstValueFrom(this._organize.sort(input));
+      const project = this.handle(input, output);
       console.timeEnd(labelTime);
-
-      this._events.get(AppEvent.LOADED).emit(project);
-    });
+      this._events.get<Project>(AppEvent.LOADED).next(project);
+    } catch (error) {
+      console.timeEnd(labelTime);
+      console.error('Sort failed:', error);
+    }
   }
 
   private cleanInput(data: IInput) {
@@ -67,16 +71,13 @@ export class ProcessorService {
   private loadJSON(file: File) {
     const reader = new FileReader();
 
-    // Leer el archivo como texto
     reader.readAsText(file);
 
-    // Cuando el archivo ha sido leído
     reader.onload = () => {
       const json = JSON.parse(reader.result as string);
       this.sort(json as IInput);
     };
 
-    // Manejar errores de lectura
     reader.onerror = () => {
       throw reader.error;
     };
@@ -130,7 +131,7 @@ export class ProcessorService {
         item.detail || '',
         {
           type: 'box',
-          targable: true,
+          targetable: true,
           position: {
             x: box.position.x,
             y: box.position.y,

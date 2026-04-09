@@ -4,11 +4,11 @@ import {
   HttpRequest,
 } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { ComunicationService } from '@common/services/comunication.service';
+import { CommunicationService } from '@common/services/communication.service';
 
 @Injectable()
 export class CustomHttpInterceptor implements HttpInterceptor {
-  constructor(private _comunication: ComunicationService) {}
+  constructor(private _comunication: CommunicationService) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler) {
     const headers: any = {};

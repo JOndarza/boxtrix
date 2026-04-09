@@ -57,7 +57,7 @@ export class RenderedController extends Rendered {
     detail: string | undefined,
     meta: {
       type: RenderType;
-      targable: boolean;
+      targetable: boolean;
       position: IPosition;
       means: IMeasurements;
       rotation: Rotation;
@@ -65,7 +65,7 @@ export class RenderedController extends Rendered {
   ) {
     super(id, name, detail, meta);
     this._type = meta.type;
-    this._targetable = meta.targable;
+    this._targetable = meta.targetable;
 
     this._items = [];
   }

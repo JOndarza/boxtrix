@@ -18,8 +18,6 @@ export abstract class APIBase {
   protected _core!: Application;
   protected _router!: Router;
 
-  protected!: Router;
-
   config() {
     this._core = express();
 
@@ -57,7 +55,6 @@ export abstract class APIBase {
     const allowedOrigins = [getVar('FRONTEND_ORIGIN')];
     const corsOptions = {
       origin: (origin, callback) => {
-        console.log('origin', origin);
         if (!origin || allowedOrigins.indexOf(origin) !== -1) {
           callback(null, true);
         } else {

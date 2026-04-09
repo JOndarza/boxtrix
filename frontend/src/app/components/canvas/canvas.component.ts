@@ -5,14 +5,14 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
-import { ContantsService } from '@shared/services/contants.service';
+import { ConstantsService } from '@shared/services/constants.service';
 import { ContextService } from '@shared/services/context.service';
 import { AppEvent, EventsService } from '@shared/services/events.service';
 import { FocusManagerService } from '@shared/services/focusManager.service';
 import { debounceTime } from 'rxjs';
 import * as THREE from 'three';
 import { BoxGeometry } from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { TextManager } from '@shared/services/TextManager.service';
 import { RenderedController } from '@common/classes/rendered/Rendered.controller';
 import { IMeasurements, IPosition } from '@common/dtos/Data.interface';
@@ -20,7 +20,7 @@ import { Rotation } from '@common/enums/Rotation.enum';
 import { RewindManagerService } from '@shared/services/RewindManager.service';
 import _, { min } from 'lodash';
 import { Project } from '@common/classes/rendered/Project.class';
-import { TextGeometryParameters } from 'three/examples/jsm/geometries/TextGeometry';
+import { TextGeometryParameters } from 'three/examples/jsm/geometries/TextGeometry.js';
 import { IScene } from '@common/interfaces/Scene.interface';
 
 export const enum KeyCode {
@@ -44,13 +44,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
   private _controls!: OrbitControls;
   private _frameId!: number;
 
-  private _delta = 0;
   private _mainGroup!: THREE.Object3D;
   private _raycaster = new THREE.Raycaster();
   private _pointer = new THREE.Vector2();
 
   constructor(
-    private _contants: ContantsService,
+    private _constants: ConstantsService,
     private _events: EventsService,
     private _focus: FocusManagerService,
     private _rewind: RewindManagerService,
@@ -122,12 +121,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
     document.addEventListener('click', this.onMouseMove.bind(this), false);
   }
 
-  // HACK: TO WOTK
   private animate = (): void => {
     this._controls.update();
-
-    this._delta += 0.01;
-
     this.renderScene();
     this._frameId = requestAnimationFrame(this.animate);
   };
@@ -231,7 +226,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
     this.addLight();
 
-    this._events.get(AppEvent.RENDERED).emit();
+    this._events.get(AppEvent.RENDERED).next();
   }
 
   private addGrid(data: IScene) {
@@ -239,7 +234,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
     let grid = new THREE.GridHelper(
       size * 2,
-      size / this._contants.GRID_SPACING,
+      size / this._constants.GRID_SPACING,
       0x42a5f5,
       0x42a5f5,
     );
@@ -361,23 +356,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
   //#endregion Models
 
   //#region
-  private fixOrderPosition(position: IPosition) {
-    return { x: position.x, y: position.y, z: position.z };
-  }
-
-  private fixOrderMeans(position: IMeasurements) {
-    return {
-      width: position.width,
-      height: position.height,
-      depth: position.depth,
-    };
-  }
-
   private getFixedData(item: RenderedController) {
-    const position = this.fixOrderPosition(item.position);
-    const means = this.fixOrderMeans(item.fixedMeans);
-
-    return { position, means };
+    const { x, y, z } = item.position;
+    const { width, height, depth } = item.fixedMeans;
+    return { position: { x, y, z }, means: { width, height, depth } };
   }
 
   private getFixedDataOnParent(
@@ -430,9 +412,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
     var mat = new THREE.MeshStandardMaterial({
       color: item.color,
-      opacity: this._contants.BOX_OPACITY,
-      metalness: this._contants.BOX_METALNESS,
-      roughness: this._contants.BOX_ROUGHNESS,
+      opacity: this._constants.BOX_OPACITY,
+      metalness: this._constants.BOX_METALNESS,
+      roughness: this._constants.BOX_ROUGHNESS,
       transparent: true,
       polygonOffset: true,
       polygonOffsetFactor: 1,
@@ -463,7 +445,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
     const clone = new RenderedController('', '', '', {
       type: 'area',
-      targable: false,
+      targetable: false,
       means: item.means,
       position: item.position,
       rotation: Rotation.WHD,

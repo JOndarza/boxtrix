@@ -5,8 +5,8 @@ import { ColorRepresentation, Mesh, MeshBasicMaterial, Object3D } from 'three';
 import {
   TextGeometry,
   TextGeometryParameters,
-} from 'three/examples/jsm/geometries/TextGeometry';
-import { Font, FontLoader } from 'three/examples/jsm/loaders/FontLoader';
+} from 'three/examples/jsm/geometries/TextGeometry.js';
+import { Font, FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 
 export const enum FontType {
   HELVETIKER_REGULAR = 'helvetiker_regular.typeface.json',

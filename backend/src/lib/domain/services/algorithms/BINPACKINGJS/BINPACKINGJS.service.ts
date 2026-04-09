@@ -1,4 +1,4 @@
-import { getVolumen } from '@domain/functions/measurements.function';
+import { getVolume } from '@domain/functions/measurements.function';
 import { IOrganizeAlgorithmService } from '@domain/interfaces/OrganizeAlgorithm.service.interface';
 import { IMeasurements } from '@domain/interfaces/structures/Data.interface';
 import {
@@ -46,7 +46,7 @@ export class BINPACKINGJSService implements IOrganizeAlgorithmService {
       i.weight = this.fixSortValues(i.weight);
     });
 
-    data.unffited?.forEach((i) => this.fixSortData(i));
+    data.unfitted?.forEach((i) => this.fixSortData(i));
   }
 
   private fixSortMeasurements(i: IMeasurements) {
@@ -67,7 +67,7 @@ export class BINPACKINGJSService implements IOrganizeAlgorithmService {
             : x.height;
         return { ...x, height } as IOrganizedArea;
       })
-      .orderBy((x) => getVolumen(x), 'desc')
+      .orderBy((x) => getVolume(x), 'desc')
       .value();
 
     let unfitted = input.boxes;

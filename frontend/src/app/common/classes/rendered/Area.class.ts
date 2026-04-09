@@ -14,7 +14,7 @@ export class Area extends RenderedController {
     super(id, name, detail, {
       type: 'area',
       ...meta,
-      targable: false,
+      targetable: false,
       rotation: 0,
     });
     this._items = [];

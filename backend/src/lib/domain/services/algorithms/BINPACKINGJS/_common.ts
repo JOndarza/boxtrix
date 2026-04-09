@@ -24,7 +24,7 @@ export interface BINPACKINGJS_CONTAINER {
 
 export interface BINPACKINGJS_BESTFIT {
   organized: BINPACKINGJS_CONTAINER;
-  unffited?: BINPACKINGJS_BESTFIT[];
+  unfitted?: BINPACKINGJS_BESTFIT[];
   width: number;
   height: number;
   depth: number;

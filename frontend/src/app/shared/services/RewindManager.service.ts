@@ -1,4 +1,5 @@
-import { EventEmitter, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
+import { Subject } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class RewindManagerService {
@@ -10,10 +11,7 @@ export class RewindManagerService {
     return this._step;
   }
 
-  private _updated = new EventEmitter();
-  public get updated() {
-    return this._updated;
-  }
+  readonly updated = new Subject<void>();
 
   set(stepNumber: number, minStepNumber: number, maxStepNumber: number) {
     this._step = stepNumber;
@@ -23,12 +21,12 @@ export class RewindManagerService {
 
   toFirst() {
     this._step = this._minStepNumber;
-    this.updated.emit();
+    this.updated.next();
   }
 
   toLast() {
     this._step = this._maxStepNumber;
-    this.updated.emit();
+    this.updated.next();
   }
 
   forward() {
@@ -36,7 +34,7 @@ export class RewindManagerService {
     if (this._step > this._maxStepNumber) {
       this._step = this._minStepNumber;
     }
-    this.updated.emit();
+    this.updated.next();
   }
 
   back() {
@@ -44,6 +42,6 @@ export class RewindManagerService {
     if (this._step < this._minStepNumber) {
       this._step = this._maxStepNumber;
     }
-    this.updated.emit();
+    this.updated.next();
   }
 }

@@ -41,7 +41,7 @@ export class SidebarComponent implements OnInit, AfterViewInit {
   }
 
   clicked(item: RenderedController) {
-    this._events.get(AppEvent.CLICKED).emit(item.id);
+    this._events.get<string>(AppEvent.CLICKED).next(item.id);
   }
 
   private selectItem(id: string) {

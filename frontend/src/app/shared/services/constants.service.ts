@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { ColorRepresentation } from 'three';
 
 @Injectable({ providedIn: 'root' })
-export class ContantsService {
+export class ConstantsService {
   private _ANGULAR_VELOCITY = 0.01;
   public get ANGULAR_VELOCITY() {
     return this._ANGULAR_VELOCITY;

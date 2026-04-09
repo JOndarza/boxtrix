@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ApiServiceBase, IRequesConfig } from '../apiService.base';
+import { ApiServiceBase } from '../apiService.base';
 import { IInput } from '@common/dtos/Input.interface';
 import { IOutput } from '@common/dtos/Output.interface';
 
@@ -7,7 +7,7 @@ import { IOutput } from '@common/dtos/Output.interface';
 export class OrganizeService extends ApiServiceBase {
   override endpoint = 'organize';
 
-  sort<TBody = IInput>(data: TBody, config?: IRequesConfig) {
-    return this.post<IOutput, TBody>('sort', data, config);
+  sort<TBody = IInput>(data: TBody) {
+    return this.post<IOutput, TBody>('sort', data);
   }
 }
