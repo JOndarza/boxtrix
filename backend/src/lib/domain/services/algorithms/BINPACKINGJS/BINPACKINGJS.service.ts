@@ -159,16 +159,14 @@ export class BINPACKINGJSService {
   private mainLogic(area: IArea, items: IBox[]): IBINPACKINGJSContainer {
     const packer = new Packer();
 
-    const bin = new Bin(
-      area.id,
-      area.width * FIX,
-      area.height * FIX,
-      area.depth * FIX,
-      0,
-    );
+    // BP3D v3 scales inputs by 10^5 internally — pass raw dimensions, not pre-scaled ones.
+    // Positions in bin.items are returned scaled by 10^5 and must be divided by FIX after packing.
+    const bin = new Bin(area.id, area.width, area.height, area.depth, 0);
     packer.addBin(bin);
 
-    // Heaviest/largest items first so BP3D places them at lower Y positions (gravity)
+    // Sort heaviest/largest first so they land at lower Y positions (gravity).
+    // We bypass packer.pack() because it re-sorts by volume and ignores weight.
+    // Instead we pre-sort and call packToBin() directly to preserve weight order.
     const sorted = [...items].sort(
       (a, b) => (b.weight ?? getVolume(b)) - (a.weight ?? getVolume(a)),
     );
@@ -177,15 +175,20 @@ export class BINPACKINGJSService {
       packer.addItem(
         new Item(
           item.id,
-          item.width * FIX,
-          item.height * FIX,
-          item.depth * FIX,
-          (item.weight ?? getVolume(item)) * FIX,
+          item.width,
+          item.height,
+          item.depth,
+          item.weight ?? getVolume(item),
         ),
       ),
     );
 
-    packer.pack();
+    // packToBin uses packer.items (not the parameter) for the inner loop,
+    // so assigning our sorted list preserves weight order (bypassing pack()'s volume re-sort).
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const bpItems: any[] = packer.items;
+    packer.items = sorted.map((item) => bpItems.find((i: { name: string }) => i.name === item.id));
+    packer.packToBin(bin, packer.items);
 
     return bin;
   }
