@@ -1,12 +1,15 @@
+import { NgTemplateOutlet } from '@angular/common';
 import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { RenderedController } from '@common/classes/rendered/Rendered.controller';
 import data from '@common/templates/inputV2.json';
-import { ContextService } from '@shared/services/context.service';
-import { AppEvent, EventsService } from '@shared/services/events.service';
+import { ContextService } from '@shared/services/Context.service';
+import { AppEvent, EventsService } from '@shared/services/Events.service';
 import { ProcessorService } from '@shared/services/Processor.service';
 import { debounceTime } from 'rxjs';
 
 @Component({
+  standalone: true,
+  imports: [NgTemplateOutlet],
   selector: 'app-sidebar',
   templateUrl: './sidebar.template.html',
   host: {

@@ -1,6 +1,6 @@
 import { IMeasurements, IPosition } from '@common/dtos/Data.interface';
 
-import { Rotation } from '../../enums/Rotation.enum';
+import { Rotation } from '@common/enums/Rotation.enum';
 import { Rendered } from './Rendered.class';
 
 export type RenderType = 'area' | 'box';

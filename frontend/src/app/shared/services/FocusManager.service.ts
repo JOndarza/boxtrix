@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { RenderedController } from '@common/classes/rendered/Rendered.controller';
 import { Color, Mesh, Object3D } from 'three';
 
-import { ConstantsService } from './constants.service';
-import { AppEvent, EventsService } from './events.service';
+import { ConstantsService } from './Constants.service';
+import { AppEvent, EventsService } from './Events.service';
 
 @Injectable({ providedIn: 'root' })
 export class FocusManagerService {
@@ -14,7 +14,7 @@ export class FocusManagerService {
 
   constructor(
     private _constants: ConstantsService,
-    private _events: EventsService
+    private _events: EventsService,
   ) {}
 
   set(obj3D: Object3D) {
@@ -23,7 +23,8 @@ export class FocusManagerService {
     this._obj3D = obj3D;
     this.select(true);
 
-    this._events.get(AppEvent.CLICKED).next();
+    const id = (obj3D.userData as RenderedController).id;
+    this._events.get<string>(AppEvent.RAYCAST).next(id);
   }
 
   private select(selected: boolean) {

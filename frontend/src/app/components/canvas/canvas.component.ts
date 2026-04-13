@@ -5,20 +5,20 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
-import { ConstantsService } from '@shared/services/constants.service';
-import { ContextService } from '@shared/services/context.service';
-import { AppEvent, EventsService } from '@shared/services/events.service';
-import { FocusManagerService } from '@shared/services/focusManager.service';
+import { ConstantsService } from '@shared/services/Constants.service';
+import { ContextService } from '@shared/services/Context.service';
+import { AppEvent, EventsService } from '@shared/services/Events.service';
+import { FocusManagerService } from '@shared/services/FocusManager.service';
 import { debounceTime } from 'rxjs';
 import * as THREE from 'three';
 import { BoxGeometry } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { TextManager } from '@shared/services/TextManager.service';
+import { TextManagerService } from '@shared/services/TextManager.service';
 import { RenderedController } from '@common/classes/rendered/Rendered.controller';
 import { IMeasurements, IPosition } from '@common/dtos/Data.interface';
 import { Rotation } from '@common/enums/Rotation.enum';
 import { RewindManagerService } from '@shared/services/RewindManager.service';
-import _, { min } from 'lodash';
+import _ from 'lodash';
 import { Project } from '@common/classes/rendered/Project.class';
 import { TextGeometryParameters } from 'three/examples/jsm/geometries/TextGeometry.js';
 import { IScene } from '@common/interfaces/Scene.interface';
@@ -31,6 +31,7 @@ export const enum KeyCode {
 }
 
 @Component({
+  standalone: true,
   selector: 'app-canvas',
   template: `<div #canvas class="canvas"></div>`,
 })
@@ -53,7 +54,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     private _events: EventsService,
     private _focus: FocusManagerService,
     private _rewind: RewindManagerService,
-    private _text: TextManager,
+    private _text: TextManagerService,
     private _context: ContextService,
   ) {}
 
@@ -66,11 +67,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
       .get(AppEvent.RENDERING)
       .pipe(debounceTime(100))
       .subscribe(this.load.bind(this));
-
-    this._events
-      .get(AppEvent.CLICKED)
-      .pipe(debounceTime(50))
-      .subscribe(this.selectItem.bind(this));
 
     this._rewind.updated
       .pipe(debounceTime(50))
@@ -176,11 +172,11 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   private handleStepNumber() {
     this._mainGroup.children.forEach((x) =>
-      this.checkVisivility(x, x.userData as RenderedController),
+      this.checkVisibility(x, x.userData as RenderedController),
     );
   }
 
-  private checkVisivility(obj: THREE.Object3D, data: RenderedController) {
+  private checkVisibility(obj: THREE.Object3D, data: RenderedController) {
     if (!data || _.isEmpty(data)) {
       obj.visible = true;
       return;
@@ -189,11 +185,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
     obj.visible = data.globalStep === 1 || data.globalStep <= this._rewind.step;
 
     obj.children?.forEach((x) =>
-      this.checkVisivility(x, x.userData as RenderedController),
+      this.checkVisibility(x, x.userData as RenderedController),
     );
   }
-
-  private selectItem() {}
 
   //#endregion THREE
 

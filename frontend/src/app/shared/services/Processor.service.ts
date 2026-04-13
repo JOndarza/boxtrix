@@ -8,9 +8,9 @@ import { IBox, IInput } from '@common/dtos/Input.interface';
 import { IOrganizedArea, IOutput } from '@common/dtos/Output.interface';
 import { newId } from '@common/functions/id.function';
 
-import { AppEvent, EventsService } from './events.service';
+import { AppEvent, EventsService } from './Events.service';
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class ProcessorService {
   constructor(
     private _events: EventsService,

@@ -1,8 +1,5 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { OrganizeService } from '@common/api/services/Organize.service';
 import {
-  NgIconComponent,
   provideIcons,
   provideNgIconsConfig,
 } from '@ng-icons/core';
@@ -13,9 +10,11 @@ import {
   matSkipNext,
   matSkipPrevious,
 } from '@ng-icons/material-icons/baseline';
-import { ProcessorService } from '@shared/services/Processor.service';
 
-import { ComponentsModule } from './components/components.module';
+import { CanvasComponent } from './components/canvas/canvas.component';
+import { FooterComponent } from './components/layout/footer/footer.component';
+import { HeaderComponent } from './components/layout/header/header.component';
+import { SidebarComponent } from './components/layout/sidebar/sidebar.component';
 import { CommunicationService } from '@common/services/communication.service';
 import { environment } from 'environment/environment';
 
@@ -24,10 +23,8 @@ import { environment } from 'environment/environment';
 
 @Component({
   standalone: true,
-  imports: [RouterOutlet, ComponentsModule, NgIconComponent],
+  imports: [HeaderComponent, FooterComponent, SidebarComponent, CanvasComponent],
   viewProviders: [
-    OrganizeService,
-    ProcessorService,
     provideIcons({
       matSkipPrevious,
       matFastRewind,
@@ -47,7 +44,7 @@ import { environment } from 'environment/environment';
   },
 })
 export class AppComponent {
-  constructor(private _comunication: CommunicationService) {
-    this._comunication.setOriginAPI(environment.originApi);
+  constructor(private _communication: CommunicationService) {
+    this._communication.setOriginAPI(environment.originApi);
   }
 }

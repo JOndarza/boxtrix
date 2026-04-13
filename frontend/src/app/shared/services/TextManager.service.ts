@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { IPosition } from '@common/dtos/Data.interface';
-import _ from 'lodash';
 import { ColorRepresentation, Mesh, MeshBasicMaterial, Object3D } from 'three';
 import {
   TextGeometry,
@@ -20,10 +19,12 @@ export interface IText {
   geometryParameters?: Partial<TextGeometryParameters>;
 }
 
+type GroupedTexts = Record<string, Record<string, IText[]>>;
+
 @Injectable({ providedIn: 'root' })
-export class TextManager {
+export class TextManagerService {
   private _defaultFontType: FontType = FontType.HELVETIKER_REGULAR;
-  private _defaulColor: ColorRepresentation = 0xffffff;
+  private _defaultColor: ColorRepresentation = 0xffffff;
   private _textGeometryParameters: Partial<TextGeometryParameters> = {
     size: 0.5,
     depth: 0.1,
@@ -32,32 +33,38 @@ export class TextManager {
   addTo(obj3D: Object3D, ...texts: IText[]) {
     if (!obj3D || !texts || !texts.length) return;
 
-    const groups = _.chain(texts)
-      .groupBy((x) => x.font)
-      .mapValues((group) => _.groupBy(group, (x) => x.color))
-      .value();
+    const groups = this.groupByFontAndColor(texts);
 
-    _.forEach(groups, (groupFont, fontType) =>
-      _.forEach(groupFont, (groupColor, color) => {
+    Object.entries(groups).forEach(([fontType, groupFont]) =>
+      Object.entries(groupFont).forEach(([color, groupColor]) => {
         const loader = new FontLoader();
-        loader.load(this.fixFontGroupings(fontType), (font) => {
+        loader.load(this.normalizeFontKey(fontType), (font) => {
           const material = new MeshBasicMaterial({
-            color: this.fixColorGroupings(color),
+            color: this.normalizeColorKey(color),
           });
           material.color.convertSRGBToLinear();
 
           groupColor.forEach((text) =>
-            this.setGeometry(obj3D, text, {
-              font,
-              material,
-            })
+            this.setGeometry(obj3D, text, { font, material }),
           );
         });
-      })
+      }),
     );
   }
 
-  private fixFontGroupings(font: string) {
+  private groupByFontAndColor(texts: IText[]): GroupedTexts {
+    const result: GroupedTexts = {};
+    for (const text of texts) {
+      const fontKey = String(text.font);
+      const colorKey = String(text.color);
+      if (!result[fontKey]) result[fontKey] = {};
+      if (!result[fontKey][colorKey]) result[fontKey][colorKey] = [];
+      result[fontKey][colorKey].push(text);
+    }
+    return result;
+  }
+
+  private normalizeFontKey(font: string) {
     switch (font) {
       case '':
       case 'undefined':
@@ -68,12 +75,12 @@ export class TextManager {
     }
   }
 
-  private fixColorGroupings(color: string) {
+  private normalizeColorKey(color: string) {
     switch (color) {
       case '':
       case 'undefined':
       case 'null':
-        return this._defaulColor;
+        return this._defaultColor;
       default:
         return color;
     }
@@ -82,7 +89,7 @@ export class TextManager {
   private setGeometry(
     parent: Object3D,
     text: IText,
-    render: { font: Font; material: MeshBasicMaterial }
+    render: { font: Font; material: MeshBasicMaterial },
   ) {
     const geometry = new TextGeometry(text.label, {
       font: render.font,
@@ -94,7 +101,7 @@ export class TextManager {
     mesh.position.set(
       text.position?.x || 0,
       text.position?.y || 0,
-      text.position?.z || 0
+      text.position?.z || 0,
     );
     parent.add(mesh);
   }

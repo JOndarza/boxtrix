@@ -3,7 +3,7 @@ import { ApiServiceBase } from '../apiService.base';
 import { IInput } from '@common/dtos/Input.interface';
 import { IOutput } from '@common/dtos/Output.interface';
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class OrganizeService extends ApiServiceBase {
   override endpoint = 'organize';
 

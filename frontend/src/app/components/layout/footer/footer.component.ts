@@ -1,7 +1,10 @@
 import { Component } from '@angular/core';
+import { NgIconComponent } from '@ng-icons/core';
 import { RewindManagerService } from '@shared/services/RewindManager.service';
 
 @Component({
+  standalone: true,
+  imports: [NgIconComponent],
   selector: 'app-footer',
   templateUrl: './footer.template.html',
   host: {

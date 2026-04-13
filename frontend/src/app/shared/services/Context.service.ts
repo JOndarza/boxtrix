@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Project } from '@common/classes/rendered/Project.class';
 import { Detail } from '@common/classes/ui/Detail.class';
-import _ from 'lodash';
 import { debounceTime } from 'rxjs';
 
-import { AppEvent, EventsService } from './events.service';
+import { AppEvent, EventsService } from './Events.service';
 import { RewindManagerService } from './RewindManager.service';
 
 @Injectable({ providedIn: 'root' })
@@ -34,7 +33,7 @@ export class ContextService {
   private load(data: Project) {
     this._project = data;
     this._detail.load(this.project);
-    this._rewind.set(1, 1, _.last(this._detail.fitted)?.globalStep ?? 1);
+    this._rewind.set(1, 1, this._detail.fitted.at(-1)?.globalStep ?? 1);
     this._events.get(AppEvent.RENDERING).next();
   }
 }

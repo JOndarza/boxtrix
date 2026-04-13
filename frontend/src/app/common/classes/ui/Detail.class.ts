@@ -1,6 +1,5 @@
-import _ from 'lodash';
-import { Project } from '../rendered/Project.class';
-import { RenderedController } from '../rendered/Rendered.controller';
+import { Project } from '@common/classes/rendered/Project.class';
+import { RenderedController } from '@common/classes/rendered/Rendered.controller';
 
 export class Detail {
   private _fitted: RenderedController[];
@@ -13,6 +12,6 @@ export class Detail {
   }
 
   load(data: Project) {
-    this._fitted = _.orderBy(data.items, (x) => x.globalStep, 'asc');
+    this._fitted = [...data.items].sort((a, b) => a.globalStep - b.globalStep);
   }
 }

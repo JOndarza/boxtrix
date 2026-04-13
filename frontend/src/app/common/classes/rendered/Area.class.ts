@@ -51,7 +51,7 @@ export class Area extends RenderedController {
   }
 
   getItemByStep(step: number) {
-    if (step > this.maxSteps && step < this.minSteps) return undefined;
+    if (step > this.maxSteps || step < this.minSteps) return undefined;
     return this._items.find((item) => item.localStep === step);
   }
 

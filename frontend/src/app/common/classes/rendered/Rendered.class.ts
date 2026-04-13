@@ -7,7 +7,7 @@ import {
 import { ColorRepresentation, Object3D } from 'three';
 
 import { Measurements, Position } from './Bases.class';
-import { Rotation } from '../../enums/Rotation.enum';
+import { Rotation } from '@common/enums/Rotation.enum';
 
 export class Rendered implements IIdentification {
   protected _id!: string;
