@@ -1,24 +1,15 @@
-import 'reflect-metadata';
-
-import { IOrganizeService } from '@application/interfaces/Organize.service.interface';
-import {
-  IOrganizeAlgorithmService,
-  SymbolBINPACKINGJSService,
-} from '@domain/interfaces/OrganizeAlgorithm.service.interface';
+import { Injectable } from '@nestjs/common';
 import { IInput } from '@domain/interfaces/structures/Input.interface';
 import {
   IOrganizedArea,
   IOrganizedBox,
   IOutput,
 } from '@domain/interfaces/structures/Output.interface';
-import { inject, injectable } from 'inversify';
+import { BINPACKINGJSService } from '@domain/services/algorithms/BINPACKINGJS/BINPACKINGJS.service';
 
-@injectable()
-export class OrganizeService implements IOrganizeService {
-  constructor(
-    @inject(SymbolBINPACKINGJSService)
-    private _algorithmLocal: IOrganizeAlgorithmService,
-  ) {}
+@Injectable()
+export class OrganizeService {
+  constructor(private readonly _algorithmLocal: BINPACKINGJSService) {}
 
   sort(input: IInput): IOutput {
     const data = this._algorithmLocal.sort(input);
@@ -30,12 +21,11 @@ export class OrganizeService implements IOrganizeService {
     data.areas.forEach((area) => {
       if (!area.boxes?.length) return;
 
-      const items = area.boxes.sort(
+      area.boxes = area.boxes.sort(
         (a, b) =>
           this.getDistanceAtGlobalPosition(area, a) -
           this.getDistanceAtGlobalPosition(area, b),
       );
-      area.boxes = items;
     });
   }
 

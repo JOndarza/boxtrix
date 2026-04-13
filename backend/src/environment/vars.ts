@@ -19,6 +19,6 @@ export function getVar(_var: EnvironmentVars) {
 }
 
 function setTimeZone() {
-  process.env.TZ = getVar('TIMEZONE') || 'America/Mexico_City';
+  process.env.TZ = getVar('TIMEZONE') ?? 'America/Mexico_City';
   console.info(`Timezone: ${new Date().toString()}`);
 }

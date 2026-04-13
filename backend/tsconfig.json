@@ -29,20 +29,8 @@
       "@environment/*": [
         "environment/*"
       ],
-      "@api/*": [
-        "api/*"
-      ],
-      "@dtos/*": [
-        "lib/application/dtos/*"
-      ],
-      "@application/*": [
-        "lib/application/*"
-      ],
-      "@transversal/*": [
-        "lib/transversal/*"
-      ],
-      "@core/*": [
-        "lib/core/*"
+      "@organize/*": [
+        "organize/*"
       ],
       "@domain/*": [
         "lib/domain/*"

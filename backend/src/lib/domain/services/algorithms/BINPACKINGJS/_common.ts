@@ -1,8 +1,7 @@
-export interface BINPACKINGJS_ITEM {
+export interface IBINPACKINGJSItem {
   name: string;
 
   position: number[];
-  allowedRotation: number[];
   rotationType: number;
 
   width: number;
@@ -12,9 +11,9 @@ export interface BINPACKINGJS_ITEM {
   weight: number;
 }
 
-export interface BINPACKINGJS_CONTAINER {
+export interface IBINPACKINGJSContainer {
   name: string;
-  items: BINPACKINGJS_ITEM[];
+  items: IBINPACKINGJSItem[];
 
   width: number;
   height: number;
@@ -22,9 +21,9 @@ export interface BINPACKINGJS_CONTAINER {
   maxWeight: number;
 }
 
-export interface BINPACKINGJS_BESTFIT {
-  organized: BINPACKINGJS_CONTAINER;
-  unfitted?: BINPACKINGJS_BESTFIT[];
+export interface IBINPACKINGJSBestFit {
+  organized: IBINPACKINGJSContainer;
+  unfitted?: IBINPACKINGJSBestFit[];
   width: number;
   height: number;
   depth: number;
