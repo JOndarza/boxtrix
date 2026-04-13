@@ -2,14 +2,15 @@
 
 # Architecture — key patterns
 
-- **Style**: Clean Architecture — Domain ← Application ← API. Never skip layers; API never imports Domain directly
-- **Dependency rule**: Domain has zero external dependencies. Application depends on Domain only
-- **IoC**: InversifyJS singleton container. Registered in `domain.ioc.ts` and `application.ioc.ts` at startup
-- **Routing**: `ModuleBase` maps `{module.endpoint}/{method}` to service calls via `get()`/`post()` helpers
-- **JWT guard**: `checkJWT = true` by default on new endpoints; `false` must be explicit
-- **Algorithm**: BINPACKINGJSService processes areas largest-volume-first; unfitted boxes → virtual `UNFITTED` area
+- **Style**: Clean Architecture — Domain ← Feature Module (HTTP + service collapsed). Domain never depends on outer layers
+- **NestJS modules**: one feature module per domain concept. `OrganizeModule` owns `OrganizeController` + `OrganizeService` + `BINPACKINGJSService`
+- **DI**: NestJS resolves providers by class type — no Symbols, no `@inject()`. Add services to the module's `providers` array
+- **Routing**: `@Controller('organize')` + `@Post('sort')` → path is `{controller}/{method}` (e.g. `/organize/sort`)
+- **JWT guard**: not yet wired to `POST /organize/sort` (public). Add `@UseGuards(JwtGuard)` when authentication is needed
+- **Algorithm**: `BINPACKINGJSService` processes areas largest-volume-first; unfitted boxes → virtual `UNFITTED` area; inputs scaled by `10^5` for integer packing
 - **Frontend**: Angular services layer (`common/api/`, `shared/services/`) mediates all HTTP; Three.js objects in `common/classes/rendered/`
-- **Error handling**: `try/catch` in `ModuleBase`; errors logged, response is `undefined`. Typed errors: TODO
+- **Components**: all Angular components are standalone; imported directly in `AppComponent`
+- **Error handling**: NestJS built-in exception filter handles unhandled errors. TODO: introduce typed `HttpException` responses
 - **No persistence**: the API is stateless — no database, no sessions stored server-side
 
 Full diagrams and flows: `docs/architecture.md`.

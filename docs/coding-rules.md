@@ -1,7 +1,5 @@
 # Coding Rules
 
-<!-- auto-generated from codebase scan -->
-
 ## General
 
 - **Code language**: english — identifiers, comments, logs
@@ -13,36 +11,36 @@
 
 | Context | Convention | Example |
 |---|---|---|
-| Classes | PascalCase | `OrganizeService`, `APIBase` |
+| Classes | PascalCase | `OrganizeService`, `BINPACKINGJSService` |
 | Interfaces | PascalCase prefixed with `I` | `IOrganizeService`, `IInput` |
-| IoC symbols | PascalCase `Symbol<Name>` | `SymbolOrganizeService` |
 | Methods / variables | camelCase | `configureRoutes`, `findBestFit` |
 | Enums | PascalCase | `Rotation`, `Units` |
-| Enum values | PascalCase | `Rotation.NoRotation` |
-| Files (backend) | PascalCase + descriptor suffix | `Organize.service.ts`, `module.base.ts` |
+| Enum values | PascalCase | `Rotation.WHD` |
+| Files (backend) | PascalCase + descriptor suffix | `Organize.service.ts`, `organize.controller.ts` |
 | Files (frontend) | PascalCase + descriptor suffix | `Organize.service.ts`, `canvas.component.ts` |
 | Angular templates | `*.template.html` | `sidebar.template.html` |
 
 ## Backend rules
 
-- **IoC**: all services must be decorated with `@injectable()`. Inject via `@inject(Symbol)` in constructors
-- **Singletons**: all IoC bindings are `inSingletonScope()`
-- **Module endpoints**: path format is `{module.endpoint}/{method}` — e.g. `/organize/sort`
-- **JWT**: default for new endpoints is `checkJWT = true`. Public endpoints must explicitly pass `false`
+- **DI**: decorate services with `@Injectable()`. Inject by class type in constructors — no Symbols, no `@inject()`
+- **Module providers**: add every injectable service to the `providers` array of its NestJS module
+- **Routing**: path format is `{controller}/{method}` — e.g. `/organize/sort`
+- **JWT**: `POST /organize/sort` is currently public. Add `@UseGuards(JwtGuard)` to protect new endpoints
 - **Algorithm precision**: BinPackingJS uses integers — multiply by `10^5` before packing, divide after
-- **Error handling (current)**: `try/catch` in `ModuleBase`; `console.error` + returns `undefined`. TODO: typed error responses
+- **Error handling**: NestJS exception filter handles unhandled errors. TODO: typed `HttpException` responses
 
 ## Frontend rules
 
 - **HTTP calls**: always use typed service classes. Never call `HttpClient` directly from components
 - **3D scene**: Three.js objects live in `common/classes/rendered/`
 - **Services scope**: `shared/services/` for cross-feature services, `common/services/` for shared utilities
+- **Standalone components**: all Angular components are standalone; each imports only what its template needs
 - **Forms**: reactive forms only, never template-driven
-- **API path**: frontend connects to backend at the URL declared in `common/services/contants.service.ts`
+- **API URL**: declared in `shared/services/Constants.service.ts` via `CommunicationService` — do not hardcode
 
 ## Testing
 
-- **Framework (backend)**: TODO: no tests found — framework not yet defined
+- **Framework (backend)**: TODO — no tests yet
 - **Framework (frontend)**: Karma + Jasmine (configured in `angular.json`)
 - **Naming**: `Should_<Outcome>_When_<Condition>` for test methods
 - **Structure**: Arrange / Act / Assert with blank lines between blocks
@@ -52,10 +50,12 @@
 ## TypeScript config
 
 ### Backend (`tsconfig.json`)
-- `strict: true`, `experimentalDecorators: true`, `emitDecoratorMetadata: true` (required for InversifyJS)
+
+- `strict: true`, `experimentalDecorators: true`, `emitDecoratorMetadata: true`
 - `esModuleInterop: true`, `resolveJsonModule: true`
-- Path aliases: `@api/*`, `@application/*`, `@domain/*`, `@transversal/*`, `@environment/*`
+- Path aliases: `@domain/*`, `@organize/*`, `@environment/*`
 
 ### Frontend (`tsconfig.json`)
+
 - `strict: true`, `experimentalDecorators: true`
 - Target: `ES2022`, module: `ES2022`

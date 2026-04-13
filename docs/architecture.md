@@ -1,7 +1,5 @@
 # Architecture
 
-<!-- auto-generated from codebase scan -->
-
 ## Overview
 
 BoxTrix follows a **Clean Architecture** split into two independent applications that communicate over HTTP.
@@ -9,71 +7,85 @@ BoxTrix follows a **Clean Architecture** split into two independent applications
 ```
 frontend/ (Angular 18 + Three.js)
     └── HTTP POST /organize/sort
-backend/ (Node.js + Express + TypeScript)
-    └── API Layer
-        └── Application Layer
-            └── Domain Layer
+backend/ (Node.js + NestJS + TypeScript)
+    └── OrganizeModule
+        ├── OrganizeController  (HTTP)
+        ├── OrganizeService     (orchestration)
+        └── BINPACKINGJSService (domain algorithm)
 ```
 
-## Backend layers
+## Backend structure
 
-### API Layer (`backend/src/api/`)
-- **Entry point**: `APIApp extends APIBase` — bootstraps Express, attaches middlewares, registers modules
-- **Modules**: `OrganizeModule` — declares endpoints by mapping HTTP verbs + IoC service symbols to handlers
-- **Base classes**: `ModuleBase` provides `get()` / `post()` helpers with optional JWT guard; `APIBase` wires Express + middleware
+### Entry point (`backend/src/main.ts`)
+Bootstraps NestJS with Helmet, CORS, compression, and Morgan. Loads env vars via `configureVars()`.
 
-### Application Layer (`backend/src/lib/application/`)
-- **Services**: orchestrate domain operations. `OrganizeService.sort()` calls the algorithm and post-processes results (sorts boxes by proximity to area origin)
-- **Interfaces**: `IOrganizeService` + its IoC symbol
+### Root module (`backend/src/app.module.ts`)
+Imports feature modules. Currently: `OrganizeModule`.
 
-### Domain Layer (`backend/src/lib/domain/`)
-- **Algorithm**: `BINPACKINGJSService` wraps the BinPackingJS 3D bin packing library. Finds best fit per area, minimizes container dimensions by binary search on each axis
-- **AI service**: `AIService` (planned, currently empty) — will call OpenAI via `HTTPService`
-- **Interfaces**: `IOrganizeAlgorithmService`, `IAIService`, `IHTTPService`
-- **Structures**: `IInput`, `IOutput`, `IBox`, `IArea`, `IOrganizedBox`, `IOrganizedArea`
-- **Enums**: `Units`, `Rotation`
+### Feature module (`backend/src/organize/`)
 
-### Transversal (`backend/src/lib/transversal/`)
-- **IoC container**: `IocContainer` wraps InversifyJS. All bindings are singleton. Registered at startup in `domain.ioc.ts` and `application.ioc.ts`
+| File | Role |
+|---|---|
+| `organize.module.ts` | Declares providers: `OrganizeService`, `BINPACKINGJSService` |
+| `organize.controller.ts` | `POST /organize/sort` — receives `IInput`, returns `IOutput` |
+| `organize.service.ts` | Orchestrates the algorithm call; sorts result boxes by proximity to area origin |
+
+### Domain layer (`backend/src/lib/domain/`)
+Zero dependencies on outer layers. Contains only pure logic and interfaces.
+
+| Path | Contents |
+|---|---|
+| `services/algorithms/BINPACKINGJS/` | `BINPACKINGJSService` — wraps BP3D, finds best fit per area by binary-searching minimum dimensions on each axis |
+| `interfaces/structures/` | `IInput`, `IOutput`, `IBox`, `IArea`, `IOrganizedBox`, `IOrganizedArea`, `IMeasurements` |
+| `functions/` | `getVolume()` — pure measurement utility |
+| `enums/` | `Units`, `Rotation` |
+
+### Environment (`backend/src/environment/vars.ts`)
+Typed wrapper around `process.env`. `getVar()` returns `string | undefined`.
 
 ## Frontend layers (`frontend/src/app/`)
 
 | Folder | Role |
 |---|---|
-| `components/` | UI components: `canvas` (Three.js 3D scene), `sidebar`, `header`, `footer` |
-| `common/api/` | Typed API client services (`Organize.service`) |
-| `common/services/` | Shared: `communication` (event bus), `storage` |
-| `common/classes/rendered/` | Three.js scene objects: `Area`, `Rendered`, `Project`, `Bases` |
-| `shared/services/` | `Processor`, `TextManager`, `Events`, `RewindManager`, `Context`, `FocusManager` |
+| `components/` | Standalone UI components: `canvas` (Three.js scene), `sidebar`, `header`, `footer` |
+| `common/api/` | Typed HTTP service (`OrganizeService extends ApiServiceBase`) |
+| `common/services/` | Utilities: `CommunicationService` (API URL + auth), `StorageService` (localStorage) |
+| `common/classes/rendered/` | Three.js scene objects: `Area`, `Rendered`, `RenderedController`, `Project`, `Bases` |
+| `common/dtos/` | Shared TypeScript interfaces mirroring backend contracts |
+| `shared/services/` | Cross-feature: `ProcessorService`, `ContextService`, `EventsService`, `RewindManagerService`, `FocusManagerService`, `TextManagerService`, `ConstantsService` |
 
 ## Data flow
 
 ```
 User input (sidebar)
-  → Processor.service
-  → POST /organize/sort (HTTP)
-  → BINPACKINGJSService.sort() — 3D bin packing per area
-  → OrganizeService.sort() — sort boxes by proximity
+  → ProcessorService.sort()
+  → POST /organize/sort (HTTP via OrganizeService)
+  → OrganizeController → OrganizeService → BINPACKINGJSService
   → IOutput returned
-  → Three.js scene rendered (canvas component)
+  → ContextService stores project
+  → AppEvent.RENDERING fired
+  → CanvasComponent renders Three.js scene
 ```
 
 ## Key patterns
 
-- **IoC via InversifyJS**: all services resolved from a singleton container; `@injectable()` + `@inject()` decorators
-- **Module routing**: endpoint path = `{module.endpoint}/{method}` (e.g. `/organize/sort`)
-- **JWT auth**: optional per-endpoint. Current `POST /organize/sort` has `checkJWT = false` (public)
-- **Algorithm precision fix**: BinPackingJS works with integers; inputs are multiplied by `10^5` then divided back to restore decimal precision
-- **Unfitted boxes**: boxes that cannot fit any area are collected into a virtual `UNFITTED` area
+- **NestJS DI**: services declared in `providers` array of the module; injected by class type in constructors
+- **Routing**: `@Controller('organize')` + `@Post('sort')` → `/organize/sort`
+- **JWT auth**: not yet wired on `POST /organize/sort` (public). Add `@UseGuards(JwtGuard)` when needed
+- **Algorithm precision**: BinPackingJS requires integers — inputs multiplied by `10^5`, outputs divided back
+- **Gravity sort**: items sorted by `weight ?? volume` descending before packing so heavier items land at lower Y
+- **Unfitted boxes**: boxes that cannot fit any area are collected into a virtual `UNFITTED` area, never silently dropped
+- **Frontend events**: `AppEvent` enum (`LOADING`, `LOADED`, `RENDERING`, `RENDERED`, `RAYCAST`, `CLICKED`) — `EventsService` provides typed `Subject<T>` per event
+- **3D selection**: `FocusManagerService.set()` fires `AppEvent.RAYCAST` with the object id; `SidebarComponent` subscribes to highlight the matching list item
 
 ## Dependency rules
 
 - Domain has **zero** dependencies on other layers
-- Application depends on Domain only
-- API depends on Application (via IoC) and never touches Domain directly
-- Transversal (IoC) is imported by API layer bootstrap only
+- Feature module (`organize/`) depends on Domain only
+- Domain never imports from `organize/`
+- Frontend components never call `HttpClient` directly — always through `common/api/` services
 
-## Error handling (current state)
+## Error handling
 
-- `try/catch` in `ModuleBase.get()` / `.post()` — catches errors, logs to `console.error`, returns `undefined` as JSON
-- TODO: introduce typed error responses instead of silent `undefined`
+- NestJS built-in exception filter handles unhandled errors (500 by default)
+- TODO: introduce typed `HttpException` responses for domain-level errors

@@ -4,10 +4,10 @@
 
 - **Code language**: english — identifiers, comments, logs
 - **Naming**: PascalCase for classes/interfaces (prefix `I`), camelCase for methods/variables, PascalCase for enums and their values
-- **File naming**: `<Name>.<descriptor>.ts` (e.g. `Organize.service.ts`, `module.base.ts`); Angular templates: `*.template.html`
+- **File naming**: `<Name>.<descriptor>.ts` (e.g. `Organize.service.ts`, `canvas.component.ts`); Angular templates: `*.template.html`
 - **File size**: split files over ~400 lines
-- **IoC symbols**: always export a `Symbol<Name>` alongside every interface — e.g. `export const SymbolOrganizeService = Symbol('OrganizeService')`
-- **Error handling**: backend uses `try/catch` in `ModuleBase`; TODO: introduce typed error responses
+- **DI (backend)**: decorate services with `@Injectable()`. Inject by class type in constructors — no Symbols, no `@inject()`
+- **Error handling**: NestJS exception filter handles unhandled errors; TODO: introduce typed `HttpException` responses
 - **Comments**: explain *why*, never *what*
 - **Commits**: conventional format, imperative mood, no AI attribution
 - **TypeScript**: `strict: true`, `experimentalDecorators: true`, `emitDecoratorMetadata: true` required in backend

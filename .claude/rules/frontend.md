@@ -14,7 +14,7 @@ paths:
 - **Services layering**: `shared/services/` = cross-feature (Processor, Context, Events, RewindManager, FocusManager, TextManager); `common/services/` = generic utilities (communication, storage)
 - **Icons**: use `@ng-icons` + Material Icons set. Never import SVGs directly
 - **Forms**: reactive forms only, never template-driven
-- **API constants**: backend URL lives in `shared/services/constants.service.ts` — do not hardcode URLs elsewhere
+- **API constants**: backend URL lives in `shared/services/Constants.service.ts` — do not hardcode URLs elsewhere
 - **Templates**: named `*.template.html` — not `*.component.html`
 
 Full reference: `docs/architecture.md`, `docs/coding-rules.md`.
