@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { OrganizeService } from '@common/api/services/Organize.service';
 import { Area } from '@common/classes/rendered/Area.class';
@@ -12,15 +12,11 @@ import { AppEvent, EventsService } from './Events.service';
 
 @Injectable({ providedIn: 'root' })
 export class ProcessorService {
-  constructor(
-    private _events: EventsService,
-    private _organize: OrganizeService,
-  ) {}
+  private readonly _events = inject(EventsService);
+  private readonly _organize = inject(OrganizeService);
 
-  load(file: File) {
-    if (!file) {
-      throw Error('Without file.');
-    }
+  load(file: File): void {
+    if (!file) throw Error('Without file.');
 
     this._events.get(AppEvent.LOADING).next();
 
@@ -28,14 +24,12 @@ export class ProcessorService {
       case 'application/json':
         this.loadJSON(file);
         break;
-      // case 'xlxs':
-      //   break;
       default:
         throw Error('File without support.');
     }
   }
 
-  async sort(input: IInput) {
+  async sort(input: IInput): Promise<void> {
     this.cleanInput(input);
 
     input.id = newId();
@@ -55,56 +49,47 @@ export class ProcessorService {
       const output = await firstValueFrom(this._organize.sort(input));
       const project = this.handle(input, output);
       console.timeEnd(labelTime);
-      this._events.get<Project>(AppEvent.LOADED).next(project);
+      this._events.get(AppEvent.LOADED).next(project);
     } catch (error) {
       console.timeEnd(labelTime);
       console.error('Sort failed:', error);
     }
   }
 
-  private cleanInput(data: IInput) {
+  private cleanInput(data: IInput): void {
     if (!data.constraints) data.constraints = { units: 'cm' };
     if (!data.areas) data.areas = [];
     if (!data.boxes) data.boxes = [];
   }
 
-  private loadJSON(file: File) {
+  private loadJSON(file: File): void {
     const reader = new FileReader();
-
     reader.readAsText(file);
-
     reader.onload = () => {
       const json = JSON.parse(reader.result as string);
       this.sort(json as IInput);
     };
-
     reader.onerror = () => {
       throw reader.error;
     };
   }
 
-  private handle(input: IInput, output: IOutput) {
+  private handle(input: IInput, output: IOutput): Project {
     const areas = this.mapAreas(input, output);
     return new Project(areas);
   }
 
-  private mapAreas(input: IInput, output: IOutput) {
+  private mapAreas(input: IInput, output: IOutput): Area[] {
     const areas: Area[] = [];
-
     let previous: Area | null = null;
 
     for (let i = 0; i < output.areas.length; i++) {
       const organized = output.areas[i];
 
-      const area = new Area(
-        organized.id,
-        organized.name || '',
-        organized.detail,
-        {
-          means: organized,
-          position: organized,
-        },
-      );
+      const area = new Area(organized.id, organized.name || '', organized.detail, {
+        means: organized,
+        position: organized,
+      });
 
       const items = this.mapItems(organized, input.boxes);
       area.setItems(items);
@@ -114,35 +99,24 @@ export class ProcessorService {
       area.setGlobalSteps(previous?.itemCount ?? 0);
 
       previous = area;
-
       areas.push(area);
     }
 
     return areas;
   }
 
-  private mapItems(organized: IOrganizedArea, originals: IBox[]) {
-    const items = organized.boxes?.map((box) => {
-      const item = originals.find((i) => i.id === box.id) || ({} as IBox);
-
-      return new RenderedController(
-        item.id,
-        item.name || '',
-        item.detail || '',
-        {
+  private mapItems(organized: IOrganizedArea, originals: IBox[]): RenderedController[] {
+    return (
+      organized.boxes?.map((box) => {
+        const item = originals.find((i) => i.id === box.id) || ({} as IBox);
+        return new RenderedController(item.id, item.name || '', item.detail || '', {
           type: 'box',
           targetable: true,
-          position: {
-            x: box.position.x,
-            y: box.position.y,
-            z: box.position.z,
-          },
+          position: { x: box.position.x, y: box.position.y, z: box.position.z },
           means: item,
           rotation: box.rotation,
-        },
-      );
-    });
-
-    return items ?? [];
+        });
+      }) ?? []
+    );
   }
 }

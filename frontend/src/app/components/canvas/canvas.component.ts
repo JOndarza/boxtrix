@@ -1,29 +1,32 @@
 import {
+  ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   ElementRef,
   OnDestroy,
   OnInit,
   ViewChild,
+  inject,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { RenderedController } from '@common/classes/rendered/Rendered.controller';
+import { IMeasurements, IPosition } from '@common/dtos/Data.interface';
+import { Rotation } from '@common/enums/Rotation.enum';
+import { IScene } from '@common/interfaces/Scene.interface';
 import { ConstantsService } from '@shared/services/Constants.service';
 import { ContextService } from '@shared/services/Context.service';
 import { AppEvent, EventsService } from '@shared/services/Events.service';
 import { FocusManagerService } from '@shared/services/FocusManager.service';
+import { RewindManagerService } from '@shared/services/RewindManager.service';
+import { SceneService } from '@shared/services/Scene.service';
+import { TextManagerService } from '@shared/services/TextManager.service';
 import { debounceTime } from 'rxjs';
 import * as THREE from 'three';
 import { BoxGeometry } from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { TextManagerService } from '@shared/services/TextManager.service';
-import { RenderedController } from '@common/classes/rendered/Rendered.controller';
-import { IMeasurements, IPosition } from '@common/dtos/Data.interface';
-import { Rotation } from '@common/enums/Rotation.enum';
-import { RewindManagerService } from '@shared/services/RewindManager.service';
-import _ from 'lodash';
-import { Project } from '@common/classes/rendered/Project.class';
 import { TextGeometryParameters } from 'three/examples/jsm/geometries/TextGeometry.js';
-import { IScene } from '@common/interfaces/Scene.interface';
+import { Project } from '@common/classes/rendered/Project.class';
 
-export const enum KeyCode {
+export enum KeyCode {
   A = 65,
   D = 68,
   W = 87,
@@ -34,132 +37,81 @@ export const enum KeyCode {
   standalone: true,
   selector: 'app-canvas',
   template: `<div #canvas class="canvas"></div>`,
+  providers: [SceneService],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CanvasComponent implements OnInit, OnDestroy {
   @ViewChild('canvas', { static: true })
-  canvas!: ElementRef;
+  canvas!: ElementRef<HTMLElement>;
 
-  private _renderer!: THREE.WebGLRenderer;
-  private _scene!: THREE.Scene;
-  private _camera!: THREE.PerspectiveCamera;
-  private _controls!: OrbitControls;
-  private _frameId!: number;
+  private readonly _constants = inject(ConstantsService);
+  private readonly _events = inject(EventsService);
+  private readonly _focus = inject(FocusManagerService);
+  private readonly _rewind = inject(RewindManagerService);
+  private readonly _text = inject(TextManagerService);
+  private readonly _context = inject(ContextService);
+  private readonly _sceneService = inject(SceneService);
+  private readonly _destroyRef = inject(DestroyRef);
 
-  private _mainGroup!: THREE.Object3D;
-  private _raycaster = new THREE.Raycaster();
-  private _pointer = new THREE.Vector2();
+  private readonly _pointer = new THREE.Vector2();
 
-  constructor(
-    private _constants: ConstantsService,
-    private _events: EventsService,
-    private _focus: FocusManagerService,
-    private _rewind: RewindManagerService,
-    private _text: TextManagerService,
-    private _context: ContextService,
-  ) {}
+  // C2 — bound refs stored so removeEventListener can target the same function
+  private readonly _onWindowResize = (): void =>
+    this._sceneService.onResize(this.canvas.nativeElement);
+  private readonly _onKeyDown = (e: KeyboardEvent): void => this.handleKeyDown(e);
+  private readonly _onCanvasClick = (e: MouseEvent): void => this.handleCanvasClick(e);
 
-  //#region THREE
   ngOnInit(): void {
-    this.initScene();
-    this.animate();
+    this._sceneService.init(this.canvas.nativeElement);
 
+    // C1 — takeUntilDestroyed prevents subscriptions from leaking past component lifetime
     this._events
       .get(AppEvent.RENDERING)
-      .pipe(debounceTime(100))
-      .subscribe(this.load.bind(this));
+      .pipe(debounceTime(100), takeUntilDestroyed(this._destroyRef))
+      .subscribe(() => this.load());
 
     this._rewind.updated
-      .pipe(debounceTime(50))
-      .subscribe(this.handleStepNumber.bind(this));
+      .pipe(debounceTime(50), takeUntilDestroyed(this._destroyRef))
+      .subscribe(() => this.handleStepNumber());
+
+    window.addEventListener('resize', this._onWindowResize);
+    document.addEventListener('keydown', this._onKeyDown);
+    document.addEventListener('click', this._onCanvasClick);
   }
 
   ngOnDestroy(): void {
-    cancelAnimationFrame(this._frameId);
-    window.removeEventListener('resize', this.onWindowResize);
+    window.removeEventListener('resize', this._onWindowResize);
+    document.removeEventListener('keydown', this._onKeyDown);
+    document.removeEventListener('click', this._onCanvasClick);
+    // SceneService teardown (renderer.dispose, forceContextLoss, scene.clear)
+    // is handled by Angular when it destroys the component-scoped injector.
   }
 
-  initScene(): void {
-    const width = this.canvas.nativeElement.clientWidth;
-    const height = this.canvas.nativeElement.clientHeight;
-
-    // Initialize renderer
-    this._renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      powerPreference: 'high-performance',
-    });
-    this._renderer.setSize(width, height);
-    this.canvas.nativeElement.appendChild(this._renderer.domElement);
-
-    // Initialize scene
-    this._scene = new THREE.Scene();
-    this._scene.background = new THREE.Color('#000');
-
-    // Initialize camera
-    this._camera = new THREE.PerspectiveCamera(80, width / height, 0.1, 10000);
-    this._camera.position.set(-50, 50, -50);
-
-    // Initialize controls
-    this._controls = new OrbitControls(this._camera, this._renderer.domElement);
-    this._controls.enableDamping = true;
-    this._controls.dampingFactor = 0.25;
-    this._controls.enableZoom = true;
-    this._controls.autoRotate = false;
-
-    this._controls.addEventListener('change', () => {
-      if (this._renderer) this._renderer.render(this._scene, this._camera);
-    });
-
-    this._mainGroup = new THREE.Object3D();
-    this._scene.add(this._mainGroup);
-
-    window.addEventListener('resize', this.onWindowResize.bind(this), false);
-    document.addEventListener('keydown', this.onKeyDown.bind(this), false);
-    document.addEventListener('click', this.onMouseMove.bind(this), false);
-  }
-
-  private animate = (): void => {
-    this._controls.update();
-    this.renderScene();
-    this._frameId = requestAnimationFrame(this.animate);
-  };
-
-  private renderScene(): void {
-    if (this._renderer) {
-      this._renderer.render(this._scene, this._camera);
+  //#region Input handlers
+  private handleKeyDown(event: KeyboardEvent): void {
+    // Guard: don't steal keypresses when a text input has focus
+    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+      return;
     }
-  }
-
-  private onWindowResize(): void {
-    const width = this.canvas.nativeElement.clientWidth;
-    const height = this.canvas.nativeElement.clientHeight;
-
-    this._camera.aspect = width / height;
-    this._camera.updateProjectionMatrix();
-    this._renderer.setSize(width, height);
-  }
-
-  private onKeyDown(event: { which: any }) {
-    var keyCode = event.which;
-    switch (keyCode) {
-      case KeyCode.D: {
+    // M4 / C3 — event.which is deprecated; use event.code
+    switch (event.code) {
+      case 'KeyD':
         this._rewind.forward();
-
         break;
-      }
-      case KeyCode.A: {
+      case 'KeyA':
         this._rewind.back();
         break;
-      }
     }
   }
 
-  private onMouseMove(event: MouseEvent): void {
-    this._pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
-    this._pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+  private handleCanvasClick(event: MouseEvent): void {
+    // M4 — use canvas bounding rect so coordinates are correct when the
+    // sidebar overlaps part of the viewport
+    const rect = this.canvas.nativeElement.getBoundingClientRect();
+    this._pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    this._pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
-    this._raycaster.setFromCamera(this._pointer, this._camera);
-
-    const intersects = this._raycaster.intersectObject(this._mainGroup, true);
+    const intersects = this._sceneService.intersect(this._sceneService.mainGroup, this._pointer);
     if (!intersects.length) return;
 
     const filter = intersects.filter(
@@ -169,15 +121,19 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
     this._focus.set(filter[0].object);
   }
+  //#endregion
 
-  private handleStepNumber() {
-    this._mainGroup.children.forEach((x) =>
+  //#region Step rendering
+  private handleStepNumber(): void {
+    this._sceneService.mainGroup.children.forEach((x) =>
       this.checkVisibility(x, x.userData as RenderedController),
     );
+    this._sceneService.markDirty();
   }
 
-  private checkVisibility(obj: THREE.Object3D, data: RenderedController) {
-    if (!data || _.isEmpty(data)) {
+  private checkVisibility(obj: THREE.Object3D, data: RenderedController): void {
+    // userData is {} (empty Object3D) when no RenderedController has been assigned
+    if (!data || !('id' in data)) {
       obj.visible = true;
       return;
     }
@@ -188,89 +144,62 @@ export class CanvasComponent implements OnInit, OnDestroy {
       this.checkVisibility(x, x.userData as RenderedController),
     );
   }
+  //#endregion
 
-  //#endregion THREE
-
-  //#region Models
-  private load() {
+  //#region Scene construction
+  private load(): void {
     if (!this._context.project) return;
 
-    this._scene.clear();
-
-    const mainGroup = new THREE.Object3D();
-    this._scene.add(mainGroup);
-    this._mainGroup = mainGroup;
+    const mainGroup = this._sceneService.resetMainGroup();
 
     this.setScene(mainGroup, this._context.project);
+
     const data = this.getMinMax(this._context.project);
 
-    this._camera.position.x = data.means.width * 2;
-    this._camera.position.y = data.maxHeight * 1.25;
-    this._camera.position.z = data.means.depth * 2;
-
-    this._camera.lookAt(
-      new THREE.Vector3(
-        data.massCenter.x,
-        data.massCenter.y,
-        data.massCenter.z,
-      ),
+    this._sceneService.camera.position.x = data.means.width * 2;
+    this._sceneService.camera.position.y = data.maxHeight * 1.25;
+    this._sceneService.camera.position.z = data.means.depth * 2;
+    this._sceneService.camera.lookAt(
+      new THREE.Vector3(data.massCenter.x, data.massCenter.y, data.massCenter.z),
     );
 
     this.addGrid(data);
-
     this.addLight();
 
+    this._sceneService.markDirty();
     this._events.get(AppEvent.RENDERED).next();
   }
 
-  private addGrid(data: IScene) {
-    let size = Math.floor(Math.max(data.means.width, data.means.depth));
+  private addGrid(data: IScene): void {
+    const size = Math.floor(Math.max(data.means.width, data.means.depth));
 
-    let grid = new THREE.GridHelper(
+    const grid = new THREE.GridHelper(
       size * 2,
       size / this._constants.GRID_SPACING,
       0x42a5f5,
       0x42a5f5,
     );
+    grid.position.set(data.massCenter.x, data.massCenter.y, data.massCenter.z);
+    this._sceneService.addToScene(grid);
 
-    grid.position.x = data.massCenter.x;
-    grid.position.y = data.massCenter.y;
-    grid.position.z = data.massCenter.z;
-
-    this._scene.add(grid);
-
-    size = data.maxHeight + data.maxHeight * 0.1;
-    const axesHelper = new THREE.AxesHelper(size);
-
-    this._scene.add(axesHelper);
+    const axisSize = data.maxHeight + data.maxHeight * 0.1;
+    this._sceneService.addToScene(new THREE.AxesHelper(axisSize));
 
     const geometryParameters = { size: 15, depth: 2 } as TextGeometryParameters;
     this._text.addTo(
-      this._scene,
-      {
-        label: 'Width',
-        position: { x: size, y: 0, z: 0 },
-        geometryParameters,
-      },
-      {
-        label: 'Height',
-        position: { x: 0, y: size, z: 0 },
-        geometryParameters,
-      },
-      {
-        label: 'Depth',
-        position: { x: 0, y: 0, z: size },
-        geometryParameters,
-      },
+      this._sceneService.scene,
+      { label: 'Width', position: { x: axisSize, y: 0, z: 0 }, geometryParameters },
+      { label: 'Height', position: { x: 0, y: axisSize, z: 0 }, geometryParameters },
+      { label: 'Depth', position: { x: 0, y: 0, z: axisSize }, geometryParameters },
     );
   }
 
-  private addLight() {
-    var ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-    this._scene.add(ambientLight);
+  private addLight(): void {
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    this._sceneService.addToScene(ambientLight);
   }
 
-  private setScene(parent: THREE.Object3D, data: Project) {
+  private setScene(parent: THREE.Object3D, data: Project): void {
     data.areas.forEach((c) => {
       const container = this.drawContainer(parent, c);
       c.setObj3D(container.obj3d);
@@ -280,12 +209,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
         box.obj3d.userData = item;
         container.obj3d.add(box.obj3d);
 
-        const geometryParameters = {
-          size: 15,
-          depth: 2,
-        } as TextGeometryParameters;
-        const offset = -(geometryParameters?.size ?? 1) / 2;
-
+        const geometryParameters = { size: 15, depth: 2 } as TextGeometryParameters;
+        const offset = -(geometryParameters.size ?? 1) / 2;
         this._text.addTo(box.obj3d, {
           label: item.globalStep.toString(),
           position: { x: offset, y: offset, z: offset },
@@ -298,47 +223,23 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   private getMinMax(data: Project): IScene {
-    const min = {
-      width: _.chain(data.areas)
-        .map((x) => x.position.x)
-        .min()
-        .value(),
-      height: _.chain(data.areas)
-        .map((x) => x.position.y)
-        .min()
-        .value(),
-      depth: _.chain(data.areas)
-        .map((x) => x.position.z)
-        .min()
-        .value(),
+    const positions = data.areas.map((x) => x.position);
+    const heights = data.areas.map((x) => x.means.height);
+
+    const min: IMeasurements = {
+      width: Math.min(...positions.map((p) => p.x)),
+      height: Math.min(...positions.map((p) => p.y)),
+      depth: Math.min(...positions.map((p) => p.z)),
     };
 
-    const max = {
-      width: _.chain(data.areas)
-        .map((x) => x.position.x)
-        .max()
-        .value(),
-      height: _.chain(data.areas)
-        .map((x) => x.position.y)
-        .max()
-        .value(),
-      depth: _.chain(data.areas)
-        .map((x) => x.position.z)
-        .max()
-        .value(),
+    const max: IMeasurements = {
+      width: Math.max(...positions.map((p) => p.x)),
+      height: Math.max(...positions.map((p) => p.y)),
+      depth: Math.max(...positions.map((p) => p.z)),
     };
 
-    const maxHeight = _.chain(data.areas)
-      .map((x) => x.means.height)
-      .max()
-      .value();
-
-    const massCenter: IPosition = {
-      x: max.width,
-      y: max.height,
-      z: max.depth,
-    };
-
+    const maxHeight = Math.max(...heights);
+    const massCenter: IPosition = { x: max.width, y: max.height, z: max.depth };
     const means: IMeasurements = {
       width: Math.abs(max.width) + Math.abs(min.width),
       height: Math.abs(max.height) + Math.abs(min.height),
@@ -347,26 +248,18 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
     return { minMeans: min, maxMeans: max, means, maxHeight, massCenter };
   }
-  //#endregion Models
+  //#endregion
 
-  //#region
+  //#region Drawing helpers
   private getFixedData(item: RenderedController) {
     const { x, y, z } = item.position;
     const { width, height, depth } = item.fixedMeans;
     return { position: { x, y, z }, means: { width, height, depth } };
   }
 
-  private getFixedDataOnParent(
-    item: RenderedController,
-    parent?: RenderedController,
-  ) {
+  private getFixedDataOnParent(item: RenderedController, parent?: RenderedController) {
     const fix = this.getFixedData(item);
-
-    const position: IPosition = {
-      x: fix.position.x,
-      y: fix.position.y,
-      z: fix.position.z,
-    };
+    const position: IPosition = { ...fix.position };
 
     position.x += fix.means.width / 2;
     position.y += fix.means.height / 2;
@@ -384,13 +277,11 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   private drawWire(item: RenderedController) {
     const fix = this.getFixedData(item);
-
-    var mat = new THREE.LineBasicMaterial({ color: item.color });
-    var geometry = new THREE.EdgesGeometry(
+    const mat = new THREE.LineBasicMaterial({ color: item.color });
+    const geometry = new THREE.EdgesGeometry(
       new BoxGeometry(fix.means.width, fix.means.height, fix.means.depth),
     );
-
-    var obj3d = new THREE.LineSegments(geometry, mat);
+    const obj3d = new THREE.LineSegments(geometry, mat);
 
     obj3d.uuid = item.id;
     obj3d.name = item.name;
@@ -403,8 +294,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   private drawBox(item: RenderedController, parent?: RenderedController) {
     const data = this.getFixedDataOnParent(item, parent);
-
-    var mat = new THREE.MeshStandardMaterial({
+    const mat = new THREE.MeshStandardMaterial({
       color: item.color,
       opacity: this._constants.BOX_OPACITY,
       metalness: this._constants.BOX_METALNESS,
@@ -416,25 +306,19 @@ export class CanvasComponent implements OnInit, OnDestroy {
     });
     mat.color.convertSRGBToLinear();
 
-    var geometry = new BoxGeometry(
-      data.means.width,
-      data.means.height,
-      data.means.depth,
-    );
-    var obj3d = new THREE.Mesh(geometry, mat);
+    const geometry = new BoxGeometry(data.means.width, data.means.height, data.means.depth);
+    const obj3d = new THREE.Mesh(geometry, mat);
 
     obj3d.uuid = item.id;
     obj3d.name = item.name;
-    obj3d.position.x = data.position.x;
-    obj3d.position.y = data.position.y;
-    obj3d.position.z = data.position.z;
+    obj3d.position.set(data.position.x, data.position.y, data.position.z);
 
     return { obj3d, ...data };
   }
 
   private drawContainer(parent: THREE.Object3D, item: RenderedController) {
     item.setColor('#F00');
-    let fixed = this.drawWire(item);
+    const fixed = this.drawWire(item);
     parent.add(fixed.obj3d);
 
     const clone = new RenderedController('', '', '', {
@@ -446,7 +330,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     });
     clone.setColor('#FF0');
 
-    let normal = this.drawWire(clone);
+    const normal = this.drawWire(clone);
     parent.add(normal.obj3d);
 
     return fixed;

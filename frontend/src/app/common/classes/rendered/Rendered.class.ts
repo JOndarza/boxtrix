@@ -4,10 +4,19 @@ import {
   IMeasurements,
   IPosition,
 } from '@common/dtos/Data.interface';
-import { ColorRepresentation, Object3D } from 'three';
 
 import { Measurements, Position } from './Bases.class';
 import { Rotation } from '@common/enums/Rotation.enum';
+
+// M7 — Three.js types removed from this domain class.
+// ColorValue covers the string/number cases used throughout the codebase.
+// ISceneObject is a structural alias so canvas code can pass THREE.Object3D
+// without importing Three.js here.
+type ColorValue = string | number;
+
+interface ISceneObject {
+  userData: unknown;
+}
 
 export class Rendered implements IIdentification {
   protected _id!: string;
@@ -45,12 +54,12 @@ export class Rendered implements IIdentification {
     return this._fixedMeans;
   }
 
-  protected _color!: ColorRepresentation;
+  protected _color!: ColorValue;
   public get color() {
     return this._color;
   }
 
-  private _obj3D!: Object3D;
+  private _obj3D!: ISceneObject;
   public get obj3D() {
     return this._obj3D;
   }
@@ -76,7 +85,7 @@ export class Rendered implements IIdentification {
     this.setColor('#FFF');
   }
 
-  setColor(color: ColorRepresentation) {
+  setColor(color: ColorValue) {
     this._color = color;
   }
 
@@ -85,7 +94,7 @@ export class Rendered implements IIdentification {
     this.fixMeans();
   }
 
-  setObj3D(obj3D: Object3D) {
+  setObj3D(obj3D: ISceneObject) {
     obj3D.userData = this;
     this._obj3D = obj3D;
   }
@@ -106,7 +115,6 @@ export class Rendered implements IIdentification {
         means.width = this.means.height;
         means.height = this.means.depth;
         means.depth = this.means.width;
-
         break;
       case Rotation.DHW:
         means.width = this.means.depth;

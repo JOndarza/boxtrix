@@ -1,26 +1,18 @@
-import {
-  HttpHandler,
-  HttpInterceptor,
-  HttpRequest,
-} from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { HttpInterceptorFn } from '@angular/common/http';
+import { inject } from '@angular/core';
 import { CommunicationService } from '@common/services/communication.service';
 
-@Injectable()
-export class CustomHttpInterceptor implements HttpInterceptor {
-  constructor(private _communication: CommunicationService) {}
+export const httpInterceptor: HttpInterceptorFn = (req, next) => {
+  const communication = inject(CommunicationService);
+  const headers: Record<string, string> = {};
 
-  intercept(req: HttpRequest<any>, next: HttpHandler) {
-    const headers: any = {};
+  const auth = communication.auth;
+  if (auth) headers[communication.ID_SESSION] = auth;
 
-    const auth = this._communication.auth;
-    if (auth) headers[this._communication.ID_SESSION] = auth;
+  const clone = req.clone({
+    setHeaders: headers,
+    url: [communication.api, req.url].join('/'),
+  });
 
-    const clone = req.clone({
-      setHeaders: headers,
-      url: [this._communication.api, req.url].join('/'),
-    });
-
-    return next.handle(clone);
-  }
-}
+  return next(clone);
+};
