@@ -1,59 +1,100 @@
 .app-footer {
-    color: white;
-
-    display: block;
-    position: fixed;
-
-    bottom: 0;
-    right: 0;
-    padding: 1rem;
-
-    width: 100%;
+  color: white;
+  display: block;
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  padding: 1rem;
+  width: 100%;
 }
 
-
 .step-controls {
-    width: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+
+  // H2 — step counter so users always know where they are in the sequence
+  .step-indicator {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+    letter-spacing: 0.05em;
+  }
+
+  .step-buttons {
     display: flex;
     flex-direction: row;
-    justify-content: center;
+    align-items: center;
+    gap: 0.25rem;
 
-    .step-buttons {
-        display: flex;
-        flex-direction: row;
+    .step-button {
+      // M3 — 48×48px minimum touch target (Material Design guidelines)
+      min-width: 48px;
+      min-height: 48px;
+      padding: 8px;
 
-        .step-button {
-            color: white;
-            cursor: pointer;
-            background-color: transparent;
-            border: none;
-            align-items: center;
-            border-radius: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            text-align: center;
+      color: white;
+      cursor: pointer;
+      background-color: transparent;
+      border: none;
+      border-radius: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      transition: background 0.15s ease;
 
-            &.main {
-                ng-icon {
-                    --ng-icon__size: 3rem !important;
-                }
-            }
+      &:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.1);
+      }
 
-            &.secundary {
-                ng-icon {
-                    --ng-icon__size: 2.5rem !important;
-                }
-            }
+      &:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+      }
 
-            ng-icon {
-                border: 1px solid white;
-                border-radius: 50px;
-            }
-
-            .step-button-text {
-                padding-top: 0.75rem;
-            }
+      &.main {
+        ng-icon {
+          --ng-icon__size: 3rem !important;
         }
+      }
+
+      // L2 — fixed typo: "secundary" → "secondary"
+      &.secondary {
+        ng-icon {
+          --ng-icon__size: 2.5rem !important;
+        }
+      }
+
+      ng-icon {
+        border: 1px solid white;
+        border-radius: 50px;
+      }
+
+      .step-button-text {
+        padding-top: 0.4rem;
+        font-size: 0.7rem;
+      }
     }
+  }
+}
+
+// M3 — stack vertically on very narrow screens
+@media (max-width: 480px) {
+  .step-controls .step-buttons {
+    gap: 0;
+
+    .step-button {
+      min-width: 40px;
+      min-height: 40px;
+      padding: 4px;
+    }
+
+    .step-button-text {
+      display: none;
+    }
+  }
 }

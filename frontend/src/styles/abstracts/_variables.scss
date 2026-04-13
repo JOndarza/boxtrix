@@ -1,6 +1,7 @@
 :root {
-    --background-color: #000;
-    --sidebar-width: 200px;
+  // L4 — #121212 instead of pure black reduces eye strain and halos
+  --background-color: #121212;
+  --sidebar-width: 200px;
 }
 
 $sidebar-width: var(--sidebar-width);

@@ -2,33 +2,77 @@
   <h3>BoxTrix</h3>
 </div>
 
-<div class="sidebar-body">
-  <ng-template
-    [ngTemplateOutlet]="listTemp"
-    [ngTemplateOutletContext]="{context: { title: 'Fitted', collection: detail.fitted }}"
-  ></ng-template>
-</div>
+<nav class="sidebar-body" aria-label="Packed items">
+  @if (isLoading()) {
+    <div class="empty-state" aria-live="polite" aria-busy="true">
+      <span class="loading-spinner" aria-hidden="true"></span>
+      <p>Processing…</p>
+    </div>
+  } @else if (detail.fitted?.length || detail.unfitted?.length) {
+
+    @if (detail.fitted?.length) {
+      <h3>Fitted</h3>
+      <h5>{{ detail.fitted.length }} {{ detail.fitted.length === 1 ? 'item' : 'items' }}</h5>
+      <ul class="sequence" role="listbox" aria-label="Fitted items">
+        @for (item of detail.fitted; track item.id) {
+          <li
+            class="sequence-item"
+            role="option"
+            tabindex="0"
+            [class.selected]="item.selected"
+            [attr.aria-selected]="item.selected"
+            (click)="clicked(item)"
+            (keydown.enter)="clicked(item)"
+            (keydown.space)="$event.preventDefault(); clicked(item)"
+          >
+            <div class="item-row">
+              <span class="color-swatch" [style.background]="colorOf(item)" aria-hidden="true"></span>
+              <span class="item-name">{{ item.name }}</span>
+            </div>
+          </li>
+        }
+      </ul>
+    }
+
+    @if (detail.unfitted?.length) {
+      <h3 class="unfitted-title">Unfitted</h3>
+      <h5 class="unfitted-count">
+        {{ detail.unfitted.length }} {{ detail.unfitted.length === 1 ? 'item' : 'items' }} could not be placed
+      </h5>
+      <ul class="sequence unfitted-list" role="list" aria-label="Unfitted items">
+        @for (item of detail.unfitted; track item.id) {
+          <li class="sequence-item unfitted-item">
+            <div class="item-row">
+              <span class="item-name">{{ item.name }}</span>
+            </div>
+          </li>
+        }
+      </ul>
+    }
+
+  } @else {
+    <div class="empty-state">
+      <p class="empty-title">No data loaded</p>
+      <p class="empty-hint">Upload a <strong>.json</strong> file to visualise optimal box placement in 3D.</p>
+    </div>
+  }
+
+  @if (uploadError()) {
+    <p class="upload-error" role="alert">{{ uploadError() }}</p>
+  }
+</nav>
 
 <div class="sidebar-footer">
-  <input type="file" (change)="load($event)" />
+  <label for="file-upload" class="upload-label" [class.upload-label--loading]="isLoading()">
+    <span>{{ isLoading() ? 'Processing…' : 'Upload JSON' }}</span>
+  </label>
+  <input
+    id="file-upload"
+    type="file"
+    accept=".json"
+    class="visually-hidden"
+    [disabled]="isLoading()"
+    (change)="load($event)"
+    aria-label="Upload JSON configuration file"
+  />
 </div>
-
-<ng-template #listTemp let-context="context">
-  @if (context.collection?.length) {
-
-  <h3>{{context.title}}</h3>
-  <h5>{{context.collection?.length}} item's</h5>
-
-  <ul class="sequence">
-    @for (item of context.collection; track $index) {
-    <li
-      class="sequence-item"
-      [class.selected]="item.selected"
-      (click)="clicked(item)"
-    >
-      <div>{{item.name}}</div>
-    </li>
-    }
-  </ul>
-  }
-</ng-template>
