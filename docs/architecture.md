@@ -52,7 +52,7 @@ Typed wrapper around `process.env`. `getVar()` returns `string | undefined`.
 | `common/services/` | Utilities: `CommunicationService` (API URL + auth), `StorageService` (localStorage) |
 | `common/classes/rendered/` | Three.js scene objects: `Area`, `Rendered`, `RenderedController`, `Project`, `Bases` |
 | `common/dtos/` | Shared TypeScript interfaces mirroring backend contracts |
-| `shared/services/` | Cross-feature: `ProcessorService`, `ContextService`, `EventsService`, `RewindManagerService`, `FocusManagerService`, `TextManagerService`, `ConstantsService` |
+| `shared/services/` | Cross-feature: `ProcessorService`, `ContextService`, `EventsService`, `RewindManagerService`, `FocusManagerService`, `TextManagerService`, `ConstantsService`, `ThemeService`, `GraphicsService` |
 
 ## Data flow
 
@@ -77,6 +77,8 @@ User input (sidebar)
 - **Unfitted boxes**: boxes that cannot fit any area are collected into a virtual `UNFITTED` area, never silently dropped
 - **Frontend events**: `AppEvent` enum (`LOADING`, `LOADED`, `RENDERING`, `RENDERED`, `RAYCAST`, `CLICKED`) — `EventsService` provides typed `Subject<T>` per event
 - **3D selection**: `FocusManagerService.set()` fires `AppEvent.RAYCAST` with the object id; `SidebarComponent` subscribes to highlight the matching list item
+- **User preferences**: `ThemeService` and `GraphicsService` follow the same pattern — Angular `signal()` for state, direct `localStorage` for persistence (keys `boxtrix-theme` / `boxtrix-graphics`), `providedIn: 'root'`. Never use `StorageService` for preferences; keep persistence inline.
+- **WebGL quality**: `SceneService` exposes `setPixelRatio(ratio)` and `setToneMapping(mode)` for runtime quality changes. `CanvasComponent` wires `GraphicsService` signals to these methods via `effect()` guarded by `_sceneReady`. Initial settings are applied imperatively in `ngOnInit` after `init()` so the first frame renders at the saved quality.
 
 ## Dependency rules
 
