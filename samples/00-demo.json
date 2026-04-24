@@ -1,0 +1,46 @@
+{
+  "id": "demo-coleccion",
+  "name": "Demo — Colección Funko Pop y Comics",
+  "constraints": {
+    "units": "cm",
+    "stackable": true,
+    "maxStackHeight": 60
+  },
+  "areas": [
+    {
+      "id": "Estante A",
+      "width": 90,
+      "height": 45,
+      "depth": 40,
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    {
+      "id": "Estante B",
+      "width": 90,
+      "height": 45,
+      "depth": 40,
+      "x": 95,
+      "y": 0,
+      "z": 0
+    }
+  ],
+  "boxes": [
+    { "id": "Funko Pop — Spider-Man", "width": 14, "height": 19, "depth": 10, "weight": 0.3 },
+    { "id": "Funko Pop — Batman", "width": 14, "height": 19, "depth": 10, "weight": 0.3 },
+    { "id": "Funko Pop — Goku Super Saiyan", "width": 14, "height": 22, "depth": 10, "weight": 0.35 },
+    { "id": "Funko Pop — Darth Vader", "width": 14, "height": 19, "depth": 10, "weight": 0.3 },
+    { "id": "Funko Pop — Iron Man", "width": 14, "height": 19, "depth": 10, "weight": 0.3 },
+    { "id": "Funko Pop — Link (Zelda)", "width": 14, "height": 19, "depth": 10, "weight": 0.3 },
+    { "id": "Comic — Batman #1", "width": 17, "height": 26, "depth": 1, "weight": 0.15 },
+    { "id": "Comic — X-Men #1", "width": 17, "height": 26, "depth": 1, "weight": 0.15 },
+    { "id": "Comic — Amazing Spider-Man #300", "width": 17, "height": 26, "depth": 1, "weight": 0.15 },
+    { "id": "Comic — Watchmen #1", "width": 17, "height": 26, "depth": 1, "weight": 0.15 },
+    { "id": "Funko Pop — Thanos", "width": 14, "height": 22, "depth": 10, "weight": 0.4 },
+    { "id": "Caja LEGO — Millennium Falcon Mini", "width": 26, "height": 19, "depth": 6, "weight": 0.8 },
+    { "id": "Funko Pop — Mandalorian con Grogu", "width": 14, "height": 22, "depth": 10, "weight": 0.35 },
+    { "id": "Funko Pop — Deadpool", "width": 14, "height": 19, "depth": 10, "weight": 0.3 },
+    { "id": "Funko Pop — Wolverine", "width": 14, "height": 19, "depth": 10, "weight": 0.3 }
+  ]
+}

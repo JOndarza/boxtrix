@@ -1,0 +1,27 @@
+<div class="header-info" aria-label="Application info">
+  <span class="header-app-name">BoxTrix</span>
+  <span class="header-tagline">3D space optimizer</span>
+</div>
+
+<div class="header-controls">
+  <button
+    class="header-icon-btn"
+    (click)="toggleGraphicsPanel()"
+    [class.active]="isPanelOpen()"
+    [attr.aria-pressed]="isPanelOpen()"
+    title="Configuración gráfica"
+    aria-label="Configuración gráfica"
+  >
+    <ng-icon name="matSettings" [size]="'1rem'"></ng-icon>
+  </button>
+
+  <button
+    class="header-icon-btn theme-toggle"
+    (click)="toggleTheme()"
+    [attr.aria-label]="isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
+    [attr.aria-pressed]="!isDark()"
+    [title]="isDark() ? 'Light mode' : 'Dark mode'"
+  >
+    {{ isDark() ? '☀' : '☾' }}
+  </button>
+</div>

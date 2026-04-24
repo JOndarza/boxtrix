@@ -1,0 +1,40 @@
+{
+  "id": "edge-high-density",
+  "name": "Edge case — Many small items in a single area",
+  "constraints": {
+    "units": "cm",
+    "stackable": true,
+    "maxStackHeight": 40
+  },
+  "areas": [
+    {
+      "id": "Estante de comics",
+      "width": 90,
+      "height": 30,
+      "depth": 20,
+      "x": 0,
+      "y": 0,
+      "z": 0
+    }
+  ],
+  "boxes": [
+    { "id": "Comic #001", "width": 17, "height": 26, "depth": 1, "weight": 0.15 },
+    { "id": "Comic #002", "width": 17, "height": 26, "depth": 1, "weight": 0.15 },
+    { "id": "Comic #003", "width": 17, "height": 26, "depth": 1, "weight": 0.15 },
+    { "id": "Comic #004", "width": 17, "height": 26, "depth": 1, "weight": 0.15 },
+    { "id": "Comic #005", "width": 17, "height": 26, "depth": 1, "weight": 0.15 },
+    { "id": "Comic #006", "width": 17, "height": 26, "depth": 1, "weight": 0.15 },
+    { "id": "Comic #007", "width": 17, "height": 26, "depth": 1, "weight": 0.15 },
+    { "id": "Comic #008", "width": 17, "height": 26, "depth": 1, "weight": 0.15 },
+    { "id": "Comic #009", "width": 17, "height": 26, "depth": 1, "weight": 0.15 },
+    { "id": "Comic #010", "width": 17, "height": 26, "depth": 1, "weight": 0.15 },
+    { "id": "Comic #011", "width": 17, "height": 26, "depth": 1, "weight": 0.15 },
+    { "id": "Comic #012", "width": 17, "height": 26, "depth": 1, "weight": 0.15 },
+    { "id": "Comic #013", "width": 17, "height": 26, "depth": 1, "weight": 0.15 },
+    { "id": "Comic #014", "width": 17, "height": 26, "depth": 1, "weight": 0.15 },
+    { "id": "Comic #015", "width": 17, "height": 26, "depth": 1, "weight": 0.15 },
+    { "id": "Comic #016 — grueso", "width": 17, "height": 26, "depth": 3, "weight": 0.4 },
+    { "id": "Comic #017 — grueso", "width": 17, "height": 26, "depth": 3, "weight": 0.4 },
+    { "id": "Separador de acrílico", "width": 17, "height": 26, "depth": 0.3, "weight": 0.1 }
+  ]
+}

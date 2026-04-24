@@ -1,0 +1,56 @@
+@if (hasData) {
+  <div class="stats-section">
+    <span class="stats-label">Volumen disponible</span>
+    <span class="stats-value">
+      {{ availableVol | number:'1.0-0' }}
+      <span class="stats-unit">{{ units }}³</span>
+    </span>
+  </div>
+
+  <div class="stats-divider"></div>
+
+  <div class="stats-section">
+    <span class="stats-label">Ocupado</span>
+    <span class="stats-value stats-value--accent">
+      {{ occupiedVol | number:'1.0-0' }}
+      <span class="stats-unit">{{ units }}³</span>
+    </span>
+  </div>
+
+  <div class="stats-section stats-section--bar">
+    <div class="stats-bar-track">
+      <div class="stats-bar-fill" [style.width.%]="efficiencyPct"></div>
+    </div>
+    <span class="stats-pct">{{ efficiencyPct }}%</span>
+  </div>
+
+  <div class="stats-section">
+    <span class="stats-label">Desperdiciado</span>
+    <span class="stats-value stats-value--muted">
+      {{ wastedVol | number:'1.0-0' }}
+      <span class="stats-unit">{{ units }}³</span>
+    </span>
+  </div>
+
+  <div class="stats-divider"></div>
+
+  <div class="stats-section">
+    <span class="stats-label">Ítems colocados</span>
+    <span class="stats-value">{{ fittedCount }}</span>
+  </div>
+
+  @if (unfittedCount > 0) {
+    <div class="stats-section">
+      <span class="stats-label">Sin colocar</span>
+      <span class="stats-value stats-value--unfit">{{ unfittedCount }}</span>
+    </div>
+
+    <div class="stats-section">
+      <span class="stats-label">Vol. sin colocar</span>
+      <span class="stats-value stats-value--unfit">
+        {{ unfittedVol | number:'1.0-0' }}
+        <span class="stats-unit">{{ units }}³</span>
+      </span>
+    </div>
+  }
+}

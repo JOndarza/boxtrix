@@ -1,0 +1,27 @@
+{
+  "id": "edge-single-item",
+  "name": "Edge case — Single item in a single area",
+  "constraints": {
+    "units": "cm"
+  },
+  "areas": [
+    {
+      "id": "Vitrina pequeña",
+      "width": 30,
+      "height": 40,
+      "depth": 20,
+      "x": 0,
+      "y": 0,
+      "z": 0
+    }
+  ],
+  "boxes": [
+    {
+      "id": "Funko Pop — Edición especial",
+      "width": 14,
+      "height": 22,
+      "depth": 10,
+      "weight": 0.35
+    }
+  ]
+}

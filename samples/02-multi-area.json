@@ -1,0 +1,67 @@
+{
+  "id": "edge-multi-area",
+  "name": "Edge case — Multiple areas at different positions (shelf unit + cabinet)",
+  "constraints": {
+    "units": "cm",
+    "stackable": true,
+    "maxStackHeight": 80
+  },
+  "areas": [
+    {
+      "id": "Cajón inferior",
+      "width": 60,
+      "height": 15,
+      "depth": 50,
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    {
+      "id": "Estante medio",
+      "width": 120,
+      "height": 40,
+      "depth": 35,
+      "x": 0,
+      "y": 20,
+      "z": 0
+    },
+    {
+      "id": "Estante superior",
+      "width": 120,
+      "height": 30,
+      "depth": 35,
+      "x": 0,
+      "y": 65,
+      "z": 0
+    },
+    {
+      "id": "Vitrina lateral",
+      "width": 45,
+      "height": 80,
+      "depth": 30,
+      "x": 125,
+      "y": 0,
+      "z": 0
+    }
+  ],
+  "boxes": [
+    { "id": "Funko Pop — Luke Skywalker", "width": 14, "height": 19, "depth": 10, "weight": 0.3 },
+    { "id": "Funko Pop — Darth Vader", "width": 14, "height": 19, "depth": 10, "weight": 0.3 },
+    { "id": "Funko Pop — Yoda", "width": 14, "height": 19, "depth": 10, "weight": 0.3 },
+    { "id": "Funko Pop — Chewbacca", "width": 14, "height": 22, "depth": 10, "weight": 0.4 },
+    { "id": "Funko Pop — Han Solo", "width": 14, "height": 19, "depth": 10, "weight": 0.3 },
+    { "id": "Funko Pop — Leia", "width": 14, "height": 19, "depth": 10, "weight": 0.3 },
+    { "id": "Funko Pop — R2D2", "width": 12, "height": 16, "depth": 10, "weight": 0.25 },
+    { "id": "Funko Pop — C-3PO", "width": 14, "height": 22, "depth": 10, "weight": 0.35 },
+    { "id": "Funko Pop — Rey", "width": 14, "height": 19, "depth": 10, "weight": 0.3 },
+    { "id": "Funko Pop — Kylo Ren", "width": 14, "height": 19, "depth": 10, "weight": 0.3 },
+    { "id": "Comic — Star Wars #1", "width": 17, "height": 26, "depth": 1, "weight": 0.15 },
+    { "id": "Comic — Star Wars #2", "width": 17, "height": 26, "depth": 1, "weight": 0.15 },
+    { "id": "Comic — Star Wars #3", "width": 17, "height": 26, "depth": 1, "weight": 0.15 },
+    { "id": "LEGO — Millennium Falcon Mini", "width": 26, "height": 19, "depth": 6, "weight": 0.8 },
+    { "id": "LEGO — X-Wing Mini", "width": 22, "height": 16, "depth": 6, "weight": 0.65 },
+    { "id": "LEGO — Death Star Mini", "width": 20, "height": 20, "depth": 20, "weight": 1.2 },
+    { "id": "Figura — Stormtrooper 1:6", "width": 18, "height": 35, "depth": 14, "weight": 1.5 },
+    { "id": "Figura — Darth Vader 1:6", "width": 18, "height": 38, "depth": 14, "weight": 1.8 }
+  ]
+}

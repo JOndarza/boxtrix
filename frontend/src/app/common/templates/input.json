@@ -1,0 +1,63 @@
+{
+    "units": "cm",
+    "containers": [
+        {
+            "name": "STAGE1",
+            "detail": "Details STAGE1",
+            "width": 150,
+            "height": 240,
+            "depth": 215,
+            "x": 0,
+            "y": 0,
+            "z": 0
+        },
+        {
+            "name": "STAGE2",
+            "detail": "Details STAGE2",
+            "width": 138,
+            "height": 240,
+            "depth": 135,
+            "x": -150,
+            "y": 0,
+            "z": 80
+        }
+    ],
+    "boxes": [
+        {
+            "name": "BOX1",
+            "width": 61.3,
+            "height": 31.5,
+            "depth": 80.8
+        },
+        {
+            "name": "BOX2",
+            "width": 72,
+            "height": 35,
+            "depth": 82.3
+        },
+        {
+            "name": "BOX3",
+            "width": 72,
+            "height": 48,
+            "depth": 82.3
+        },
+        {
+            "name": "BOX4",
+            "width": 73,
+            "height": 48,
+            "depth": 86.3
+        },
+        {
+            "name": "BOX5",
+            "width": 72.5,
+            "height": 46,
+            "depth": 88
+        },
+        {
+            "name": "BOX6",
+            "width": 78.7,
+            "height": 38.5,
+            "depth": 86.7
+        }
+    ]
+}

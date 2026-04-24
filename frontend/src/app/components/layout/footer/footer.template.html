@@ -1,0 +1,71 @@
+<span class="transport-counter" aria-live="polite" aria-label="Current step">
+  @if (hasData) {
+    {{ step | number:'2.0-0' }} / {{ maxStep | number:'2.0-0' }}
+  } @else {
+    &ndash;&ndash; / &ndash;&ndash;
+  }
+</span>
+
+<div class="transport-scrubber">
+  <input
+    type="range"
+    [min]="1"
+    [max]="hasData ? maxStep : 1"
+    [value]="hasData ? step : 1"
+    [disabled]="!hasData"
+    [style.--scrubber-pct]="scrubberPct + '%'"
+    (input)="seek($event)"
+    aria-label="Step scrubber"
+    [attr.aria-valuemin]="1"
+    [attr.aria-valuemax]="maxStep"
+    [attr.aria-valuenow]="step"
+  />
+</div>
+
+<div class="transport-buttons" role="group" aria-label="Playback controls">
+  <button
+    class="transport-btn"
+    [disabled]="!hasData"
+    (click)="first()"
+    aria-label="Go to first step"
+  >
+    <ng-icon name="matSkipPrevious" aria-hidden="true"></ng-icon>
+  </button>
+
+  <button
+    class="transport-btn"
+    [disabled]="!hasData"
+    (click)="back()"
+    aria-label="Go to previous step"
+  >
+    <ng-icon name="matFastRewind" aria-hidden="true"></ng-icon>
+  </button>
+
+  <button
+    class="transport-btn transport-btn--play"
+    [disabled]="!hasData"
+    (click)="play()"
+    [attr.aria-label]="isPlaying() ? 'Pause auto-play' : 'Start auto-play'"
+    [attr.aria-pressed]="isPlaying()"
+  >
+    <ng-icon [name]="isPlaying() ? 'matPause' : 'matPlayArrow'" aria-hidden="true"></ng-icon>
+  </button>
+
+  <button
+    class="transport-btn"
+    [disabled]="!hasData"
+    (click)="forward()"
+    aria-label="Go to next step"
+  >
+    <ng-icon name="matFastForward" aria-hidden="true"></ng-icon>
+  </button>
+
+  <button
+    class="transport-btn"
+    [disabled]="!hasData"
+    (click)="last()"
+    aria-label="Go to last step"
+  >
+    <ng-icon name="matSkipNext" aria-hidden="true"></ng-icon>
+  </button>
+</div>

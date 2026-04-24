@@ -1,0 +1,62 @@
+@if (isPanelOpen()) {
+  <div class="graphics-backdrop" (click)="close()" aria-hidden="true"></div>
+
+  <div class="graphics-panel" role="dialog" aria-label="Configuración de gráficos">
+    <div class="graphics-panel-header">
+      <span class="graphics-panel-title">Calidad Gráfica</span>
+    </div>
+
+    <div class="graphics-panel-body">
+
+      <div class="graphics-row">
+        <span class="graphics-label" id="resolution-label">Resolución</span>
+        <div class="graphics-presets" role="group" aria-labelledby="resolution-label">
+          @for (opt of presetOptions; track opt.value) {
+            <button
+              class="preset-btn"
+              [class.active]="settings().pixelRatioPreset === opt.value"
+              [attr.aria-pressed]="settings().pixelRatioPreset === opt.value"
+              (click)="selectPreset(opt.value)"
+            >{{ opt.label }}</button>
+          }
+        </div>
+      </div>
+
+      <div class="graphics-row">
+        <label class="graphics-label" for="tone-mapping-select">Mapeo de tonos</label>
+        <select
+          id="tone-mapping-select"
+          class="graphics-select"
+          [value]="settings().toneMapping"
+          (change)="selectToneMapping($event)"
+        >
+          @for (opt of toneMappingOptions; track opt.value) {
+            <option [value]="opt.value" [selected]="opt.value === settings().toneMapping">{{ opt.label }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="graphics-row graphics-row--slider">
+        <div class="graphics-row-top">
+          <label class="graphics-label" for="ambient-intensity">Intensidad de luz</label>
+          <span class="graphics-value-badge" aria-live="polite">
+            {{ formatIntensity(settings().ambientIntensity) }}
+          </span>
+        </div>
+        <input
+          id="ambient-intensity"
+          type="range"
+          class="graphics-slider"
+          min="0.1"
+          max="2.0"
+          step="0.05"
+          [value]="settings().ambientIntensity"
+          [style.--slider-pct]="((settings().ambientIntensity - 0.1) / 1.9 * 100) + '%'"
+          (input)="onIntensityInput($event)"
+          aria-label="Intensidad de luz ambiental"
+        />
+      </div>
+
+    </div>
+  </div>
+}
