@@ -28,6 +28,7 @@ export class RewindManagerService {
     this._step = stepNumber;
     this._minStepNumber = minStepNumber;
     this._maxStepNumber = maxStepNumber;
+    this.updated.next();
   }
 
   toFirst(): void {

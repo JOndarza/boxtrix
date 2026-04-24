@@ -53,6 +53,8 @@ export class ProcessorService {
     } catch (error) {
       console.timeEnd(labelTime);
       console.error('Sort failed:', error);
+      const msg = error instanceof Error ? error.message : 'Backend error — check the JSON and try again.';
+      this._events.get(AppEvent.LOAD_ERROR).next(msg);
     }
   }
 
@@ -76,7 +78,7 @@ export class ProcessorService {
 
   private handle(input: IInput, output: IOutput): Project {
     const areas = this.mapAreas(input, output);
-    return new Project(areas);
+    return new Project(areas, input.constraints?.units ?? 'cm');
   }
 
   private mapAreas(input: IInput, output: IOutput): Area[] {

@@ -5,6 +5,7 @@ import { Project } from '@common/classes/rendered/Project.class';
 export enum AppEvent {
   LOADING = 'LOADING',
   LOADED = 'LOADED',
+  LOAD_ERROR = 'LOAD_ERROR',
 
   RENDERING = 'RENDERING',
   RENDERED = 'RENDERED',
@@ -16,6 +17,7 @@ export enum AppEvent {
 type EventPayloadMap = {
   [AppEvent.LOADING]: void;
   [AppEvent.LOADED]: Project;
+  [AppEvent.LOAD_ERROR]: string;
   [AppEvent.RENDERING]: void;
   [AppEvent.RENDERED]: void;
   [AppEvent.RAYCAST]: string;

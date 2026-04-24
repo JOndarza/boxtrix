@@ -8,13 +8,14 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgIconComponent } from '@ng-icons/core';
 import { RewindManagerService } from '@shared/services/RewindManager.service';
 
 @Component({
   standalone: true,
-  imports: [NgIconComponent],
+  imports: [NgIconComponent, DecimalPipe],
   selector: 'app-footer',
   templateUrl: './footer.template.html',
   host: { class: 'app-footer' },
@@ -37,6 +38,11 @@ export class FooterComponent implements OnInit, OnDestroy {
   }
   get hasData() {
     return this._rewind.hasData;
+  }
+
+  get scrubberPct(): number {
+    if (!this.hasData || this.maxStep <= 1) return 0;
+    return Math.round(((this.step - 1) / (this.maxStep - 1)) * 100);
   }
 
   ngOnInit(): void {
@@ -74,6 +80,11 @@ export class FooterComponent implements OnInit, OnDestroy {
 
   last(): void {
     this._rewind.toLast();
+  }
+
+  seek(event: Event): void {
+    const value = +(event.target as HTMLInputElement).value;
+    this._rewind.set(value, 1, this.maxStep);
   }
 
   private stopPlay(): void {

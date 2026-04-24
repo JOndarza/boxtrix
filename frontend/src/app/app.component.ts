@@ -1,18 +1,26 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { CommunicationService } from '@common/services/communication.service';
 import { environment } from 'environment/environment';
 
 import { CanvasComponent } from './components/canvas/canvas.component';
 import { FooterComponent } from './components/layout/footer/footer.component';
+import { GraphicsSettingsComponent } from './components/layout/graphics-settings/graphics-settings.component';
 import { HeaderComponent } from './components/layout/header/header.component';
 import { SidebarComponent } from './components/layout/sidebar/sidebar.component';
-
-// https://fonts.google.com/icons?icon.query=skip
-// https://ng-icons.github.io/ng-icons/#/browse-icons
+import { StatsComponent } from './components/layout/stats/stats.component';
+import { WelcomeComponent } from './components/layout/welcome/welcome.component';
 
 @Component({
   standalone: true,
-  imports: [HeaderComponent, FooterComponent, SidebarComponent, CanvasComponent],
+  imports: [
+    HeaderComponent,
+    FooterComponent,
+    GraphicsSettingsComponent,
+    SidebarComponent,
+    StatsComponent,
+    CanvasComponent,
+    WelcomeComponent,
+  ],
   selector: 'app-root',
   templateUrl: './app.template.html',
   host: { class: 'app-root' },
@@ -20,6 +28,8 @@ import { SidebarComponent } from './components/layout/sidebar/sidebar.component'
 })
 export class AppComponent {
   private readonly _communication = inject(CommunicationService);
+
+  readonly showWelcome = signal(true);
 
   constructor() {
     this._communication.setOriginAPI(environment.originApi);

@@ -6,7 +6,9 @@ import { provideIcons, provideNgIconsConfig } from '@ng-icons/core';
 import {
   matFastForward,
   matFastRewind,
+  matPause,
   matPlayArrow,
+  matSettings,
   matSkipNext,
   matSkipPrevious,
 } from '@ng-icons/material-icons/baseline';
@@ -18,7 +20,7 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideHttpClient(withInterceptors([httpInterceptor])),
-    provideIcons({ matSkipPrevious, matFastRewind, matPlayArrow, matFastForward, matSkipNext }),
+    provideIcons({ matSkipPrevious, matFastRewind, matPlayArrow, matPause, matFastForward, matSkipNext, matSettings }),
     provideNgIconsConfig({ size: '2rem', color: '#FFF' }),
   ],
 };

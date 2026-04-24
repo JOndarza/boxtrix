@@ -1,0 +1,27 @@
+{
+  "id": "edge-perfect-fit",
+  "name": "Edge case — Items fill the area exactly (100% efficiency)",
+  "constraints": {
+    "units": "cm",
+    "stackable": true
+  },
+  "areas": [
+    {
+      "id": "Caja de almacenamiento",
+      "width": 60,
+      "height": 20,
+      "depth": 30,
+      "x": 0,
+      "y": 0,
+      "z": 0
+    }
+  ],
+  "boxes": [
+    { "id": "Bloque A1", "width": 20, "height": 20, "depth": 15, "weight": 0.5 },
+    { "id": "Bloque A2", "width": 20, "height": 20, "depth": 15, "weight": 0.5 },
+    { "id": "Bloque A3", "width": 20, "height": 20, "depth": 15, "weight": 0.5 },
+    { "id": "Bloque B1", "width": 20, "height": 20, "depth": 15, "weight": 0.5 },
+    { "id": "Bloque B2", "width": 20, "height": 20, "depth": 15, "weight": 0.5 },
+    { "id": "Bloque B3", "width": 20, "height": 20, "depth": 15, "weight": 0.5 }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "id": "edge-inches",
+  "name": "Edge case — US measurements in inches, two adjacent storage units",
+  "constraints": {
+    "units": "in",
+    "stackable": true
+  },
+  "areas": [
+    {
+      "id": "Standard shelf 36\"",
+      "width": 36,
+      "height": 12,
+      "depth": 14,
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    {
+      "id": "Deep cabinet 24\"",
+      "width": 24,
+      "height": 18,
+      "depth": 20,
+      "x": 40,
+      "y": 0,
+      "z": 0
+    }
+  ],
+  "boxes": [
+    { "id": "Funko Pop — Spider-Man (US)", "width": 5.5, "height": 7.5, "depth": 4, "weight": 0.66 },
+    { "id": "Funko Pop — Iron Man (US)", "width": 5.5, "height": 7.5, "depth": 4, "weight": 0.66 },
+    { "id": "Funko Pop — Captain America (US)", "width": 5.5, "height": 7.5, "depth": 4, "weight": 0.66 },
+    { "id": "Funko Pop — Thor (US)", "width": 5.5, "height": 8.5, "depth": 4, "weight": 0.77 },
+    { "id": "Funko Pop — Black Widow (US)", "width": 5.5, "height": 7.5, "depth": 4, "weight": 0.66 },
+    { "id": "Funko Pop — Hulk (US)", "width": 5.5, "height": 8.5, "depth": 4, "weight": 0.77 },
+    { "id": "Comic divider A", "width": 6.75, "height": 10.5, "depth": 0.5, "weight": 0.33 },
+    { "id": "Comic divider B", "width": 6.75, "height": 10.5, "depth": 0.5, "weight": 0.33 }
+  ]
+}

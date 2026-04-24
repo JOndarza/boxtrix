@@ -1,3 +1,5 @@
+import { Units } from '@common/enums/Units.enum';
+
 import { Area } from './Area.class';
 import { RenderedController } from './Rendered.controller';
 
@@ -11,7 +13,10 @@ export class Project {
     return this._items;
   }
 
-  constructor(private _areas: Area[]) {
+  constructor(
+    private _areas: Area[],
+    readonly units: Units = 'cm',
+  ) {
     this._items = this._areas.map((area) => area.items).flatMap((item) => item);
   }
 }

@@ -1,0 +1,204 @@
+// ── Backdrop (click-outside dismiss) ─────────────────────────────────────────
+.graphics-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 49;
+}
+
+// ── Graphics settings floating panel ─────────────────────────────────────────
+.graphics-panel {
+  @extend .general-container-style;
+
+  position: fixed;
+  top: 5.5rem;
+  right: 0.5rem;
+
+  width: 240px;
+  padding: 0;
+  z-index: 50;
+
+  color: var(--text-primary);
+
+  animation: graphics-panel-in 0.18s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.graphics-panel-header {
+  padding: 0.6rem 0.75rem 0.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.graphics-panel-title {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-tertiary);
+}
+
+// ── Panel body ────────────────────────────────────────────────────────────────
+.graphics-panel-body {
+  padding: 0.5rem 0.75rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.graphics-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+
+  &--slider {
+    gap: 0.4rem;
+  }
+}
+
+.graphics-row-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.graphics-label {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  display: block;
+}
+
+// ── Preset buttons ────────────────────────────────────────────────────────────
+.graphics-presets {
+  display: flex;
+  gap: 4px;
+}
+
+.preset-btn {
+  flex: 1;
+  padding: 3px 0;
+  font-size: 0.65rem;
+  font-family: inherit;
+  line-height: 1.4;
+  text-align: center;
+
+  background: var(--bg-3);
+  border: 1px solid var(--border-default);
+  border-radius: $control-radius;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+
+  &:hover:not(.active) {
+    background: var(--bg-4);
+    color: var(--text-primary);
+    border-color: var(--border-strong);
+  }
+
+  &.active {
+    background: var(--accent-subtle);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+}
+
+// ── Select ────────────────────────────────────────────────────────────────────
+.graphics-select {
+  width: 100%;
+  padding: 4px 24px 4px 6px;
+  font-size: 0.75rem;
+  font-family: inherit;
+
+  background: var(--bg-3);
+  border: 1px solid var(--border-default);
+  border-radius: $control-radius;
+  color: var(--text-primary);
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%235f6571' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+
+  transition: background-color 0.12s ease, border-color 0.12s ease;
+
+  &:hover {
+    background-color: var(--bg-4);
+    border-color: var(--border-strong);
+  }
+
+  &:focus-visible {
+    border-color: var(--accent);
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  option {
+    background: var(--bg-2);
+    color: var(--text-primary);
+  }
+}
+
+// ── Slider ────────────────────────────────────────────────────────────────────
+.graphics-slider {
+  width: 100%;
+  height: 3px;
+  appearance: none;
+  cursor: pointer;
+  border-radius: 2px;
+  outline: none;
+
+  background: linear-gradient(
+    to right,
+    var(--accent) 0%,
+    var(--accent) var(--slider-pct, 0%),
+    var(--border-default) var(--slider-pct, 0%),
+    var(--border-default) 100%
+  );
+
+  &::-webkit-slider-thumb {
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg-0);
+    cursor: pointer;
+    transition: transform 0.1s ease;
+
+    &:hover { transform: scale(1.2); }
+  }
+
+  &::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg-0);
+    cursor: pointer;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+    border-radius: 2px;
+  }
+}
+
+// ── Value badge ───────────────────────────────────────────────────────────────
+.graphics-value-badge {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-subtle);
+  padding: 1px 6px;
+  border-radius: 10px;
+  min-width: 2.2rem;
+  text-align: center;
+}
+
+// ── Animation ─────────────────────────────────────────────────────────────────
+@keyframes graphics-panel-in {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}

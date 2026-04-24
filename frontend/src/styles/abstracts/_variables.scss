@@ -1,7 +1,64 @@
 :root {
-  // L4 — #121212 instead of pure black reduces eye strain and halos
-  --background-color: #121212;
-  --sidebar-width: 200px;
+  // ── Backgrounds ──────────────────────────────────────────────────────────────
+  --bg-0: #0a0b0d;
+  --bg-1: #101114;
+  --bg-2: #16181d;
+  --bg-3: #1c1f26;
+  --bg-4: #262a33;
+
+  // ── Borders ──────────────────────────────────────────────────────────────────
+  --border-subtle:  rgba(255, 255, 255, 0.06);
+  --border-default: rgba(255, 255, 255, 0.10);
+  --border-strong:  rgba(255, 255, 255, 0.18);
+
+  // ── Text ─────────────────────────────────────────────────────────────────────
+  --text-primary:   #e8eaed;
+  --text-secondary: #9ba1ad;
+  --text-tertiary:  #5f6571;
+
+  // ── Accent — amber matches the yellow wireframe in the Three.js scene ────────
+  --accent:        #fbbf24;
+  --accent-subtle: rgba(251, 191, 36, 0.12);
+
+  // ── Semantic status ───────────────────────────────────────────────────────────
+  --status-fit:   #6ee7b7;
+  --status-unfit: #f87171;
+
+  // ── Layout tokens ─────────────────────────────────────────────────────────────
+  --sidebar-width: 280px;
+  --footer-height: 64px;
+
+  // ── Legacy alias so any remaining references still resolve ────────────────────
+  --background-color: var(--bg-1);
 }
 
-$sidebar-width: var(--sidebar-width);
+// ── Light theme overrides ─────────────────────────────────────────────────────
+[data-theme="light"] {
+  --bg-0: #e8e9eb;
+  --bg-1: #f0f1f3;
+  --bg-2: #ffffff;
+  --bg-3: #eaebee;
+  --bg-4: #dcdee3;
+
+  --border-subtle:  rgba(0, 0, 0, 0.06);
+  --border-default: rgba(0, 0, 0, 0.10);
+  --border-strong:  rgba(0, 0, 0, 0.18);
+
+  --text-primary:   #1a1b1e;
+  --text-secondary: #4a4f5a;
+  --text-tertiary:  #8a909e;
+
+  // Darker amber so it stays readable on light backgrounds
+  --accent:        #d97706;
+  --accent-subtle: rgba(217, 119, 6, 0.10);
+
+  --status-fit:   #059669;
+  --status-unfit: #dc2626;
+
+  --background-color: var(--bg-1);
+}
+
+$sidebar-width:   var(--sidebar-width);
+$footer-height:   var(--footer-height);
+$panel-radius:    4px;
+$control-radius:  2px;

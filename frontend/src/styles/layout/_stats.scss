@@ -1,0 +1,105 @@
+// ── Volume stats panel — bottom-right, above the transport bar ───────────────
+.app-stats {
+  @extend .general-container-style;
+
+  position: fixed;
+  bottom: calc(var(--footer-height) + 0.5rem);
+  right: 0.5rem;
+
+  width: 200px;
+  padding: 0.75rem;
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  color: var(--text-primary);
+}
+
+// ── Section row ───────────────────────────────────────────────────────────────
+.stats-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.stats-section--bar {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+// ── Labels ────────────────────────────────────────────────────────────────────
+.stats-label {
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-tertiary);
+}
+
+// ── Values ────────────────────────────────────────────────────────────────────
+.stats-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.1;
+
+  &--accent {
+    color: var(--accent);
+  }
+
+  &--muted {
+    color: var(--text-tertiary);
+    font-size: 0.85rem;
+    font-weight: 400;
+  }
+
+  &--unfit {
+    color: var(--status-unfit);
+  }
+}
+
+.stats-unit {
+  font-size: 0.65rem;
+  font-weight: 400;
+  color: var(--text-tertiary);
+  margin-left: 1px;
+}
+
+// ── Progress bar ──────────────────────────────────────────────────────────────
+.stats-bar-track {
+  flex: 1;
+  height: 4px;
+  background: var(--border-default);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.stats-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+  max-width: 100%;
+}
+
+.stats-pct {
+  flex-shrink: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--accent);
+  min-width: 2.5rem;
+  text-align: right;
+}
+
+// ── Divider ───────────────────────────────────────────────────────────────────
+.stats-divider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 0.1rem 0;
+}

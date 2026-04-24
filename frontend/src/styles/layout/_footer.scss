@@ -1,100 +1,152 @@
+// ── Transport bar ─────────────────────────────────────────────────────────────
+// Full-width instrument strip pinned to viewport bottom.
 .app-footer {
-  color: white;
-  display: block;
   position: fixed;
   bottom: 0;
+  left: 0;
   right: 0;
-  padding: 1rem;
-  width: 100%;
+  height: var(--footer-height);
+
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 1.25rem;
+
+  background: rgba(22, 24, 29, 0.95);
+
+  [data-theme="light"] & {
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 -1px 0 var(--border-subtle);
+  }
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid var(--border-subtle);
+
+  color: var(--text-primary);
 }
 
-.step-controls {
-  width: 100%;
+// ── Step counter (left zone) ──────────────────────────────────────────────────
+.transport-counter {
+  flex-shrink: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  min-width: 6rem;
+  user-select: none;
+}
+
+// ── Progress scrubber (centre zone) ──────────────────────────────────────────
+.transport-scrubber {
+  flex: 1;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 0.25rem;
 
-  // H2 — step counter so users always know where they are in the sequence
-  .step-indicator {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.7);
-    letter-spacing: 0.05em;
+  input[type='range'] {
+    width: 100%;
+    height: 3px;
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+    border-radius: 2px;
+    outline: none;
+
+    background: linear-gradient(
+      to right,
+      var(--accent) 0%,
+      var(--accent) var(--scrubber-pct, 0%),
+      var(--border-default) var(--scrubber-pct, 0%),
+      var(--border-default) 100%
+    );
+
+    &::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--bg-0);
+      transition: transform 0.1s ease;
+    }
+
+    &::-moz-range-thumb {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--bg-0);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 4px;
+      border-radius: 2px;
+    }
+
+    &:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
   }
+}
 
-  .step-buttons {
+// ── Transport buttons (right zone) ───────────────────────────────────────────
+.transport-buttons {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+
+  .transport-btn {
+    width: 40px;
+    height: 40px;
     display: flex;
-    flex-direction: row;
     align-items: center;
-    gap: 0.25rem;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: $control-radius;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background 0.12s ease, color 0.12s ease;
 
-    .step-button {
-      // M3 — 48×48px minimum touch target (Material Design guidelines)
-      min-width: 48px;
-      min-height: 48px;
-      padding: 8px;
+    &:hover:not(:disabled) {
+      background: var(--bg-3);
+      color: var(--text-primary);
+    }
 
-      color: white;
-      cursor: pointer;
-      background-color: transparent;
-      border: none;
-      border-radius: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      transition: background 0.15s ease;
+    &:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    &.transport-btn--play {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 1px solid var(--accent);
+      color: var(--accent);
 
       &:hover:not(:disabled) {
-        background: rgba(255, 255, 255, 0.1);
+        background: var(--accent-subtle);
       }
 
-      &:disabled {
-        opacity: 0.35;
-        cursor: not-allowed;
-      }
-
-      &.main {
-        ng-icon {
-          --ng-icon__size: 3rem !important;
-        }
-      }
-
-      // L2 — fixed typo: "secundary" → "secondary"
-      &.secondary {
-        ng-icon {
-          --ng-icon__size: 2.5rem !important;
-        }
-      }
-
-      ng-icon {
-        border: 1px solid white;
-        border-radius: 50px;
-      }
-
-      .step-button-text {
-        padding-top: 0.4rem;
-        font-size: 0.7rem;
+      &[aria-pressed='true'] {
+        background: var(--accent-subtle);
       }
     }
   }
 }
 
-// M3 — stack vertically on very narrow screens
+// ── Responsive ────────────────────────────────────────────────────────────────
 @media (max-width: 480px) {
-  .step-controls .step-buttons {
-    gap: 0;
+  .transport-counter {
+    display: none;
+  }
 
-    .step-button {
-      min-width: 40px;
-      min-height: 40px;
-      padding: 4px;
-    }
-
-    .step-button-text {
-      display: none;
-    }
+  .transport-buttons .transport-btn {
+    width: 36px;
+    height: 36px;
   }
 }

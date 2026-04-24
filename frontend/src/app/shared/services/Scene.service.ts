@@ -43,6 +43,7 @@ export class SceneService implements OnDestroy {
       antialias: true,
       powerPreference: 'high-performance',
     });
+    this._renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this._renderer.setSize(width, height);
     canvas.appendChild(this._renderer.domElement);
 
@@ -84,6 +85,20 @@ export class SceneService implements OnDestroy {
 
   addToScene(...objects: THREE.Object3D[]): void {
     objects.forEach((o) => this._scene.add(o));
+  }
+
+  setBackground(color: string): void {
+    (this._scene.background as THREE.Color).set(color);
+  }
+
+  setPixelRatio(ratio: number): void {
+    this._renderer.setPixelRatio(ratio);
+    this.markDirty();
+  }
+
+  setToneMapping(mode: THREE.ToneMapping): void {
+    this._renderer.toneMapping = mode;
+    this.markDirty();
   }
 
   intersect(group: THREE.Object3D, pointer: THREE.Vector2): THREE.Intersection[] {

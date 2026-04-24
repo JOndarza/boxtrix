@@ -1,6 +1,11 @@
-<div class="sidebar-header">
-  <h3>BoxTrix</h3>
-</div>
+<button
+  class="sidebar-toggle"
+  (click)="toggleCollapse()"
+  [attr.aria-expanded]="!isCollapsed()"
+  [attr.aria-label]="isCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
+>
+  {{ isCollapsed() ? '›' : '‹' }}
+</button>
 
 <nav class="sidebar-body" aria-label="Packed items">
   @if (isLoading()) {
@@ -8,38 +13,60 @@
       <span class="loading-spinner" aria-hidden="true"></span>
       <p>Processing…</p>
     </div>
-  } @else if (detail.fitted?.length || detail.unfitted?.length) {
 
-    @if (detail.fitted?.length) {
-      <h3>Fitted</h3>
-      <h5>{{ detail.fitted.length }} {{ detail.fitted.length === 1 ? 'item' : 'items' }}</h5>
-      <ul class="sequence" role="listbox" aria-label="Fitted items">
-        @for (item of detail.fitted; track item.id) {
-          <li
-            class="sequence-item"
-            role="option"
-            tabindex="0"
-            [class.selected]="item.selected"
-            [attr.aria-selected]="item.selected"
-            (click)="clicked(item)"
-            (keydown.enter)="clicked(item)"
-            (keydown.space)="$event.preventDefault(); clicked(item)"
-          >
-            <div class="item-row">
-              <span class="color-swatch" [style.background]="colorOf(item)" aria-hidden="true"></span>
-              <span class="item-name">{{ item.name }}</span>
-            </div>
-          </li>
-        }
-      </ul>
+  } @else if (fittedAreas.length || detail.unfitted?.length) {
+
+    @if (fittedAreas.length) {
+      <div class="section-header">
+        <span class="section-label">Fitted</span>
+        <span class="section-count">{{ totalFitted }}</span>
+      </div>
+
+      @for (area of fittedAreas; track area.id) {
+        <div class="area-header">
+          <div class="area-header-top">
+            <span class="area-name">{{ area.name }}</span>
+            <span class="area-fill" [class.area-fill--low]="fillPct(area) < 50">
+              {{ fillPct(area) }}%
+            </span>
+          </div>
+          <div class="area-dims">
+            {{ area.means.width | number:'1.0-0' }}&thinsp;&times;&thinsp;{{ area.means.height | number:'1.0-0' }}&thinsp;&times;&thinsp;{{ area.means.depth | number:'1.0-0' }}&nbsp;{{ units }}
+          </div>
+        </div>
+
+        <ul class="sequence" role="listbox" [attr.aria-label]="'Items in ' + area.name">
+          @for (item of area.items; track item.id) {
+            <li
+              class="sequence-item"
+              role="option"
+              tabindex="0"
+              [class.selected]="item.selected"
+              [attr.aria-selected]="item.selected"
+              (click)="clicked(item)"
+              (keydown.enter)="clicked(item)"
+              (keydown.space)="$event.preventDefault(); clicked(item)"
+            >
+              <div class="item-row">
+                <span class="item-step" aria-hidden="true">{{ item.globalStep }}</span>
+                <span class="color-swatch" [style.background]="colorOf(item)" aria-hidden="true"></span>
+                <span class="item-name">{{ item.name }}</span>
+              </div>
+              <div class="item-dims" aria-hidden="true">
+                {{ item.fixedMeans.width | number:'1.0-0' }}&thinsp;&times;&thinsp;{{ item.fixedMeans.height | number:'1.0-0' }}&thinsp;&times;&thinsp;{{ item.fixedMeans.depth | number:'1.0-0' }}&nbsp;{{ units }}
+              </div>
+            </li>
+          }
+        </ul>
+      }
     }
 
     @if (detail.unfitted?.length) {
-      <h3 class="unfitted-title">Unfitted</h3>
-      <h5 class="unfitted-count">
-        {{ detail.unfitted.length }} {{ detail.unfitted.length === 1 ? 'item' : 'items' }} could not be placed
-      </h5>
-      <ul class="sequence unfitted-list" role="list" aria-label="Unfitted items">
+      <div class="section-header section-header--unfit">
+        <span class="section-label">Unfitted</span>
+        <span class="section-count section-count--unfit">{{ detail.unfitted.length }}</span>
+      </div>
+      <ul class="sequence" role="list" aria-label="Unfitted items">
         @for (item of detail.unfitted; track item.id) {
           <li class="sequence-item unfitted-item">
             <div class="item-row">
@@ -62,17 +89,25 @@
   }
 </nav>
 
-<div class="sidebar-footer">
-  <label for="file-upload" class="upload-label" [class.upload-label--loading]="isLoading()">
-    <span>{{ isLoading() ? 'Processing…' : 'Upload JSON' }}</span>
-  </label>
-  <input
-    id="file-upload"
-    type="file"
-    accept=".json"
-    class="visually-hidden"
-    [disabled]="isLoading()"
-    (change)="load($event)"
-    aria-label="Upload JSON configuration file"
-  />
-</div>
+@if (!isCollapsed()) {
+  <div class="sidebar-footer">
+    <label for="file-upload" class="upload-label" [class.upload-label--loading]="isLoading()">
+      <span>{{ isLoading() ? 'Processing…' : 'Upload JSON' }}</span>
+    </label>
+    <input
+      id="file-upload"
+      type="file"
+      accept=".json"
+      class="visually-hidden"
+      [disabled]="isLoading()"
+      (change)="load($event)"
+      aria-label="Upload JSON configuration file"
+    />
+  </div>
+}
+
+<div
+  class="sidebar-resize-handle"
+  (mousedown)="onHandleMouseDown($event)"
+  aria-hidden="true"
+></div>

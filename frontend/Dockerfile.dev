@@ -1,0 +1,10 @@
+FROM node:22-alpine
+RUN apk update && apk upgrade --no-cache
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+EXPOSE 4100
+
+CMD ["npx", "ng", "serve", "--host", "0.0.0.0", "--poll", "500"]

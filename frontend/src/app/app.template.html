@@ -1,4 +1,10 @@
+@if (showWelcome()) {
+  <app-welcome (dismissed)="showWelcome.set(false)"></app-welcome>
+}
+
 <app-header></app-header>
+<app-graphics-settings></app-graphics-settings>
 <app-sidebar></app-sidebar>
+<app-stats></app-stats>
 <app-footer></app-footer>
 <app-canvas></app-canvas>

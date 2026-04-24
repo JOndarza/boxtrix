@@ -6,6 +6,7 @@ import {
   OnDestroy,
   OnInit,
   ViewChild,
+  effect,
   inject,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -18,8 +19,10 @@ import { ContextService } from '@shared/services/Context.service';
 import { AppEvent, EventsService } from '@shared/services/Events.service';
 import { FocusManagerService } from '@shared/services/FocusManager.service';
 import { RewindManagerService } from '@shared/services/RewindManager.service';
+import { GraphicsService, PIXEL_RATIO_VALUES } from '@shared/services/Graphics.service';
 import { SceneService } from '@shared/services/Scene.service';
 import { TextManagerService } from '@shared/services/TextManager.service';
+import { ThemeService } from '@shared/services/Theme.service';
 import { debounceTime } from 'rxjs';
 import * as THREE from 'three';
 import { BoxGeometry } from 'three';
@@ -51,9 +54,45 @@ export class CanvasComponent implements OnInit, OnDestroy {
   private readonly _text = inject(TextManagerService);
   private readonly _context = inject(ContextService);
   private readonly _sceneService = inject(SceneService);
+  private readonly _theme = inject(ThemeService);
+  private readonly _graphics = inject(GraphicsService);
   private readonly _destroyRef = inject(DestroyRef);
 
   private readonly _pointer = new THREE.Vector2();
+  private _sceneReady = false;
+  private _ambientLight!: THREE.AmbientLight;
+
+  // Reactively update background and rebuild scene geometry when theme toggles.
+  private readonly _themeEffect = effect(() => {
+    const dark = this._theme.isDark();
+    if (!this._sceneReady) return;
+    this._sceneService.setBackground(dark ? '#0a0b0d' : '#f0f1f3');
+    // Rebuild if data is loaded so wireframe/grid colours update immediately.
+    if (this._context.project) {
+      this._events.get(AppEvent.RENDERING).next();
+    } else {
+      this._sceneService.markDirty();
+    }
+  });
+
+  private readonly _pixelRatioEffect = effect(() => {
+    const preset = this._graphics.settings().pixelRatioPreset;
+    if (!this._sceneReady) return;
+    this._sceneService.setPixelRatio(PIXEL_RATIO_VALUES[preset]());
+  });
+
+  private readonly _toneMappingEffect = effect(() => {
+    const mode = this._graphics.settings().toneMapping;
+    if (!this._sceneReady) return;
+    this._sceneService.setToneMapping(mode);
+  });
+
+  private readonly _ambientEffect = effect(() => {
+    const intensity = this._graphics.settings().ambientIntensity;
+    if (!this._sceneReady || !this._ambientLight) return;
+    this._ambientLight.intensity = intensity;
+    this._sceneService.markDirty();
+  });
 
   // C2 — bound refs stored so removeEventListener can target the same function
   private readonly _onWindowResize = (): void =>
@@ -63,6 +102,11 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this._sceneService.init(this.canvas.nativeElement);
+    this._sceneService.setBackground(this._theme.isDark() ? '#0a0b0d' : '#f0f1f3');
+    this._sceneReady = true;
+    const gfx = this._graphics.settings();
+    this._sceneService.setPixelRatio(PIXEL_RATIO_VALUES[gfx.pixelRatioPreset]());
+    this._sceneService.setToneMapping(gfx.toneMapping);
 
     // C1 — takeUntilDestroyed prevents subscriptions from leaking past component lifetime
     this._events
@@ -156,9 +200,14 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
     const data = this.getMinMax(this._context.project);
 
-    this._sceneService.camera.position.x = data.means.width * 2;
-    this._sceneService.camera.position.y = data.maxHeight * 1.25;
-    this._sceneService.camera.position.z = data.means.depth * 2;
+    // Position camera equidistant on all three axes so the initial view shows
+    // the XYZ volume (top + front + side visible), not just the XZ plane.
+    const d = Math.max(data.means.width, data.maxHeight, data.means.depth) * 2;
+    this._sceneService.camera.position.set(
+      data.massCenter.x + d,
+      data.massCenter.y + d,
+      data.massCenter.z + d,
+    );
     this._sceneService.camera.lookAt(
       new THREE.Vector3(data.massCenter.x, data.massCenter.y, data.massCenter.z),
     );
@@ -172,12 +221,13 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   private addGrid(data: IScene): void {
     const size = Math.floor(Math.max(data.means.width, data.means.depth));
+    const dark = this._theme.isDark();
 
     const grid = new THREE.GridHelper(
       size * 2,
       size / this._constants.GRID_SPACING,
-      0x42a5f5,
-      0x42a5f5,
+      dark ? this._constants.GRID_COLOR_CENTER : 0x92400e,
+      dark ? this._constants.GRID_COLOR_LINES  : 0xc8a77a,
     );
     grid.position.set(data.massCenter.x, data.massCenter.y, data.massCenter.z);
     this._sceneService.addToScene(grid);
@@ -185,22 +235,22 @@ export class CanvasComponent implements OnInit, OnDestroy {
     const axisSize = data.maxHeight + data.maxHeight * 0.1;
     this._sceneService.addToScene(new THREE.AxesHelper(axisSize));
 
-    const geometryParameters = { size: 15, depth: 2 } as TextGeometryParameters;
-    this._text.addTo(
-      this._sceneService.scene,
-      { label: 'Width', position: { x: axisSize, y: 0, z: 0 }, geometryParameters },
-      { label: 'Height', position: { x: 0, y: axisSize, z: 0 }, geometryParameters },
-      { label: 'Depth', position: { x: 0, y: 0, z: axisSize }, geometryParameters },
-    );
-  }
+    }
 
   private addLight(): void {
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-    this._sceneService.addToScene(ambientLight);
+    this._ambientLight = new THREE.AmbientLight(
+      0xffffff,
+      this._graphics.settings().ambientIntensity,
+    );
+    this._sceneService.addToScene(this._ambientLight);
   }
 
   private setScene(parent: THREE.Object3D, data: Project): void {
-    data.areas.forEach((c) => {
+    const fittedAreas = data.areas.filter((a) => a.name !== 'UNFITTED');
+    const unfittedArea = data.areas.find((a) => a.name === 'UNFITTED');
+
+    // ── Áreas reales ──────────────────────────────────────────────────────────
+    fittedAreas.forEach((c) => {
       const container = this.drawContainer(parent, c);
       c.setObj3D(container.obj3d);
 
@@ -209,17 +259,54 @@ export class CanvasComponent implements OnInit, OnDestroy {
         box.obj3d.userData = item;
         container.obj3d.add(box.obj3d);
 
-        const geometryParameters = { size: 15, depth: 2 } as TextGeometryParameters;
-        const offset = -(geometryParameters.size ?? 1) / 2;
+        const textSize = Math.min(4, Math.min(box.means.width, box.means.height, box.means.depth) * 0.12);
+        const offset = -(textSize / 2);
         this._text.addTo(box.obj3d, {
           label: item.globalStep.toString(),
           position: { x: offset, y: offset, z: offset },
-          geometryParameters,
+          geometryParameters: { size: textSize, depth: 0.1 } as TextGeometryParameters,
         });
 
         item.setObj3D(box.obj3d);
       });
     });
+
+    // ── Área UNFITTED — desplazada a la derecha del espacio real ─────────────
+    if (unfittedArea) {
+      // Use means.width (original area size) — the outer yellow wireframe is
+      // drawn from means, so the gap must clear that boundary, not fixedMeans.
+      const maxX = fittedAreas.reduce(
+        (m, a) => Math.max(m, a.position.x + a.means.width),
+        0,
+      );
+      const gap = Math.max(15, maxX * 0.1);
+      unfittedArea.position.set({ x: maxX + gap, y: 0, z: 0 });
+
+      const dark = this._theme.isDark();
+      const container = this.drawContainer(
+        parent,
+        unfittedArea,
+        dark ? '#ef4444' : '#b91c1c',
+        dark ? '#f87171' : '#dc2626',
+      );
+      unfittedArea.setObj3D(container.obj3d);
+
+      unfittedArea.items.forEach((item) => {
+        const box = this.drawBox(item, unfittedArea);
+        box.obj3d.userData = item;
+        container.obj3d.add(box.obj3d);
+
+        const textSize = Math.min(4, Math.min(box.means.width, box.means.height, box.means.depth) * 0.12);
+        const offset = -(textSize / 2);
+        this._text.addTo(box.obj3d, {
+          label: item.globalStep.toString(),
+          position: { x: offset, y: offset, z: offset },
+          geometryParameters: { size: textSize, depth: 0.1 } as TextGeometryParameters,
+        });
+
+        item.setObj3D(box.obj3d);
+      });
+    }
   }
 
   private getMinMax(data: Project): IScene {
@@ -316,8 +403,14 @@ export class CanvasComponent implements OnInit, OnDestroy {
     return { obj3d, ...data };
   }
 
-  private drawContainer(parent: THREE.Object3D, item: RenderedController) {
-    item.setColor('#F00');
+  private drawContainer(
+    parent: THREE.Object3D,
+    item: RenderedController,
+    innerColor?: string,
+    outerColor?: string,
+  ) {
+    const dark = this._theme.isDark();
+    item.setColor(innerColor ?? (dark ? '#ff2222' : '#b91c1c'));
     const fixed = this.drawWire(item);
     parent.add(fixed.obj3d);
 
@@ -328,7 +421,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       position: item.position,
       rotation: Rotation.WHD,
     });
-    clone.setColor('#FF0');
+    clone.setColor(outerColor ?? (dark ? '#ffee00' : '#92400e'));
 
     const normal = this.drawWire(clone);
     parent.add(normal.obj3d);

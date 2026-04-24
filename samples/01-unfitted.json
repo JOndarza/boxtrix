@@ -1,0 +1,56 @@
+{
+  "id": "edge-unfitted",
+  "name": "Edge case — Items that exceed the area in all orientations",
+  "constraints": {
+    "units": "cm",
+    "stackable": true
+  },
+  "areas": [
+    {
+      "id": "Cajón pequeño",
+      "width": 50,
+      "height": 30,
+      "depth": 30,
+      "x": 0,
+      "y": 0,
+      "z": 0
+    }
+  ],
+  "boxes": [
+    {
+      "id": "Funko Pop — Naruto",
+      "width": 14,
+      "height": 19,
+      "depth": 10,
+      "weight": 0.3
+    },
+    {
+      "id": "Funko Pop — Sasuke",
+      "width": 14,
+      "height": 19,
+      "depth": 10,
+      "weight": 0.3
+    },
+    {
+      "id": "Funko Pop — Goku",
+      "width": 14,
+      "height": 19,
+      "depth": 10,
+      "weight": 0.3
+    },
+    {
+      "id": "Caja imposible — todas las rotaciones exceden el área",
+      "width": 80,
+      "height": 80,
+      "depth": 80,
+      "weight": 5.0
+    },
+    {
+      "id": "Estatua grande — no cabe en ninguna orientación",
+      "width": 60,
+      "height": 70,
+      "depth": 55,
+      "weight": 3.5
+    }
+  ]
+}

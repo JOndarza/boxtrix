@@ -13,6 +13,16 @@ export class ConstantsService {
   public get GRID_SPACING() {
     return this._GRID_SPACING;
   }
+
+  private _GRID_COLOR_CENTER: ColorRepresentation = 0xfbbf24;
+  public get GRID_COLOR_CENTER() {
+    return this._GRID_COLOR_CENTER;
+  }
+
+  private _GRID_COLOR_LINES: ColorRepresentation = 0x3d3020;
+  public get GRID_COLOR_LINES() {
+    return this._GRID_COLOR_LINES;
+  }
   //#endregion GRID
 
   //#region BOX

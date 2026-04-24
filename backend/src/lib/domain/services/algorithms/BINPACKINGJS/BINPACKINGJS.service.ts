@@ -17,7 +17,7 @@ import {
   IBINPACKINGJSContainer,
 } from './_common';
 
-const { Item, Bin, Packer } = BP3D;
+const { Item, Bin } = BP3D;
 
 // BinPackingJS requires integer inputs — all dimensions are scaled by this factor before
 // packing and divided back after. Changing this value affects precision.
@@ -157,38 +157,52 @@ export class BINPACKINGJSService {
 
   //#region Algorithm
   private mainLogic(area: IArea, items: IBox[]): IBINPACKINGJSContainer {
-    const packer = new Packer();
-
-    // BP3D v3 scales inputs by 10^5 internally — pass raw dimensions, not pre-scaled ones.
-    // Positions in bin.items are returned scaled by 10^5 and must be divided by FIX after packing.
+    // BP3D v3 scales inputs by 10^5 internally via factoredInteger() in Bin/Item constructors.
+    // Positions in bin.items[].position are returned pre-scaled and must be divided by FIX.
     const bin = new Bin(area.id, area.width, area.height, area.depth, 0);
-    packer.addBin(bin);
 
-    // Sort heaviest/largest first so they land at lower Y positions (gravity).
-    // We bypass packer.pack() because it re-sorts by volume and ignores weight.
-    // Instead we pre-sort and call packToBin() directly to preserve weight order.
+    // Sort heaviest/largest first (gravity: heavier boxes occupy lower Y positions).
+    // We bypass Packer.pack() entirely — it re-sorts by volume on every call and
+    // ignores weight. Instead we call bin.putItem() directly in our own priority order.
     const sorted = [...items].sort(
       (a, b) => (b.weight ?? getVolume(b)) - (a.weight ?? getVolume(a)),
     );
 
-    sorted.forEach((item) =>
-      packer.addItem(
-        new Item(
-          item.id,
-          item.width,
-          item.height,
-          item.depth,
-          item.weight ?? getVolume(item),
-        ),
-      ),
-    );
+    for (const item of sorted) {
+      const bpItem = new Item(
+        item.id,
+        item.width,
+        item.height,
+        item.depth,
+        item.weight ?? getVolume(item),
+      );
 
-    // packToBin uses packer.items (not the parameter) for the inner loop,
-    // so assigning our sorted list preserves weight order (bypassing pack()'s volume re-sort).
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const bpItems: any[] = packer.items;
-    packer.items = sorted.map((item) => bpItems.find((i: { name: string }) => i.name === item.id));
-    packer.packToBin(bin, packer.items);
+      if (bin.items.length === 0) {
+        bin.putItem(bpItem, [0, 0, 0]);
+        continue;
+      }
+
+      // Try the three pivot axes against every already-placed item (mirrors packToBin logic)
+      let placed = false;
+      outer: for (let axis = 0; axis < 3; axis++) {
+        for (const pivot_item of bin.items) {
+          const d = pivot_item.getDimension();
+          const pv: [number, number, number] =
+            axis === 0
+              ? [pivot_item.position[0] + d[0], pivot_item.position[1], pivot_item.position[2]]
+              : axis === 1
+                ? [pivot_item.position[0], pivot_item.position[1] + d[1], pivot_item.position[2]]
+                : [pivot_item.position[0], pivot_item.position[1], pivot_item.position[2] + d[2]];
+
+          if (bin.putItem(bpItem, pv)) {
+            placed = true;
+            break outer;
+          }
+        }
+      }
+
+      void placed; // unfit items are simply not in bin.items
+    }
 
     return bin;
   }

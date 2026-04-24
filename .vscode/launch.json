@@ -1,0 +1,34 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Backend — Attach (Docker)",
+      "type": "node",
+      "request": "attach",
+      "address": "localhost",
+      "port": 9229,
+      "localRoot": "${workspaceFolder}/backend",
+      "remoteRoot": "/app",
+      "sourceMaps": true,
+      "restart": true,
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+      "preLaunchTask": "debug: up"
+    },
+    {
+      "name": "Frontend — Chrome",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:4400",
+      "webRoot": "${workspaceFolder}/frontend",
+      "preLaunchTask": "dev: up"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Full Stack",
+      "configurations": ["Backend — Attach (Docker)", "Frontend — Chrome"],
+      "preLaunchTask": "debug: up",
+      "stopAll": true
+    }
+  ]
+}

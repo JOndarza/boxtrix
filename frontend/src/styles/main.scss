@@ -16,11 +16,14 @@
 @import './base/typography';
 
 @import './layout/canvas';
-@import './layout/header';
 @import './layout/footer';
+@import './layout/header';
 @import './layout/sidebar';
+@import './layout/stats';
+@import './layout/welcome';
 
 @import './themes/theme';
+@import './layout/graphics-settings';
 
 // M5 — honour the OS reduced-motion preference; suppresses sidebar transition,
 // loading spinner, and any future CSS animations
