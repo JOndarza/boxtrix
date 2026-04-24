@@ -6,6 +6,8 @@ import { CanvasComponent } from './components/canvas/canvas.component';
 import { FooterComponent } from './components/layout/footer/footer.component';
 import { GraphicsSettingsComponent } from './components/layout/graphics-settings/graphics-settings.component';
 import { HeaderComponent } from './components/layout/header/header.component';
+import { InputPanelComponent } from './components/layout/input-panel/input-panel.component';
+import { KeyboardHelpComponent } from './components/layout/keyboard-help/keyboard-help.component';
 import { SidebarComponent } from './components/layout/sidebar/sidebar.component';
 import { StatsComponent } from './components/layout/stats/stats.component';
 import { WelcomeComponent } from './components/layout/welcome/welcome.component';
@@ -16,6 +18,8 @@ import { WelcomeComponent } from './components/layout/welcome/welcome.component'
     HeaderComponent,
     FooterComponent,
     GraphicsSettingsComponent,
+    InputPanelComponent,
+    KeyboardHelpComponent,
     SidebarComponent,
     StatsComponent,
     CanvasComponent,

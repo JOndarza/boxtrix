@@ -1,3 +1,5 @@
+@use '../abstracts/variables' as *;
+
 .app-root {
   display: block;
   width: 100%;
@@ -6,17 +8,22 @@
   background: var(--bg-0);
 }
 
-// H3 — glassmorphism base consumed by sidebar, header, and any future panel.
-.general-container-style {
+// H3 — glassmorphism base consumed by sidebar, stats, and graphics panel.
+// Exposed as a mixin so partials can @include it after @use '@use '../themes/theme' as *'.
+@mixin glassmorphism-panel {
   background: rgba(22, 24, 29, 0.92);
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-radius: $panel-radius;
   border: 1px solid var(--border-subtle);
+
+  [data-theme="light"] & {
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.10);
+  }
 }
 
-[data-theme="light"] .general-container-style {
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.10);
+.general-container-style {
+  @include glassmorphism-panel;
 }

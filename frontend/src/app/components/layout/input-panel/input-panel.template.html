@@ -1,0 +1,102 @@
+@if (isPanelOpen()) {
+  <div class="ip-backdrop" (click)="close()" aria-hidden="true"></div>
+
+  <div class="ip-panel" role="dialog" aria-label="New packing" [formGroup]="form">
+
+    <!-- ── Header ─────────────────────────────────────────────────────── -->
+    <header class="ip-header">
+      <span class="ip-title">New packing</span>
+      <div class="ip-header-right">
+        <select class="ip-units-select" [value]="units()" (change)="setUnits($event)" aria-label="Units">
+          <option value="cm">cm</option>
+          <option value="in">in</option>
+          <option value="mm">mm</option>
+        </select>
+        <button class="ip-close-btn" type="button" (click)="close()" aria-label="Close panel">&#x2715;</button>
+      </div>
+    </header>
+
+    <!-- ── Body ───────────────────────────────────────────────────────── -->
+    <div class="ip-body">
+
+      <!-- AREAS -->
+      <section class="ip-section" formArrayName="areas">
+        <span class="ip-section-label">Areas</span>
+
+        <div class="ip-col-headers ip-row ip-row--area">
+          <span>Name</span><span>W</span><span>H</span><span>D</span><span></span>
+        </div>
+
+        @for (area of areas.controls; track $index) {
+          <div class="ip-row ip-row--area" [formGroupName]="$index">
+            <input
+              class="ip-cell"
+              formControlName="name"
+              type="text"
+              [placeholder]="'Area ' + ($index + 1)"
+              autocomplete="off"
+            />
+            <input class="ip-cell ip-cell--num" formControlName="width"  type="number" min="0.01" step="any" placeholder="W" />
+            <input class="ip-cell ip-cell--num" formControlName="height" type="number" min="0.01" step="any" placeholder="H" />
+            <input
+              class="ip-cell ip-cell--num"
+              formControlName="depth"
+              type="number" min="0.01" step="any" placeholder="D"
+              (keydown.enter)="onAreaDepthEnter($index)"
+            />
+            <button class="ip-delete-btn" type="button" (click)="removeArea($index)" aria-label="Remove area" tabindex="-1">&#x2715;</button>
+          </div>
+        }
+
+        <button class="ip-add-link" type="button" (click)="addArea()">+ Add area</button>
+      </section>
+
+      <div class="ip-divider"></div>
+
+      <!-- BOXES -->
+      <section class="ip-section" formArrayName="boxes">
+        <span class="ip-section-label">Boxes</span>
+
+        <div class="ip-col-headers ip-row ip-row--box">
+          <span>Name</span><span>W</span><span>H</span><span>D</span><span>#</span><span></span>
+        </div>
+
+        @for (box of boxes.controls; track $index) {
+          <div class="ip-row ip-row--box" [formGroupName]="$index">
+            <input
+              class="ip-cell"
+              formControlName="name"
+              type="text"
+              [placeholder]="'Box ' + ($index + 1)"
+              autocomplete="off"
+            />
+            <input class="ip-cell ip-cell--num" formControlName="width"  type="number" min="0.01" step="any" placeholder="W" />
+            <input class="ip-cell ip-cell--num" formControlName="height" type="number" min="0.01" step="any" placeholder="H" />
+            <input class="ip-cell ip-cell--num" formControlName="depth"  type="number" min="0.01" step="any" placeholder="D" />
+            <input
+              class="ip-cell ip-cell--num"
+              formControlName="qty"
+              type="number" min="1" step="1" placeholder="#"
+              (keydown.enter)="onBoxQtyEnter($index)"
+            />
+            <button class="ip-delete-btn" type="button" (click)="removeBox($index)" aria-label="Remove box" tabindex="-1">&#x2715;</button>
+          </div>
+        }
+
+        <button class="ip-add-link" type="button" (click)="addBox()">+ Add box</button>
+      </section>
+    </div>
+
+    <!-- ── Footer ─────────────────────────────────────────────────────── -->
+    <footer class="ip-footer">
+      @if (validationError()) {
+        <p class="ip-error" role="alert">{{ validationError() }}</p>
+      }
+      <div class="ip-actions">
+        <button class="ip-btn ip-btn--ghost" type="button" (click)="exportJson()">&#x2193; Save JSON</button>
+        <button class="ip-btn ip-btn--primary" type="button" (click)="run()">&#x25BA; Run packing</button>
+      </div>
+    </footer>
+
+  </div>
+}

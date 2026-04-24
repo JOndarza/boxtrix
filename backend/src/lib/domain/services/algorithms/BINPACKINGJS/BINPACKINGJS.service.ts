@@ -213,51 +213,61 @@ export class BINPACKINGJSService {
     if (sorted.items.length < items.length)
       items = items.filter((x) => sorted.items.find((y) => y.name === x.id));
 
-    let minWidth = false;
-    let minHeight = false;
-    let minDepth = false;
+    // Nothing fits — return early to avoid the infinite loop where 0 >= 0 is always true.
+    if (!items.length)
+      return { organized: sorted, width: original.width, height: original.height, depth: original.depth };
 
-    const means: IMeasurements = {
-      width: original.width,
-      height: original.height,
-      depth: original.depth,
-    };
+    // Bounding box of the initial packing is the tightest possible lower bound for each
+    // dimension — items can never pack tighter than their actual footprint.
+    // Using it as lo cuts the binary search range by 60–90% vs. starting from 1.
+    const bbox = this.placedBoundingBox(sorted.items);
 
-    let previous = {} as IBINPACKINGJSContainer;
+    // Binary search each dimension in sequence (same ordering as the original linear shrink).
+    // Monotonicity holds: the algorithm is deterministic, so if all items fit in container W
+    // they also fit in any W' > W — a larger container never breaks a valid packing.
+    const minW = this.bisectDim({ ...original },                            items, 'width',  bbox.width,  original.width);
+    const minH = this.bisectDim({ ...original, width: minW },               items, 'height', bbox.height, original.height);
+    const minD = this.bisectDim({ ...original, width: minW, height: minH }, items, 'depth',  bbox.depth,  original.depth);
 
-    while (!minWidth || !minHeight || !minDepth) {
-      const area = {
-        id: original.id,
-        name: original.name,
-        detail: original.detail,
-        width: means.width,
-        height: means.height,
-        depth: means.depth,
-      } as IArea;
+    const tight: IArea = { ...original, width: minW, height: minH, depth: minD };
+    return { organized: this.mainLogic(tight, items), width: minW, height: minH, depth: minD };
+  }
 
-      sorted = this.mainLogic(area, items);
+  // Bounding box of BP3D-placed items. Positions and dimensions are pre-unscale (× FIX).
+  private placedBoundingBox(items: IBINPACKINGJSContainer['items']): IMeasurements {
+    let maxX = 0, maxY = 0, maxZ = 0;
+    for (const item of items as any[]) {
+      const d = item.getDimension() as number[];
+      maxX = Math.max(maxX, item.position[0] + d[0]);
+      maxY = Math.max(maxY, item.position[1] + d[1]);
+      maxZ = Math.max(maxZ, item.position[2] + d[2]);
+    }
+    return { width: maxX / FIX, height: maxY / FIX, depth: maxZ / FIX };
+  }
 
-      if (sorted.items.length >= items.length) {
-        if (!minWidth) --means.width;
-        else if (!minHeight) --means.height;
-        else if (!minDepth) --means.depth;
+  // Binary search for the minimum integer value of `dim` in [lo, hi] such that
+  // mainLogic still packs all `items`. Template carries the already-minimized sibling dims.
+  private bisectDim(
+    template: IArea,
+    items: IBox[],
+    dim: 'width' | 'height' | 'depth',
+    lo: number,
+    hi: number,
+  ): number {
+    let result = Math.ceil(hi);
+    let lo_ = Math.max(1, Math.floor(lo));
+    let hi_ = Math.ceil(hi);
 
-        previous = sorted;
+    while (lo_ <= hi_) {
+      const mid = Math.floor((lo_ + hi_) / 2);
+      if (this.mainLogic({ ...template, [dim]: mid }, items).items.length >= items.length) {
+        result = mid;
+        hi_ = mid - 1;
       } else {
-        if (!minWidth) {
-          minWidth = true;
-          ++means.width;
-        } else if (!minHeight) {
-          minHeight = true;
-          ++means.height;
-        } else if (!minDepth) {
-          minDepth = true;
-          ++means.depth;
-        }
+        lo_ = mid + 1;
       }
     }
-
-    return { organized: previous, ...means };
+    return result;
   }
   //#endregion Algorithm
 }

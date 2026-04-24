@@ -14,7 +14,7 @@
       <p>Processing…</p>
     </div>
 
-  } @else if (fittedAreas.length || detail.unfitted?.length) {
+  } @else if (fittedAreas.length || detail.unfitted.length) {
 
     @if (fittedAreas.length) {
       <div class="section-header">
@@ -46,6 +46,8 @@
               (click)="clicked(item)"
               (keydown.enter)="clicked(item)"
               (keydown.space)="$event.preventDefault(); clicked(item)"
+              (keydown.arrowdown)="$event.preventDefault(); navigateItem($event, 1)"
+              (keydown.arrowup)="$event.preventDefault(); navigateItem($event, -1)"
             >
               <div class="item-row">
                 <span class="item-step" aria-hidden="true">{{ item.globalStep }}</span>
@@ -61,7 +63,7 @@
       }
     }
 
-    @if (detail.unfitted?.length) {
+    @if (detail.unfitted.length) {
       <div class="section-header section-header--unfit">
         <span class="section-label">Unfitted</span>
         <span class="section-count section-count--unfit">{{ detail.unfitted.length }}</span>
@@ -81,6 +83,7 @@
     <div class="empty-state">
       <p class="empty-title">No data loaded</p>
       <p class="empty-hint">Upload a <strong>.json</strong> file to visualise optimal box placement in 3D.</p>
+      <button class="demo-btn" (click)="loadDemo()" type="button">Try demo data</button>
     </div>
   }
 

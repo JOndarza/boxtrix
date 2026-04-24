@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { Subject } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
@@ -23,6 +23,26 @@ export class RewindManagerService {
   }
 
   readonly updated = new Subject<void>();
+
+  readonly isPlaying = signal(false);
+  private _playInterval?: ReturnType<typeof setInterval>;
+
+  togglePlay(): void {
+    if (this._playInterval) {
+      this.stopPlay();
+    } else {
+      this.isPlaying.set(true);
+      this._playInterval = setInterval(() => this.forward(), 800);
+    }
+  }
+
+  stopPlay(): void {
+    if (this._playInterval) {
+      clearInterval(this._playInterval);
+      this._playInterval = undefined;
+    }
+    this.isPlaying.set(false);
+  }
 
   set(stepNumber: number, minStepNumber: number, maxStepNumber: number): void {
     this._step = stepNumber;

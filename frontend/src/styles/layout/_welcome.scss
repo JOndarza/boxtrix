@@ -1,3 +1,5 @@
+@use '../abstracts/variables' as *;
+
 // ── Welcome overlay ───────────────────────────────────────────────────────────
 .app-welcome {
   position: fixed;
@@ -142,23 +144,31 @@
   }
 }
 
-.welcome-skip-btn {
+.welcome-demo-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-  padding: 0.6rem;
+  padding: 0.7rem 1.5rem;
   background: transparent;
-  border: none;
+  border: 1px solid var(--border-default);
   border-radius: 4px;
-  color: var(--text-tertiary);
-  font-size: 0.82rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  font-family: inherit;
+  letter-spacing: 0.02em;
   cursor: pointer;
-  transition: color 0.15s ease, background 0.15s ease;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
 
   &:hover {
-    color: var(--text-secondary);
-    background: var(--bg-3);
+    border-color: var(--accent);
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+  }
+
+  &:active {
+    transform: scale(0.99);
   }
 }
 

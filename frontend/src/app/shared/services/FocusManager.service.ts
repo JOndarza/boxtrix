@@ -25,6 +25,13 @@ export class FocusManagerService {
     this._events.get(AppEvent.RAYCAST).next(id);
   }
 
+  clear(): void {
+    if (!this._obj3D) return;
+    this.select(false);
+    this._obj3D = null!;
+    this._events.get(AppEvent.RAYCAST).next('');
+  }
+
   private select(selected: boolean): void {
     const color = selected
       ? this._constants.BOX_COLOR_RAYCAST

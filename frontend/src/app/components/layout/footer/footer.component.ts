@@ -6,11 +6,11 @@ import {
   OnDestroy,
   OnInit,
   inject,
-  signal,
 } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgIconComponent } from '@ng-icons/core';
+import { KeyboardHelpService } from '@shared/services/KeyboardHelp.service';
 import { RewindManagerService } from '@shared/services/RewindManager.service';
 
 @Component({
@@ -23,12 +23,11 @@ import { RewindManagerService } from '@shared/services/RewindManager.service';
 })
 export class FooterComponent implements OnInit, OnDestroy {
   private readonly _rewind = inject(RewindManagerService);
+  private readonly _help = inject(KeyboardHelpService);
   private readonly _destroyRef = inject(DestroyRef);
   private readonly _cdr = inject(ChangeDetectorRef);
 
-  // H2 — track play state for toggle button label
-  readonly isPlaying = signal(false);
-  private _playInterval?: ReturnType<typeof setInterval>;
+  readonly isPlaying = this._rewind.isPlaying;
 
   get step() {
     return this._rewind.step;
@@ -53,7 +52,7 @@ export class FooterComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.stopPlay();
+    this._rewind.stopPlay();
   }
 
   first(): void {
@@ -64,14 +63,12 @@ export class FooterComponent implements OnInit, OnDestroy {
     this._rewind.back();
   }
 
-  // H2 — play auto-advances steps every 800ms; second press stops it
   play(): void {
-    if (this._playInterval) {
-      this.stopPlay();
-    } else {
-      this.isPlaying.set(true);
-      this._playInterval = setInterval(() => this._rewind.forward(), 800);
-    }
+    this._rewind.togglePlay();
+  }
+
+  toggleHelp(): void {
+    this._help.toggle();
   }
 
   forward(): void {
@@ -87,11 +84,4 @@ export class FooterComponent implements OnInit, OnDestroy {
     this._rewind.set(value, 1, this.maxStep);
   }
 
-  private stopPlay(): void {
-    if (this._playInterval) {
-      clearInterval(this._playInterval);
-      this._playInterval = undefined;
-    }
-    this.isPlaying.set(false);
-  }
 }

@@ -10,20 +10,19 @@
 // themes/
 // ********************************************
 
-@import './abstracts/variables';
-
-@import './base/reset';
-@import './base/typography';
-
-@import './layout/canvas';
-@import './layout/footer';
-@import './layout/header';
-@import './layout/sidebar';
-@import './layout/stats';
-@import './layout/welcome';
-
-@import './themes/theme';
-@import './layout/graphics-settings';
+@use './abstracts/variables';
+@use './base/reset';
+@use './base/typography';
+@use './themes/theme';
+@use './layout/canvas';
+@use './layout/footer';
+@use './layout/header';
+@use './layout/sidebar';
+@use './layout/stats';
+@use './layout/welcome';
+@use './layout/graphics-settings';
+@use './layout/keyboard-help';
+@use './layout/input-panel';
 
 // M5 — honour the OS reduced-motion preference; suppresses sidebar transition,
 // loading spinner, and any future CSS animations

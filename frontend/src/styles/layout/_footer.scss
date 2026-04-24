@@ -1,3 +1,5 @@
+@use '../abstracts/variables' as *;
+
 // ── Transport bar ─────────────────────────────────────────────────────────────
 // Full-width instrument strip pinned to viewport bottom.
 .app-footer {
@@ -136,6 +138,32 @@
         background: var(--accent-subtle);
       }
     }
+  }
+}
+
+// ── Keyboard help button ──────────────────────────────────────────────────────
+.transport-help-btn {
+  flex-shrink: 0;
+  margin-left: auto;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border-default);
+  border-radius: 50%;
+  color: var(--text-tertiary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+
+  &:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-subtle);
   }
 }
 

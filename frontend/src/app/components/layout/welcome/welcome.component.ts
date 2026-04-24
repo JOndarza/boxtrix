@@ -37,6 +37,11 @@ export class WelcomeComponent implements OnInit {
     this.dismissed.emit();
   }
 
+  loadDemo(): void {
+    this._processor.loadDemo();
+    this.dismiss();
+  }
+
   load(event: Event): void {
     const files = (event.target as HTMLInputElement).files;
     if (!files?.length) return;

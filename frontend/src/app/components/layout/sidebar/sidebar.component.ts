@@ -164,6 +164,19 @@ export class SidebarComponent implements OnInit {
     this._events.get(AppEvent.CLICKED).next(item.id);
   }
 
+  loadDemo(): void {
+    this._processor.loadDemo();
+  }
+
+  navigateItem(event: Event, delta: number): void {
+    const current = event.currentTarget as HTMLElement;
+    const items = Array.from(
+      current.closest('[role="listbox"]')?.querySelectorAll<HTMLElement>('[role="option"]') ?? [],
+    );
+    const idx = items.indexOf(current);
+    items[idx + delta]?.focus();
+  }
+
   private selectItem(id: string): void {
     this.detail?.fitted.forEach((x) => (x.selected = x.id === id));
     this._cdr.markForCheck();

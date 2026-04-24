@@ -21,11 +21,16 @@ export class OrganizeService {
     data.areas.forEach((area) => {
       if (!area.boxes?.length) return;
 
-      area.boxes = area.boxes.sort(
-        (a, b) =>
+      area.boxes = area.boxes.sort((a, b) => {
+        // Primary: Y ascending so bottom boxes render before top boxes
+        const dy = a.position.y - b.position.y;
+        if (dy !== 0) return dy;
+        // Secondary: XZ distance from the area origin as tiebreaker within the same row
+        return (
           this.getDistanceAtGlobalPosition(area, a) -
-          this.getDistanceAtGlobalPosition(area, b),
-      );
+          this.getDistanceAtGlobalPosition(area, b)
+        );
+      });
     });
   }
 

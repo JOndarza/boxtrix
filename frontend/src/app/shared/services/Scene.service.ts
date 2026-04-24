@@ -1,6 +1,7 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { ViewportGizmo } from 'three-viewport-gizmo';
 
 /**
  * Owns the WebGL lifecycle scoped to a single CanvasComponent instance.
@@ -21,6 +22,7 @@ export class SceneService implements OnDestroy {
   private _frameId!: number;
   private _dirty = false;
   private readonly _raycaster = new THREE.Raycaster();
+  private _viewportGizmo!: ViewportGizmo;
 
   get scene(): THREE.Scene {
     return this._scene;
@@ -42,6 +44,7 @@ export class SceneService implements OnDestroy {
     this._renderer = new THREE.WebGLRenderer({
       antialias: true,
       powerPreference: 'high-performance',
+      preserveDrawingBuffer: true,
     });
     this._renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this._renderer.setSize(width, height);
@@ -60,6 +63,13 @@ export class SceneService implements OnDestroy {
     this._controls.autoRotate = false;
     this._controls.addEventListener('change', this._onControlsChange);
 
+    this._viewportGizmo = new ViewportGizmo(this._camera, this._renderer, {
+      placement: 'top-right',
+      size: 96,
+      offset: { top: 90 },
+    });
+    this._viewportGizmo.attachControls(this._controls);
+
     this._mainGroup = new THREE.Object3D();
     this._scene.add(this._mainGroup);
 
@@ -72,6 +82,7 @@ export class SceneService implements OnDestroy {
     this._camera.aspect = width / height;
     this._camera.updateProjectionMatrix();
     this._renderer.setSize(width, height);
+    this._viewportGizmo.update();
     this.markDirty();
   }
 
@@ -112,6 +123,7 @@ export class SceneService implements OnDestroy {
 
   ngOnDestroy(): void {
     cancelAnimationFrame(this._frameId);
+    this._viewportGizmo.dispose();
     this._controls.removeEventListener('change', this._onControlsChange);
     this._controls.dispose();
     this._renderer.dispose();
@@ -131,6 +143,7 @@ export class SceneService implements OnDestroy {
       this._renderer.render(this._scene, this._camera);
       this._dirty = false;
     }
+    this._viewportGizmo.render();
     this._frameId = requestAnimationFrame(this._animate);
   };
 }

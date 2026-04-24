@@ -1,0 +1,52 @@
+@if (visible()) {
+  <div class="kb-overlay" (click)="close()" aria-modal="true" role="dialog" aria-label="Keyboard shortcuts">
+    <div class="kb-panel" (click)="$event.stopPropagation()">
+      <header class="kb-header">
+        <span class="kb-title">Keyboard shortcuts</span>
+        <button class="kb-close" (click)="close()" aria-label="Close">&#x2715;</button>
+      </header>
+
+      <div class="kb-groups">
+        <section class="kb-group">
+          <h3 class="kb-group-label">Navigation</h3>
+          <dl class="kb-list">
+            <dt><kbd>A</kbd></dt><dd>Step backward</dd>
+            <dt><kbd>D</kbd></dt><dd>Step forward</dd>
+            <dt><kbd>&#x2190;</kbd><kbd>&#x2192;</kbd></dt><dd>Previous / next area</dd>
+            <dt><kbd>&#x2191;</kbd><kbd>&#x2193;</kbd></dt><dd>Navigate sidebar list</dd>
+          </dl>
+        </section>
+
+        <section class="kb-group">
+          <h3 class="kb-group-label">Camera</h3>
+          <dl class="kb-list">
+            <dt><kbd>F</kbd></dt><dd>Focus selected box</dd>
+            <dt><kbd>H</kbd></dt><dd>Frame all — home view</dd>
+            <dt><kbd>1</kbd>–<kbd>9</kbd></dt><dd>Jump to area N</dd>
+            <dt><kbd>V</kbd></dt><dd>Toggle grid &amp; axes</dd>
+          </dl>
+        </section>
+
+        <section class="kb-group">
+          <h3 class="kb-group-label">Playback</h3>
+          <dl class="kb-list">
+            <dt><kbd>Space</kbd></dt><dd>Play / pause auto-step</dd>
+            <dt><kbd>Esc</kbd></dt><dd>Deselect item</dd>
+          </dl>
+        </section>
+
+        <section class="kb-group">
+          <h3 class="kb-group-label">Interface</h3>
+          <dl class="kb-list">
+            <dt><kbd>?</kbd></dt><dd>Show this help</dd>
+            <dt><kbd>Esc</kbd></dt><dd>Close dialog</dd>
+          </dl>
+        </section>
+      </div>
+
+      <footer class="kb-footer">
+        Press <kbd>?</kbd> or <kbd>Esc</kbd> to dismiss
+      </footer>
+    </div>
+  </div>
+}

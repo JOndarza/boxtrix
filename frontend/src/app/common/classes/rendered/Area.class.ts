@@ -56,12 +56,11 @@ export class Area extends RenderedController {
   }
 
   protected orderItems() {
-    const items = this._items.sort(
-      (a, b) =>
-        this.getDistanceAtGlobalPosition(a) -
-        this.getDistanceAtGlobalPosition(b),
-    );
-    this._items = items;
+    this._items = this._items.sort((a, b) => {
+      const dy = a.position.y - b.position.y;
+      if (dy !== 0) return dy;
+      return this.getDistanceAtGlobalPosition(a) - this.getDistanceAtGlobalPosition(b);
+    });
   }
 
   private getDistanceAtGlobalPosition(item: RenderedController) {

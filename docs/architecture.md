@@ -91,3 +91,83 @@ User input (sidebar)
 
 - NestJS built-in exception filter handles unhandled errors (500 by default)
 - TODO: introduce typed `HttpException` responses for domain-level errors
+
+## UI patterns & services added (2026-04-24)
+
+### New services in `shared/services/`
+
+| Service | State | Methods | Consumers |
+|---|---|---|---|
+| `KeyboardHelpService` | `isVisible: signal<boolean>` | `toggle()`, `close()` | `CanvasComponent` (`?` key), `FooterComponent` (`?` button) |
+| `InputPanelService` | `isPanelOpen: signal<boolean>`, `units: signal<Units>` | `toggle()`, `close()`, `run(areas, boxes)`, `exportJson(areas, boxes)`, `buildInput(areas, boxes): IInput` | `InputPanelComponent` |
+
+`InputPanelService.buildInput()` converts `AreaRow[]`/`BoxRow[]` form data into `IInput` and delegates to `ProcessorService.sort()`.
+
+### Modified services
+
+**`RewindManagerService`** — now owns play state:
+- Added `isPlaying: Signal<boolean>`, `togglePlay()`, `stopPlay()`
+- `FooterComponent` and `CanvasComponent` both delegate to these instead of managing their own interval references
+
+**`FocusManagerService`** — added `clear()`:
+- Un-highlights the currently selected object
+- Fires `AppEvent.RAYCAST` with an empty string to deselect the sidebar item
+
+**`ContextService`** — initial step now starts at `maxStep`:
+- All boxes are visible on load instead of starting at step `1`
+
+### New components
+
+**`KeyboardHelpComponent`** (`layout/keyboard-help/`):
+- Glassmorphism overlay listing all keyboard shortcuts grouped by category
+- Visibility controlled entirely by `KeyboardHelpService`
+
+**`InputPanelComponent`** (`layout/input-panel/`):
+- Fixed right-side drawer (360 px wide)
+- Uses Reactive Forms (`FormArray`) for dynamic rows of areas and boxes
+- Tab navigation between cells; Enter appends a new row; × removes a row
+- Validates all rows before delegating to `InputPanelService.run()`
+
+### Key patterns added
+
+**Canvas click isolation**
+
+`handleCanvasClick` was moved from `document` to `canvas.nativeElement`. This prevents sidebar clicks from triggering the raycaster and deselecting the active object.
+
+**Sidebar→3D selection bridge**
+
+`CanvasComponent` subscribes to `AppEvent.CLICKED` (fired by `SidebarComponent`) and resolves the object via `mainGroup.getObjectByProperty('uuid', id)`, then calls `FocusManagerService.set(obj)`.
+
+**Keyboard shortcuts** (handled in `CanvasComponent.handleKeyDown`)
+
+| Key | Action |
+|---|---|
+| `F` | Focus selected object (camera lerp) |
+| `H` | Frame all objects (camera lerp) |
+| `V` | Toggle grid + axes helpers |
+| `Space` | `RewindManagerService.togglePlay()` |
+| `Escape` | `FocusManagerService.clear()` + close all overlays |
+| `?` | `KeyboardHelpService.toggle()` |
+| `1`–`9` | Jump to area N (camera lerp) |
+
+**Camera lerp animation**
+
+`_animateCameraTo(targetPos, targetLookAt, duration)` — RAF loop using `easeInOutCubic`, cancellable at any time via `_cameraAnimId`. Used by `F`, `H`, and `1`–`9` shortcuts. Typical duration: 400–500 ms.
+
+**Hover highlight**
+
+`handleCanvasMouseMove` is bound to the canvas element. On each mousemove it raycasts the scene and applies `emissive.setHex(0x2a2a2a)` to the hovered non-selected mesh, clearing the emissive when the cursor leaves.
+
+### Stats panel changes
+
+- All labels translated to English: "Space utilization", "Available volume", "Occupied", "Wasted", "Placed items", "Unplaced", "Unplaced volume"
+- Space utilization % promoted to hero metric: `2.4rem`, accent color, rendered at the top of the panel
+
+### Sidebar changes
+
+| Change | Detail |
+|---|---|
+| Demo data button | Empty-state button calls `ProcessorService.loadDemo()` |
+| Arrow key navigation | `navigateItem(event, delta)` moves focus `↑`/`↓` through listbox items |
+| Unfitted item style | Opacity raised to `0.85`; color set to `--status-unfit` |
+| Toggle button | Widened to `32 px`; color swatches enlarged to `12 px` |

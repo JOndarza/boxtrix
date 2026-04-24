@@ -37,7 +37,8 @@ export class ContextService {
   private load(data: Project): void {
     this._project = data;
     this._detail.load(this.project);
-    this._rewind.set(1, 1, this._detail.fitted.at(-1)?.globalStep ?? 1);
+    const maxStep = this._detail.fitted.at(-1)?.globalStep ?? 1;
+    this._rewind.set(maxStep, 1, maxStep);
     this._events.get(AppEvent.RENDERING).next();
   }
 }

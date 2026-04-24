@@ -6,6 +6,15 @@
 <div class="header-controls">
   <button
     class="header-icon-btn"
+    (click)="toggleInputPanel()"
+    [class.active]="isInputPanelOpen()"
+    [attr.aria-pressed]="isInputPanelOpen()"
+    title="New packing"
+    aria-label="New packing"
+  >+</button>
+
+  <button
+    class="header-icon-btn"
     (click)="toggleGraphicsPanel()"
     [class.active]="isPanelOpen()"
     [attr.aria-pressed]="isPanelOpen()"
