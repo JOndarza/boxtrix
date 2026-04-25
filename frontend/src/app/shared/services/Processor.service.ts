@@ -7,6 +7,7 @@ import { RenderedController } from '@common/classes/rendered/Rendered.controller
 import { IBox, IInput } from '@common/dtos/Input.interface';
 import { IOrganizedArea, IOutput } from '@common/dtos/Output.interface';
 import { Corner } from '@common/enums/Corner.enum';
+import { Rotation } from '@common/enums/Rotation.enum';
 import { newId } from '@common/functions/id.function';
 
 import { AppEvent, EventsService } from './Events.service';
@@ -241,16 +242,19 @@ export class ProcessorService {
     return (
       organized.boxes?.map((box) => {
         const item = originals.find((i) => i.id === box.id) || ({} as IBox);
-        // The backend sends `rotatedSize` already adjusted for the applied rotation;
-        // using the original `item` dimensions here would render rotated boxes with
-        // their pre-rotation footprint and produce visible overlaps.
+        // The backend sends `rotatedSize` already adjusted for the applied rotation
+        // and serializes the Rotation enum as a string (camelCase) which doesn't match
+        // the frontend's numeric `const enum`, so local fixMeans() rotation is unreliable.
+        // Pass the rotated size as `means` and tag rotation as WHD (identity) so the
+        // controller's fixedMeans equals the size the backend actually placed.
         const means = box.rotatedSize ?? item;
+        const rotation = box.rotatedSize ? Rotation.WHD : box.rotation;
         return new RenderedController(item.id, item.name || '', item.detail || '', {
           type: 'box',
           targetable: true,
           position: { x: box.position.x, y: box.position.y, z: box.position.z },
           means,
-          rotation: box.rotation,
+          rotation,
         });
       }) ?? []
     );
