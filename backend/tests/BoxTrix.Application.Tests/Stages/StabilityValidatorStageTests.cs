@@ -16,7 +16,7 @@ public sealed class StabilityValidatorStageTests
     {
         var candidate = Aabb.FromPositionAndSize(new Position(0, 0, 0), new Measurements(10, 10, 10));
 
-        _stability.IsStable(candidate, [], minSupportRatio: 1.0).Should().BeTrue();
+        _stability.IsStable(candidate, (IReadOnlyList<PlacedBox>)[], minSupportRatio: 1.0).Should().BeTrue();
     }
 
     [Fact]
@@ -25,7 +25,7 @@ public sealed class StabilityValidatorStageTests
         // Half-overhanging box at y>0 with no support at all
         var candidate = Aabb.FromPositionAndSize(new Position(50, 10, 0), new Measurements(10, 10, 10));
 
-        _stability.IsStable(candidate, [], minSupportRatio: 0).Should().BeTrue();
+        _stability.IsStable(candidate, (IReadOnlyList<PlacedBox>)[], minSupportRatio: 0).Should().BeTrue();
     }
 
     [Fact]

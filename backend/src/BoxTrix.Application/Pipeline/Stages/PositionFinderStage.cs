@@ -1,5 +1,6 @@
 using BoxTrix.Domain.Contracts;
 using BoxTrix.Domain.Entities;
+using BoxTrix.Domain.Functions;
 using BoxTrix.Domain.ValueObjects;
 using Microsoft.Extensions.Logging;
 
@@ -31,7 +32,18 @@ public sealed class PositionFinderStage : IPipelineStage
         IReadOnlyList<PlacedBox> areaPlaced,
         double minSupportRatio)
     {
+        var areaSize = context.Source.Size;
+
+        // Build the support surface once per placement attempt instead of re-scanning
+        // areaPlaced on every EP × rotation stability check (O(n) → O(1) lookup).
+        var surface = GeometryFunctions.BuildSupportSurface(areaPlaced);
+
+        // Pre-filter: discard EPs where the candidate clearly overflows the area or
+        // stack-height cap before constructing a full AABB.
         var orderedEps = layer.ExtremePoints
+            .Where(p => p.X + candidate.Size.Width  <= areaSize.Width
+                     && p.Y + candidate.Size.Height <= context.MaxStackHeight
+                     && p.Z + candidate.Size.Depth  <= areaSize.Depth)
             .OrderBy(p => p.Y)
             .ThenBy(p => p.Z)
             .ThenBy(p => p.X)
@@ -39,11 +51,8 @@ public sealed class PositionFinderStage : IPipelineStage
 
         foreach (var ep in orderedEps)
         {
-            var placement = TryAt(ep, candidate, context, areaPlaced, minSupportRatio);
-            if (placement is null)
-            {
-                continue;
-            }
+            var placement = TryAt(ep, candidate, context, areaPlaced, surface, minSupportRatio);
+            if (placement is null) continue;
 
             CommitPlacement(layer, ep, placement);
             _logger.LogDebug("Placed {Box} at ({X},{Y},{Z}) rotation {Rotation}",
@@ -61,37 +70,24 @@ public sealed class PositionFinderStage : IPipelineStage
         RotatedBox candidate,
         AreaContext context,
         IReadOnlyList<PlacedBox> areaPlaced,
+        Dictionary<long, List<Aabb>> surface,
         double minSupportRatio)
     {
         var aabb = Aabb.FromPositionAndSize(ep, candidate.Size);
         var areaAabb = Aabb.FromPositionAndSize(Position.Origin, context.Source.Size);
 
-        if (!areaAabb.Contains(aabb))
-        {
-            return null;
-        }
-        if (aabb.Max.Y > context.MaxStackHeight)
-        {
-            return null;
-        }
+        if (!areaAabb.Contains(aabb)) return null;
+        if (aabb.Max.Y > context.MaxStackHeight) return null;
+
         foreach (var f in context.Forbidden)
         {
-            if (aabb.Overlaps(f))
-            {
-                return null;
-            }
+            if (aabb.Overlaps(f)) return null;
         }
         foreach (var p in areaPlaced)
         {
-            if (aabb.Overlaps(p.Aabb))
-            {
-                return null;
-            }
+            if (aabb.Overlaps(p.Aabb)) return null;
         }
-        if (!_stability.IsStable(aabb, areaPlaced, minSupportRatio))
-        {
-            return null;
-        }
+        if (!_stability.IsStable(aabb, surface, minSupportRatio)) return null;
 
         return new PlacedBox(candidate.Source, ep, candidate.Rotation, candidate.Size);
     }

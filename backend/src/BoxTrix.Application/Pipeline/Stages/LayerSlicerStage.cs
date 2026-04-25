@@ -62,13 +62,18 @@ public sealed class LayerSlicerStage : IPipelineStage
         List<PlacedBox> allPlaced,
         double minSupportRatio)
     {
+        // Minimum dimension of the box across all six rotations — the smallest
+        // headroom any rotation could ever need.
+        long minBoxHeight = box.Size.MinDimension;
+
         foreach (var layer in layers)
         {
             long heightCap = context.MaxStackHeight - layer.YBase;
-            if (heightCap <= 0)
-            {
+
+            // Skip layer if even the flattest rotation cannot fit height-wise,
+            // or if the layer has no extreme points to try.
+            if (heightCap <= 0 || heightCap < minBoxHeight || layer.ExtremePoints.Count == 0)
                 continue;
-            }
 
             foreach (var rotated in _rotations.Candidates(box, heightCap))
             {

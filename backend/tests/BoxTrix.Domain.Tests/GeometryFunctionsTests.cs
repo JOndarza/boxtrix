@@ -26,7 +26,7 @@ public sealed class GeometryFunctionsTests
     public void Floor_placements_have_full_support()
     {
         var candidate = Aabb.FromPositionAndSize(new Position(0, 0, 0), new Measurements(10, 10, 10));
-        GeometryFunctions.SupportRatio(candidate, []).Should().Be(1.0);
+        GeometryFunctions.SupportRatio(candidate, (IReadOnlyList<PlacedBox>)[]).Should().Be(1.0);
     }
 
     [Fact]
@@ -80,7 +80,7 @@ public sealed class GeometryFunctionsTests
     public void Support_ratio_is_zero_when_no_box_below_at_y_greater_than_zero()
     {
         var candidate = Aabb.FromPositionAndSize(new Position(0, 10, 0), new Measurements(10, 5, 10));
-        GeometryFunctions.SupportRatio(candidate, []).Should().Be(0.0);
+        GeometryFunctions.SupportRatio(candidate, (IReadOnlyList<PlacedBox>)[]).Should().Be(0.0);
     }
 
     [Fact]

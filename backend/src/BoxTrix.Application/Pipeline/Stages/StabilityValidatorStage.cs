@@ -15,16 +15,19 @@ public sealed class StabilityValidatorStage : IPipelineStage
 {
     public bool IsStable(Aabb candidate, IReadOnlyList<PlacedBox> placed, double minSupportRatio)
     {
-        if (minSupportRatio <= 0)
-        {
-            return true;
-        }
-
-        if (GeometryFunctions.SupportRatio(candidate, placed) < minSupportRatio)
-        {
-            return false;
-        }
-
+        if (minSupportRatio <= 0) return true;
+        if (GeometryFunctions.SupportRatio(candidate, placed) < minSupportRatio) return false;
         return GeometryFunctions.CentreOfGravityInsideSupport(candidate, placed);
+    }
+
+    /// <summary>
+    /// Fast overload using a pre-built support surface. Avoids re-scanning the
+    /// full placed list on every EP attempt within a single TryPlace call.
+    /// </summary>
+    public bool IsStable(Aabb candidate, Dictionary<long, List<Aabb>> surface, double minSupportRatio)
+    {
+        if (minSupportRatio <= 0) return true;
+        if (GeometryFunctions.SupportRatio(candidate, surface) < minSupportRatio) return false;
+        return GeometryFunctions.CentreOfGravityInsideSupport(candidate, surface);
     }
 }
