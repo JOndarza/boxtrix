@@ -38,10 +38,15 @@ npm start
 ## Tests
 
 ```sh
-# Backend
+# Backend — all three projects
 cd backend && dotnet test
 
-# Frontend
+# Backend — individual projects
+dotnet test backend/tests/BoxTrix.Domain.Tests
+dotnet test backend/tests/BoxTrix.Application.Tests
+dotnet test backend/tests/BoxTrix.Api.Tests
+
+# Frontend (Karma/Jasmine — requires Chrome)
 cd frontend && npm test
 ```
 
