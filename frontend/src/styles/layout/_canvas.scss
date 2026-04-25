@@ -1,5 +1,46 @@
 .canvas {
+  position: relative;
   width: 100%;
   height: calc(100vh - var(--footer-height));
   overflow: hidden;
+}
+
+// CSS2DRenderer box labels
+.scene-label {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 0.65rem;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  padding: 1px 5px;
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
+// Fly mode indicator
+.fly-mode-badge {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: #fff;
+  background: rgba(99, 179, 237, 0.25);
+  border: 1px solid rgba(99, 179, 237, 0.6);
+  border-radius: 4px;
+  padding: 3px 10px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+// SelectionHelper rubber-band rectangle
+.selectBox {
+  border: 1px solid #55aaff;
+  background-color: rgba(75, 160, 255, 0.08);
+  position: fixed;
+  pointer-events: none;
 }
