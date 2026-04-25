@@ -10,6 +10,7 @@ public readonly record struct Measurements(long Width, long Height, long Depth)
     public double Volume => (double)Width * Height * Depth;
 
     public long MaxDimension => Math.Max(Width, Math.Max(Height, Depth));
+    public long MinDimension => Math.Min(Width, Math.Min(Height, Depth));
 }
 
 public readonly record struct DecimalMeasurements(decimal Width, decimal Height, decimal Depth);
