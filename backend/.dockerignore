@@ -1,4 +1,9 @@
-node_modules
-build
-dist
-.git
+**/bin/
+**/obj/
+**/*.user
+.vs/
+.idea/
+.vscode/
+**/.DS_Store
+**/coverage/
+**/TestResults/

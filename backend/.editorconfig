@@ -1,0 +1,30 @@
+root = true
+
+[*]
+indent_style = space
+indent_size = 4
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.{json,yml,yaml,csproj,props,sln}]
+indent_size = 2
+
+[*.cs]
+csharp_new_line_before_open_brace = all
+csharp_new_line_before_else = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_finally = true
+csharp_indent_case_contents = true
+csharp_indent_switch_labels = true
+csharp_space_after_keywords_in_control_flow_statements = true
+dotnet_sort_system_directives_first = true
+
+# Suppress warnings that conflict with our style
+dotnet_diagnostic.CA1515.severity = none  # Allow public types in app projects
+dotnet_diagnostic.CA1707.severity = none  # Underscores in identifiers (test method naming)
+dotnet_diagnostic.CA1062.severity = none  # Public method args nullability already covered by NRT
+
+[*Tests/**.cs]
+dotnet_diagnostic.CA1707.severity = none

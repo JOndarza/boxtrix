@@ -5,169 +5,148 @@
 BoxTrix follows a **Clean Architecture** split into two independent applications that communicate over HTTP.
 
 ```
-frontend/ (Angular 18 + Three.js)
+frontend/ (Angular + Three.js)
     └── HTTP POST /organize/sort
-backend/ (Node.js + NestJS + TypeScript)
-    └── OrganizeModule
-        ├── OrganizeController  (HTTP)
-        ├── OrganizeService     (orchestration)
-        └── BINPACKINGJSService (domain algorithm)
+backend/ (ASP.NET Core minimal API on .NET 10)
+    └── BoxTrix.Api ──► BoxTrix.Application ──► BoxTrix.Domain
+                          (PackingPipeline)
 ```
 
 ## Backend structure
 
-### Entry point (`backend/src/main.ts`)
-Bootstraps NestJS with Helmet, CORS, compression, and Morgan. Loads env vars via `configureVars()`.
+### Solution layout
 
-### Root module (`backend/src/app.module.ts`)
-Imports feature modules. Currently: `OrganizeModule`.
+```
+backend/
+├── BoxTrix.sln
+├── Directory.Build.props
+├── src/
+│   ├── BoxTrix.Domain/
+│   │   ├── Enums/                 (Rotation, Corner, Units)
+│   │   ├── ValueObjects/          (Position, Measurements, Aabb)
+│   │   ├── Entities/              (Box, Area, ExitCorridor, PlacedBox, OrganizedArea)
+│   │   ├── Functions/             (GeometryFunctions — rotate, support, AABB)
+│   │   └── Contracts/             (IPipelineStage marker)
+│   │
+│   ├── BoxTrix.Application/
+│   │   ├── DependencyInjection.cs
+│   │   └── Pipeline/
+│   │       ├── PackingPipeline.cs        (orchestrator + IPacker)
+│   │       ├── PipelineRequest.cs / PipelineResponse.cs (decimal-space)
+│   │       ├── NormalizedRequest.cs / AreaContext.cs / Layer.cs
+│   │       └── Stages/  (eleven specialised classes)
+│   │
+│   └── BoxTrix.Api/
+│       ├── Program.cs
+│       ├── Endpoints/             (OrganizeEndpoints — MapPost("/organize/sort", …))
+│       ├── Dtos/                  (InputDto, OutputDto, Mappers)
+│       └── Validators/            (FluentValidation rules per DTO)
+│
+└── tests/  (Domain.Tests, Application.Tests, Api.Tests)
+```
 
-### Feature module (`backend/src/organize/`)
+### Domain layer — invariants
 
-| File | Role |
-|---|---|
-| `organize.module.ts` | Declares providers: `OrganizeService`, `BINPACKINGJSService` |
-| `organize.controller.ts` | `POST /organize/sort` — receives `IInput`, returns `IOutput` |
-| `organize.service.ts` | Orchestrates the algorithm call; sorts result boxes by proximity to area origin |
+- `Position`/`Measurements` are scaled-integer (`long`) value objects produced by the `NormalizerStage` (×10^5)
+- `DecimalPosition`/`DecimalMeasurements` are user-space (`decimal`) — produced by the `DenormalizerStage` and consumed by the API mapper
+- `Aabb` overlap is half-open: two AABBs sharing a single face do **not** collide
+- `GeometryFunctions.SupportRatio` returns `[0, 1]`; the floor (y = 0) is always fully supported
+- `Box.GravityKey = (Weight ?? 1) × Volume` — the sort key for bottom-up placement
+- Domain has **zero** dependencies on Application or Api
 
-### Domain layer (`backend/src/lib/domain/`)
-Zero dependencies on outer layers. Contains only pure logic and interfaces.
+### Application layer — the pipeline
 
-| Path | Contents |
-|---|---|
-| `services/algorithms/BINPACKINGJS/` | `BINPACKINGJSService` — wraps BP3D, finds best fit per area by binary-searching minimum dimensions on each axis |
-| `interfaces/structures/` | `IInput`, `IOutput`, `IBox`, `IArea`, `IOrganizedBox`, `IOrganizedArea`, `IMeasurements` |
-| `functions/` | `getVolume()` — pure measurement utility |
-| `enums/` | `Units`, `Rotation` |
+The `PackingPipeline` orchestrator wires eleven stages registered as singletons. Every stage is a single-responsibility class so individual heuristics can be swapped without touching the rest.
 
-### Environment (`backend/src/environment/vars.ts`)
-Typed wrapper around `process.env`. `getVar()` returns `string | undefined`.
+| # | Stage | Responsibility |
+|---|---|---|
+| a | `NormalizerStage` | Validate input, scale decimal → `long` ×10^5, default missing weights |
+| b | `AreaPreprocessorStage` | Map `Corner` to canonical (0,0,0), flip exit-corridor AABB into canonical space, resolve `MaxStackHeight` |
+| c | `BoxSorterStage` | Stable sort: `weight × volume` desc → volume → max dim → id |
+| d | `AreaSelectorStage` | Iterate areas largest-volume-first; per area run e..i; collect unfitted |
+| e | `LayerSlicerStage` | Maintain Y layers bottom-up; open new layers on demand under `MaxStackHeight` |
+| f | `RotationOptimizerStage` | Yield the six rotations ordered by base area desc, height asc (stability bias) |
+| g | `PositionFinderStage` | **Extreme Points heuristic** (Crainic, Perboli, Tadei 2008). Picks lex-smallest EP `(z, x, y)` that satisfies bounds, no overlap, no forbidden region, height cap, stability |
+| h | `StabilityValidatorStage` | Reject `y > 0` placements with support ratio below `MinSupportRatio` (default 0.7) or CoG outside the supporting polygon |
+| i | `CompactorStage` | Greedy push toward origin: `-x` then `-z` then `-y`. Re-validates stability after each push |
+| j | `UnfittedCollectorStage` | Build a synthetic `UNFITTED` area large enough for everything that did not fit; pack it through the same pipeline (no corridor, no cap, no stability) |
+| k | `DenormalizerStage` | `÷ 10^5` and apply the inverse X/Z flip per area so coordinates are anchored to the user's chosen corner |
+
+### Api layer
+
+`Program.cs` wires DI (`AddBoxTrixApplication()`), CORS for `FRONTEND_ORIGIN`, JSON camelCase + string enums, and Swashbuckle for `/swagger`.
+
+`OrganizeEndpoints.MapOrganizeEndpoints` registers `POST /organize/sort` returning `Ok<OutputDto>` or `ValidationProblem` (RFC 7807).
+
+`Mappers` translate `InputDto ↔ PipelineRequest` and `PipelineResponse → OutputDto`. Application never sees the wire shape.
 
 ## Frontend layers (`frontend/src/app/`)
 
 | Folder | Role |
 |---|---|
-| `components/` | Standalone UI components: `canvas` (Three.js scene), `sidebar`, `header`, `footer` |
+| `components/` | Standalone UI components: `canvas` (Three.js scene), `sidebar`, `header`, `footer`, `layout/input-panel`, `layout/keyboard-help` |
 | `common/api/` | Typed HTTP service (`OrganizeService extends ApiServiceBase`) |
-| `common/services/` | Utilities: `CommunicationService` (API URL + auth), `StorageService` (localStorage) |
-| `common/classes/rendered/` | Three.js scene objects: `Area`, `Rendered`, `RenderedController`, `Project`, `Bases` |
+| `common/classes/rendered/` | Three.js scene objects: `Area` (now carries `exitCorridor`), `Rendered`, `RenderedController`, `Project`, `Bases` |
 | `common/dtos/` | Shared TypeScript interfaces mirroring backend contracts |
-| `shared/services/` | Cross-feature: `ProcessorService`, `ContextService`, `EventsService`, `RewindManagerService`, `FocusManagerService`, `TextManagerService`, `ConstantsService`, `ThemeService`, `GraphicsService` |
+| `common/enums/` | `Rotation`, `Corner`, `Units` (mirror of backend enums) |
+| `shared/services/` | Cross-feature: `ProcessorService`, `ContextService`, `EventsService`, `RewindManagerService`, `FocusManagerService`, `TextManagerService`, `ConstantsService`, `ThemeService`, `GraphicsService`, `KeyboardHelpService`, `InputPanelService` |
 
 ## Data flow
 
 ```
-User input (sidebar)
+User input (input-panel)
+  → InputPanelService.buildInput()           (form rows → IInput)
   → ProcessorService.sort()
-  → POST /organize/sort (HTTP via OrganizeService)
-  → OrganizeController → OrganizeService → BINPACKINGJSService
+  → POST /organize/sort                      (HTTP via OrganizeService)
+  → BoxTrix.Api.OrganizeEndpoints.Sort
+      ├─► InputValidator (FluentValidation)
+      ├─► Mappers.ToPipelineRequest
+      ├─► PackingPipeline.Pack            ─── stages a..k
+      └─► Mappers.FromPipelineResponse
   → IOutput returned
-  → ContextService stores project
+  → ProcessorService.handle() builds Project
+  → ContextService stores it
   → AppEvent.RENDERING fired
-  → CanvasComponent renders Three.js scene
+  → CanvasComponent renders Three.js scene (drawContainer + drawExitCorridor + drawBox)
 ```
 
 ## Key patterns
 
-- **NestJS DI**: services declared in `providers` array of the module; injected by class type in constructors
-- **Routing**: `@Controller('organize')` + `@Post('sort')` → `/organize/sort`
-- **JWT auth**: not yet wired on `POST /organize/sort` (public). Add `@UseGuards(JwtGuard)` when needed
-- **Algorithm precision**: BinPackingJS requires integers — inputs multiplied by `10^5`, outputs divided back
-- **Gravity sort**: items sorted by `weight ?? volume` descending before packing so heavier items land at lower Y
-- **Unfitted boxes**: boxes that cannot fit any area are collected into a virtual `UNFITTED` area, never silently dropped
-- **Frontend events**: `AppEvent` enum (`LOADING`, `LOADED`, `RENDERING`, `RENDERED`, `RAYCAST`, `CLICKED`) — `EventsService` provides typed `Subject<T>` per event
-- **3D selection**: `FocusManagerService.set()` fires `AppEvent.RAYCAST` with the object id; `SidebarComponent` subscribes to highlight the matching list item
-- **User preferences**: `ThemeService` and `GraphicsService` follow the same pattern — Angular `signal()` for state, direct `localStorage` for persistence (keys `boxtrix-theme` / `boxtrix-graphics`), `providedIn: 'root'`. Never use `StorageService` for preferences; keep persistence inline.
-- **WebGL quality**: `SceneService` exposes `setPixelRatio(ratio)` and `setToneMapping(mode)` for runtime quality changes. `CanvasComponent` wires `GraphicsService` signals to these methods via `effect()` guarded by `_sceneReady`. Initial settings are applied imperatively in `ngOnInit` after `init()` so the first frame renders at the saved quality.
+- **DI (backend)**: services registered in `BoxTrix.Application/DependencyInjection.cs`; injected by type via constructor — no service-locator
+- **Routing**: minimal API `MapPost("/organize/sort", …)`; auth not yet wired (public)
+- **Algorithm precision**: `NormalizerStage` multiplies by 10^5; `DenormalizerStage` divides on the way out
+- **Bottom-up gravity**: `BoxSorterStage` sorts by `Weight × Volume` desc so heavy items consume the floor first; combined with `LayerSlicer`, this produces a physically stable stack
+- **Corner-anchored packing**: `AreaPreprocessor` maps the user's `accessCorner` to (0, 0, 0); the `Denormalizer` mirrors X/Z so user-space coordinates remain anchored to the chosen corner
+- **Forbidden regions**: `IArea.exitCorridor` (AABB) is honoured by the `PositionFinder`; the frontend renders it as a translucent red mesh
+- **Unfitted boxes**: never silently dropped — they go to a virtual `UNFITTED` area with `unplaced = true`
+- **Frontend events**: `AppEvent` enum (`LOADING`, `LOADED`, `RENDERING`, `RENDERED`, `RAYCAST`, `CLICKED`); `EventsService` provides typed `Subject<T>` per event
+- **3D selection**: `FocusManagerService.set()` fires `AppEvent.RAYCAST`; the sidebar subscribes to highlight the matching list item
+- **User preferences**: `ThemeService` and `GraphicsService` use `signal()` + inline `localStorage`; never `StorageService` for preferences
+- **WebGL quality**: `SceneService.setPixelRatio` / `setToneMapping` apply runtime renderer changes; `CanvasComponent` wires `GraphicsService` signals via `effect()` guarded by `_sceneReady`
 
 ## Dependency rules
 
-- Domain has **zero** dependencies on other layers
-- Feature module (`organize/`) depends on Domain only
-- Domain never imports from `organize/`
+- Domain has **zero** dependencies on Application, Api, or third parties beyond the BCL
+- Application references Domain only
+- Api references Domain + Application
 - Frontend components never call `HttpClient` directly — always through `common/api/` services
 
 ## Error handling
 
-- NestJS built-in exception filter handles unhandled errors (500 by default)
-- TODO: introduce typed `HttpException` responses for domain-level errors
+- Validation failures return RFC 7807 `ValidationProblem` (HTTP 400) via `TypedResults.ValidationProblem`
+- Uncaught exceptions surface as 500 via the default ASP.NET Core handler
+- TODO: typed problem details for domain-level errors (`UnreachableCorner`, `UnsupportedRotation`, etc.)
 
-## UI patterns & services added (2026-04-24)
+## UI patterns
 
-### New services in `shared/services/`
+### Input panel — extended fields (2026-04-24)
 
-| Service | State | Methods | Consumers |
-|---|---|---|---|
-| `KeyboardHelpService` | `isVisible: signal<boolean>` | `toggle()`, `close()` | `CanvasComponent` (`?` key), `FooterComponent` (`?` button) |
-| `InputPanelService` | `isPanelOpen: signal<boolean>`, `units: signal<Units>` | `toggle()`, `close()`, `run(areas, boxes)`, `exportJson(areas, boxes)`, `buildInput(areas, boxes): IInput` | `InputPanelComponent` |
+| Field | Where | Notes |
+|---|---|---|
+| `accessCorner` | per area row | Select with the four floor corners; default `BottomFrontLeft` |
+| `exitCorridor` | per area, expandable sub-row | AABB (`x, y, z, width, height, depth`) marking a forbidden region |
+| `weight` (kg) | per box row | Optional; falls back to volume when missing |
 
-`InputPanelService.buildInput()` converts `AreaRow[]`/`BoxRow[]` form data into `IInput` and delegates to `ProcessorService.sort()`.
+### Canvas — exit corridor rendering
 
-### Modified services
-
-**`RewindManagerService`** — now owns play state:
-- Added `isPlaying: Signal<boolean>`, `togglePlay()`, `stopPlay()`
-- `FooterComponent` and `CanvasComponent` both delegate to these instead of managing their own interval references
-
-**`FocusManagerService`** — added `clear()`:
-- Un-highlights the currently selected object
-- Fires `AppEvent.RAYCAST` with an empty string to deselect the sidebar item
-
-**`ContextService`** — initial step now starts at `maxStep`:
-- All boxes are visible on load instead of starting at step `1`
-
-### New components
-
-**`KeyboardHelpComponent`** (`layout/keyboard-help/`):
-- Glassmorphism overlay listing all keyboard shortcuts grouped by category
-- Visibility controlled entirely by `KeyboardHelpService`
-
-**`InputPanelComponent`** (`layout/input-panel/`):
-- Fixed right-side drawer (360 px wide)
-- Uses Reactive Forms (`FormArray`) for dynamic rows of areas and boxes
-- Tab navigation between cells; Enter appends a new row; × removes a row
-- Validates all rows before delegating to `InputPanelService.run()`
-
-### Key patterns added
-
-**Canvas click isolation**
-
-`handleCanvasClick` was moved from `document` to `canvas.nativeElement`. This prevents sidebar clicks from triggering the raycaster and deselecting the active object.
-
-**Sidebar→3D selection bridge**
-
-`CanvasComponent` subscribes to `AppEvent.CLICKED` (fired by `SidebarComponent`) and resolves the object via `mainGroup.getObjectByProperty('uuid', id)`, then calls `FocusManagerService.set(obj)`.
-
-**Keyboard shortcuts** (handled in `CanvasComponent.handleKeyDown`)
-
-| Key | Action |
-|---|---|
-| `F` | Focus selected object (camera lerp) |
-| `H` | Frame all objects (camera lerp) |
-| `V` | Toggle grid + axes helpers |
-| `Space` | `RewindManagerService.togglePlay()` |
-| `Escape` | `FocusManagerService.clear()` + close all overlays |
-| `?` | `KeyboardHelpService.toggle()` |
-| `1`–`9` | Jump to area N (camera lerp) |
-
-**Camera lerp animation**
-
-`_animateCameraTo(targetPos, targetLookAt, duration)` — RAF loop using `easeInOutCubic`, cancellable at any time via `_cameraAnimId`. Used by `F`, `H`, and `1`–`9` shortcuts. Typical duration: 400–500 ms.
-
-**Hover highlight**
-
-`handleCanvasMouseMove` is bound to the canvas element. On each mousemove it raycasts the scene and applies `emissive.setHex(0x2a2a2a)` to the hovered non-selected mesh, clearing the emissive when the cursor leaves.
-
-### Stats panel changes
-
-- All labels translated to English: "Space utilization", "Available volume", "Occupied", "Wasted", "Placed items", "Unplaced", "Unplaced volume"
-- Space utilization % promoted to hero metric: `2.4rem`, accent color, rendered at the top of the panel
-
-### Sidebar changes
-
-| Change | Detail |
-|---|---|
-| Demo data button | Empty-state button calls `ProcessorService.loadDemo()` |
-| Arrow key navigation | `navigateItem(event, delta)` moves focus `↑`/`↓` through listbox items |
-| Unfitted item style | Opacity raised to `0.85`; color set to `--status-unfit` |
-| Toggle button | Widened to `32 px`; color swatches enlarged to `12 px` |
+`CanvasComponent.drawExitCorridor(parent, area)` adds a translucent red mesh + wireframe inside the area container when `area.exitCorridor` is present. Coordinates are area-local; the parent transform (centred at zero) is taken into account.

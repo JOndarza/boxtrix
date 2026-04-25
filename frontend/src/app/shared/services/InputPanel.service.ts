@@ -1,12 +1,52 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { IInput } from '@common/dtos/Input.interface';
+import { Corner } from '@common/enums/Corner.enum';
+import { IArea, IBox, IInput } from '@common/dtos/Input.interface';
 import { ProcessorService } from './Processor.service';
 
-export interface AreaRow { name: string; width: string; height: string; depth: string; }
-export interface BoxRow  { name: string; width: string; height: string; depth: string; qty: string; }
+export interface AreaRow {
+  name: string;
+  width: string;
+  height: string;
+  depth: string;
+  accessCorner: Corner;
+  corridor?: CorridorRow | null;
+}
 
-export const emptyAreaRow = (): AreaRow => ({ name: '', width: '', height: '', depth: '' });
-export const emptyBoxRow  = (): BoxRow  => ({ name: '', width: '', height: '', depth: '', qty: '1' });
+export interface CorridorRow {
+  x: string;
+  y: string;
+  z: string;
+  width: string;
+  height: string;
+  depth: string;
+}
+
+export interface BoxRow {
+  name: string;
+  width: string;
+  height: string;
+  depth: string;
+  qty: string;
+  weight: string;
+}
+
+export const emptyAreaRow = (): AreaRow => ({
+  name: '',
+  width: '',
+  height: '',
+  depth: '',
+  accessCorner: Corner.BottomFrontLeft,
+  corridor: null,
+});
+
+export const emptyBoxRow = (): BoxRow => ({
+  name: '',
+  width: '',
+  height: '',
+  depth: '',
+  qty: '1',
+  weight: '',
+});
 
 @Injectable({ providedIn: 'root' })
 export class InputPanelService {
@@ -39,21 +79,38 @@ export class InputPanelService {
     const validAreas = areaRows.filter((r) => +r.width > 0 && +r.height > 0 && +r.depth > 0);
     const validBoxes = boxRows.filter((r)  => +r.width > 0 && +r.height > 0 && +r.depth > 0);
 
-    const areas = validAreas.map((r, i) => ({
-      id: r.name.trim() || `Area ${i + 1}`,
-      width: +r.width, height: +r.height, depth: +r.depth,
-      x: 0, y: 0, z: 0,
-    }));
+    const areas: IArea[] = validAreas.map((r, i) => {
+      const area: IArea = {
+        id: r.name.trim() || `Area ${i + 1}`,
+        width: +r.width, height: +r.height, depth: +r.depth,
+        x: 0, y: 0, z: 0,
+        accessCorner: r.accessCorner ?? Corner.BottomFrontLeft,
+      };
 
-    const boxes: IInput['boxes'] = [];
+      if (r.corridor) {
+        const c = r.corridor;
+        const w = +c.width;
+        const h = +c.height;
+        const d = +c.depth;
+        if (w > 0 && h > 0 && d > 0) {
+          area.exitCorridor = { x: +c.x, y: +c.y, z: +c.z, width: w, height: h, depth: d };
+        }
+      }
+      return area;
+    });
+
+    const boxes: IBox[] = [];
     validBoxes.forEach((r, i) => {
       const qty      = Math.max(1, parseInt(r.qty, 10) || 1);
       const baseName = r.name.trim() || `Box ${i + 1}`;
+      const weight   = +r.weight;
       for (let q = 0; q < qty; q++) {
-        boxes.push({
+        const box: IBox = {
           id: qty > 1 ? `${baseName} #${q + 1}` : baseName,
           width: +r.width, height: +r.height, depth: +r.depth,
-        });
+        };
+        if (weight > 0) box.weight = weight;
+        boxes.push(box);
       }
     });
 

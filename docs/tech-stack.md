@@ -2,36 +2,43 @@
 
 ## Backend (`backend/`)
 
-| Package | Version | Purpose |
-|---|---|---|
-| Node.js | ≥22 | Runtime |
-| TypeScript | ^5.6.3 | Language |
-| NestJS | ^11.1 | Framework (HTTP, DI, modules) |
-| reflect-metadata | ^0.2.2 | Decorator metadata (required by NestJS) |
-| binpackingjs | ^3.0.2 | 3D bin packing algorithm |
-| jsonwebtoken | ^9.0.2 | JWT auth |
-| cors | ^2.8.5 | CORS middleware |
-| helmet | ^8.0.0 | Security headers |
-| compression | ^1.7.4 | Response compression |
-| morgan | ^1.10.0 | HTTP request logger |
-| dotenv | ^16.4.5 | Env var loading |
-| rxjs | ^7.8.1 | Reactive utilities |
-| uuid | ^10.0.0 | UUID generation |
+ASP.NET Core minimal API targeting **.NET 10**, organised into a Clean Architecture solution (`BoxTrix.sln`).
 
-### Dev tooling (backend)
-| Package | Version | Purpose |
+### Projects
+
+| Project | Path | Role |
 |---|---|---|
-| @nestjs/cli | ^11.0 | Build (`nest build`) |
-| ts-node | ^10.9.2 | Direct TS execution |
-| nodemon | ^3.1.7 | Dev server auto-reload |
-| tsconfig-paths | ^4.2.0 | Path alias resolution |
-| eslint | 8.56.0 | Linter |
-| prettier | 3.3.3 | Formatter |
+| `BoxTrix.Domain` | `src/BoxTrix.Domain/` | Entities, value objects, enums, geometry. Zero external dependencies |
+| `BoxTrix.Application` | `src/BoxTrix.Application/` | Pipeline + eleven specialised stages + DI registration |
+| `BoxTrix.Api` | `src/BoxTrix.Api/` | Minimal API endpoints, DTOs, validators, OpenAPI |
+| `BoxTrix.Domain.Tests` | `tests/BoxTrix.Domain.Tests/` | xUnit tests for value objects and geometry |
+| `BoxTrix.Application.Tests` | `tests/BoxTrix.Application.Tests/` | xUnit tests for stages and the pipeline |
+| `BoxTrix.Api.Tests` | `tests/BoxTrix.Api.Tests/` | xUnit + `WebApplicationFactory` integration tests |
+
+### NuGet packages
+
+| Package | Project | Purpose |
+|---|---|---|
+| `Microsoft.AspNetCore.OpenApi` (built-in) | Api | Endpoint descriptors |
+| `Swashbuckle.AspNetCore` | Api | Swagger UI + OpenAPI schema generation |
+| `FluentValidation.AspNetCore` | Api | Declarative DTO validation |
+| `Microsoft.Extensions.DependencyInjection` | Application + tests | Built-in DI container |
+| `xunit` / `xunit.runner.visualstudio` | tests | Test runner |
+| `FluentAssertions` | tests | Readable assertions |
+| `Microsoft.AspNetCore.Mvc.Testing` | Api.Tests | In-process HTTP test host |
 
 ### Build
-- **Dev**: `nodemon --exec ts-node src/main.ts`
-- **Prod**: `nest build` → compiled output in `dist/`
-- **Path aliases**: `@domain/*`, `@organize/*`, `@environment/*` (configured in `tsconfig.json`)
+
+- **Dev**: `dotnet watch --project src/BoxTrix.Api/BoxTrix.Api.csproj run`
+- **Prod**: `dotnet publish src/BoxTrix.Api/BoxTrix.Api.csproj -c Release -o /app`
+- **Tests**: `dotnet test`
+- **Container (dev)**: `mcr.microsoft.com/dotnet/sdk:10.0` (see `backend/Dockerfile.dev`)
+- **Container (prod)**: `mcr.microsoft.com/dotnet/aspnet:10.0` (see `backend/Dockerfile`)
+
+### Solution-wide settings
+
+- `backend/Directory.Build.props` — `TargetFramework=net10.0`, `Nullable=enable`, `TreatWarningsAsErrors=true`, `LangVersion=latest`
+- `backend/.editorconfig` — formatting + analyzer severity overrides for tests
 
 ## Frontend (`frontend/`)
 
@@ -47,6 +54,7 @@
 | zone.js | ~0.14.10 | Angular change detection |
 
 ### Dev tooling (frontend)
+
 | Package | Version | Purpose |
 |---|---|---|
 | @angular/cli | ^18.2.1 | Build + serve |
@@ -57,7 +65,12 @@
 
 | Var | Used by | Description |
 |---|---|---|
-| `PORT` | backend | Server port (default: 4200) |
-| `FRONTEND_ORIGIN` | backend | Allowed CORS origin (e.g. `http://localhost:4100`) |
-| `SERVER_JWT_PASS` | backend | JWT signing secret |
-| `OPEN_IA_KEY` | backend | OpenAI API key (planned — AIService not yet implemented) |
+| `ASPNETCORE_URLS` | backend | Listening URL (default in dev: `http://0.0.0.0:4200`) |
+| `ASPNETCORE_ENVIRONMENT` | backend | `Development` / `Production` |
+| `FRONTEND_ORIGIN` | backend | Allowed CORS origin (e.g. `http://localhost:4400`) |
+
+## Prohibited
+
+- BinPackingJS — replaced by the in-house `PackingPipeline`. Do not reintroduce.
+- ORMs and databases — the API is stateless.
+- MediatR / Inversify / any other DI container — built-in `Microsoft.Extensions.DependencyInjection` is enough.

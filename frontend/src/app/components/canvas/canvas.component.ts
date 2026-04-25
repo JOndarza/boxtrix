@@ -10,6 +10,7 @@ import {
   inject,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Area } from '@common/classes/rendered/Area.class';
 import { RenderedController } from '@common/classes/rendered/Rendered.controller';
 import { IMeasurements, IPosition } from '@common/dtos/Data.interface';
 import { Rotation } from '@common/enums/Rotation.enum';
@@ -428,6 +429,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
       const container = this.drawContainer(parent, c);
       c.setObj3D(container.obj3d);
 
+      this.drawExitCorridor(container.obj3d, c);
+
       c.items.forEach((item) => {
         const box = this.drawBox(item, c);
         box.obj3d.userData = item;
@@ -575,6 +578,46 @@ export class CanvasComponent implements OnInit, OnDestroy {
     obj3d.position.set(data.position.x, data.position.y, data.position.z);
 
     return { obj3d, ...data };
+  }
+
+  /**
+   * Draws the forbidden region the user marked as a non-blockable access path.
+   * The mesh is translucent red so the user can spot it without obstructing
+   * the placed boxes; the wireframe makes it visible from any camera angle.
+   * Coordinates are area-local — the mesh is added to the area container so
+   * it inherits its transform.
+   */
+  private drawExitCorridor(parent: THREE.Object3D, area: RenderedController): void {
+    if (!(area instanceof Area) || !area.exitCorridor) return;
+
+    const dark = this._theme.isDark();
+    const c = area.exitCorridor;
+
+    const mat = new THREE.MeshStandardMaterial({
+      color: dark ? 0xef4444 : 0xb91c1c,
+      transparent: true,
+      opacity: 0.18,
+      depthWrite: false,
+      polygonOffset: true,
+      polygonOffsetFactor: 1,
+      polygonOffsetUnits: 1,
+    });
+
+    const geometry = new BoxGeometry(c.width, c.height, c.depth);
+    const mesh = new THREE.Mesh(geometry, mat);
+
+    // Position relative to area centre — area.fixedMeans/means already centre the parent at (0,0,0).
+    mesh.position.x = c.x + c.width  / 2 - area.means.width  / 2;
+    mesh.position.y = c.y + c.height / 2 - area.means.height / 2;
+    mesh.position.z = c.z + c.depth  / 2 - area.means.depth  / 2;
+
+    const wire = new THREE.LineSegments(
+      new THREE.EdgesGeometry(geometry),
+      new THREE.LineBasicMaterial({ color: dark ? 0xff7777 : 0xdc2626 }),
+    );
+    wire.position.copy(mesh.position);
+
+    parent.add(mesh, wire);
   }
 
   private drawContainer(

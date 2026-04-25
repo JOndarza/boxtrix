@@ -6,6 +6,7 @@ import {
   signal,
 } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { CORNER_OPTIONS, Corner } from '@common/enums/Corner.enum';
 import { InputPanelService } from '@shared/services/InputPanel.service';
 
 @Component({
@@ -19,9 +20,10 @@ export class InputPanelComponent {
   private readonly _panel = inject(InputPanelService);
   private readonly _fb    = inject(FormBuilder);
 
-  readonly isPanelOpen    = this._panel.isPanelOpen;
-  readonly units          = this._panel.units;
+  readonly isPanelOpen     = this._panel.isPanelOpen;
+  readonly units           = this._panel.units;
   readonly validationError = signal<string | null>(null);
+  readonly cornerOptions   = CORNER_OPTIONS;
 
   readonly form = this._fb.group({
     areas: this._fb.array([this._newAreaGroup()]),
@@ -43,12 +45,31 @@ export class InputPanelComponent {
     if (this.areas.length > 1) {
       this.areas.removeAt(i);
     } else {
-      this.areas.at(0).reset({ name: '', width: '', height: '', depth: '' });
+      this.areas.at(0).reset({ name: '', width: '', height: '', depth: '', accessCorner: Corner.BottomFrontLeft, corridor: null });
     }
   }
 
   onAreaDepthEnter(i: number): void {
     if (i === this.areas.length - 1) this.addArea();
+  }
+
+  hasCorridor(i: number): boolean {
+    return this.areas.at(i).get('corridor')?.value !== null;
+  }
+
+  toggleCorridor(i: number): void {
+    const ctrl = this.areas.at(i).get('corridor');
+    if (!ctrl) return;
+    if (ctrl.value === null) {
+      ctrl.setValue({ x: '0', y: '0', z: '0', width: '', height: '', depth: '' });
+    } else {
+      ctrl.setValue(null);
+    }
+  }
+
+  corridorGroup(i: number): FormGroup | null {
+    const ctrl = this.areas.at(i).get('corridor');
+    return ctrl?.value === null ? null : (ctrl as FormGroup);
   }
 
   // ── Boxes ──────────────────────────────────────────────────────────────────
@@ -60,7 +81,7 @@ export class InputPanelComponent {
     if (this.boxes.length > 1) {
       this.boxes.removeAt(i);
     } else {
-      this.boxes.at(0).reset({ name: '', width: '', height: '', depth: '', qty: '1' });
+      this.boxes.at(0).reset({ name: '', width: '', height: '', depth: '', qty: '1', weight: '' });
     }
   }
 
@@ -97,10 +118,12 @@ export class InputPanelComponent {
   // ── Private ────────────────────────────────────────────────────────────────
   private _newAreaGroup(): FormGroup {
     return this._fb.group({
-      name:   [''],
-      width:  ['', Validators.min(0.01)],
-      height: ['', Validators.min(0.01)],
-      depth:  ['', Validators.min(0.01)],
+      name:         [''],
+      width:        ['', Validators.min(0.01)],
+      height:       ['', Validators.min(0.01)],
+      depth:        ['', Validators.min(0.01)],
+      accessCorner: [Corner.BottomFrontLeft],
+      corridor:     [null as null | unknown],
     });
   }
 
@@ -111,6 +134,7 @@ export class InputPanelComponent {
       height: ['', Validators.min(0.01)],
       depth:  ['', Validators.min(0.01)],
       qty:    ['1'],
+      weight: ['', Validators.min(0)],
     });
   }
 }

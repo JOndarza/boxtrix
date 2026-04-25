@@ -6,6 +6,8 @@ import { IArea } from './Input.interface';
 export interface IOrganizedBox extends IIdentification {
   position: IPosition;
   rotation: Rotation;
+  /** Dimensions after the rotation has been applied (server-computed). */
+  rotatedSize?: IMeasurements;
 }
 
 export interface IOrganizedArea extends IArea {

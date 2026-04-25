@@ -1,12 +1,19 @@
+import { Corner } from '../enums/Corner.enum';
 import { Units } from '../enums/Units.enum';
 
 import { IIdentification, IMeasurements, IPosition } from './Data.interface';
 
 export type IBox = IIdentification & IMeasurements & { weight?: number };
-// NEWS
+
+export interface IExitCorridor extends IPosition, IMeasurements {}
+
 export type IArea = IIdentification &
   IMeasurements &
-  IPosition & { startPoint?: IPosition };
+  IPosition & {
+    accessCorner?: Corner;
+    exitCorridor?: IExitCorridor;
+    maxStackHeight?: number;
+  };
 
 export interface IInput extends IIdentification {
   areas: IArea[];
@@ -16,6 +23,7 @@ export interface IInput extends IIdentification {
     units?: Units;
     stackable?: boolean;
     maxStackHeight?: number;
+    minSupportRatio?: number;
     mustBeAccessible?: boolean;
     switchZforY?: boolean;
   };

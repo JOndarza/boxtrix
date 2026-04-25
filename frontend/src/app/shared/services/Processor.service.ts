@@ -6,6 +6,7 @@ import { Project } from '@common/classes/rendered/Project.class';
 import { RenderedController } from '@common/classes/rendered/Rendered.controller';
 import { IBox, IInput } from '@common/dtos/Input.interface';
 import { IOrganizedArea, IOutput } from '@common/dtos/Output.interface';
+import { Corner } from '@common/enums/Corner.enum';
 import { newId } from '@common/functions/id.function';
 
 import { AppEvent, EventsService } from './Events.service';
@@ -28,16 +29,24 @@ const DEMO_INPUT: IInput = {
   name: 'Mega Demo — Ultimate Collector Storage',
   constraints: { units: 'cm', stackable: true, maxStackHeight: 80 },
   areas: [
-    // Largest area — processes first; fits most mid-size items
-    { id: 'Main Shelf', width: 120, height: 40, depth: 35, x: 0, y: 0, z: 0 },
+    // Largest area — processes first; fits most mid-size items.
+    // accessCorner=BottomFrontRight: shelf has its access on the right side, so
+    // boxes pile up from the right edge inward to keep the right corridor clear.
+    // exitCorridor blocks a 30×40×35 strip at x=0 — that's the actual access path.
+    {
+      id: 'Main Shelf',
+      width: 120, height: 40, depth: 35, x: 0, y: 0, z: 0,
+      accessCorner: Corner.BottomFrontRight,
+      exitCorridor: { x: 0, y: 0, z: 0, width: 30, height: 40, depth: 35 },
+    },
     // Tall narrow cabinet — ideal for large figures
-    { id: 'Display Cabinet', width: 50, height: 90, depth: 28, x: 125, y: 0, z: 0 },
+    { id: 'Display Cabinet', width: 50, height: 90, depth: 28, x: 125, y: 0, z: 0, accessCorner: Corner.BottomFrontLeft },
     // Upper shelf — shorter height stress-tests 10" Funkos
-    { id: 'Upper Shelf', width: 120, height: 25, depth: 35, x: 0, y: 45, z: 0 },
+    { id: 'Upper Shelf', width: 120, height: 25, depth: 35, x: 0, y: 45, z: 0, accessCorner: Corner.BottomBackLeft },
     // Very flat drawer — only 12 cm tall, forces flat items (books, board games)
-    { id: 'Flat Drawer', width: 80, height: 12, depth: 50, x: 0, y: -15, z: 0 },
+    { id: 'Flat Drawer', width: 80, height: 12, depth: 50, x: 0, y: -15, z: 0, accessCorner: Corner.BottomFrontLeft },
     // Tiny showcase — only a single small Funko fits; everything else overflows
-    { id: 'Micro Showcase', width: 18, height: 24, depth: 12, x: 125, y: 95, z: 0 },
+    { id: 'Micro Showcase', width: 18, height: 24, depth: 12, x: 125, y: 95, z: 0, accessCorner: Corner.BottomFrontLeft },
   ],
   boxes: [
     // Standard Funkos (14×19×10 cm, 0.3 kg) ─────────────────────────────
@@ -202,6 +211,7 @@ export class ProcessorService {
       const area = new Area(organized.id, organized.name || '', organized.detail, {
         means: organized,
         position: organized,
+        exitCorridor: organized.exitCorridor,
       });
 
       const items = this.mapItems(organized, input.boxes);

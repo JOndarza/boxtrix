@@ -1,22 +1,27 @@
 import { IMeasurements, IPosition } from '@common/dtos/Data.interface';
+import { IExitCorridor } from '@common/dtos/Input.interface';
 import randomColor from 'randomcolor';
 
 import { RenderedController } from './Rendered.controller';
 import _ from 'lodash';
 
 export class Area extends RenderedController {
+  exitCorridor: IExitCorridor | undefined;
+
   constructor(
     id: string,
     name: string,
     detail: string | undefined,
-    meta: { position: IPosition; means: IMeasurements },
+    meta: { position: IPosition; means: IMeasurements; exitCorridor?: IExitCorridor },
   ) {
     super(id, name, detail, {
       type: 'area',
-      ...meta,
+      position: meta.position,
+      means: meta.means,
       targetable: false,
       rotation: 0,
     });
+    this.exitCorridor = meta.exitCorridor;
     this._items = [];
   }
 

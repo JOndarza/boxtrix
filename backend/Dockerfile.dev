@@ -1,10 +1,17 @@
-FROM node:22-alpine
-RUN apk update && apk upgrade --no-cache
+FROM mcr.microsoft.com/dotnet/sdk:10.0
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm install
+# Pre-warm restore so subsequent rebuilds skip the network round-trip.
+COPY BoxTrix.sln Directory.Build.props ./
+COPY src/BoxTrix.Domain/BoxTrix.Domain.csproj src/BoxTrix.Domain/
+COPY src/BoxTrix.Application/BoxTrix.Application.csproj src/BoxTrix.Application/
+COPY src/BoxTrix.Api/BoxTrix.Api.csproj src/BoxTrix.Api/
+COPY tests/BoxTrix.Domain.Tests/BoxTrix.Domain.Tests.csproj tests/BoxTrix.Domain.Tests/
+COPY tests/BoxTrix.Application.Tests/BoxTrix.Application.Tests.csproj tests/BoxTrix.Application.Tests/
+COPY tests/BoxTrix.Api.Tests/BoxTrix.Api.Tests.csproj tests/BoxTrix.Api.Tests/
+RUN dotnet restore
 
-EXPOSE 4200 9229
-
-CMD ["npx", "nodemon", "--config", "nodemon.docker.json", "--legacy-watch"]
+EXPOSE 4200
+ENV ASPNETCORE_URLS=http://0.0.0.0:4200
+ENV DOTNET_USE_POLLING_FILE_WATCHER=1
+CMD ["dotnet", "watch", "--project", "src/BoxTrix.Api/BoxTrix.Api.csproj", "run", "--no-launch-profile"]

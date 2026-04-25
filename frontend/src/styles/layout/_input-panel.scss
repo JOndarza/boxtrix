@@ -131,8 +131,64 @@
   gap: 3px;
   align-items: center;
 
-  &--area { grid-template-columns: 1fr 52px 52px 52px 20px; }
-  &--box  { grid-template-columns: 1fr 46px 46px 46px 36px 20px; }
+  &--area { grid-template-columns: 1fr 46px 46px 46px 96px 22px 20px; }
+  &--box  { grid-template-columns: 1fr 46px 46px 46px 36px 50px 20px; }
+}
+
+// ── Corridor sub-row (appears under an area when its corridor is enabled)
+.ip-corridor-row {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 46px 46px 46px 46px 46px 46px;
+  gap: 3px;
+  align-items: center;
+  margin-top: 4px;
+  padding: 4px 4px 4px 8px;
+  border-left: 2px solid var(--border-default);
+  background: var(--bg-2);
+  border-radius: $control-radius;
+}
+
+.ip-corridor-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+}
+
+.ip-corridor-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: $control-radius;
+  color: var(--text-tertiary);
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s, background 0.12s;
+
+  &:hover { color: var(--text-secondary); border-color: var(--border-default); }
+  &.is-active {
+    color: var(--status-unfit);
+    border-color: var(--status-unfit);
+    background: rgba(248, 113, 113, 0.1);
+  }
+}
+
+.ip-cell--corner {
+  height: 28px;
+  padding: 0 4px;
+  font-size: 0.72rem;
+  font-family: inherit;
+  color: var(--text-primary);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: $control-radius;
+
+  &:focus { outline: none; border-color: var(--border-default); background: var(--bg-2); }
 }
 
 // ── Cells ─────────────────────────────────────────────────────────────────────

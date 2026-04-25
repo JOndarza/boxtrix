@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/BoxTrix.Api/BoxTrix.Api.csproj" />
+    <Project Path="src/BoxTrix.Application/BoxTrix.Application.csproj" />
+    <Project Path="src/BoxTrix.Domain/BoxTrix.Domain.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/BoxTrix.Api.Tests/BoxTrix.Api.Tests.csproj" />
+    <Project Path="tests/BoxTrix.Application.Tests/BoxTrix.Application.Tests.csproj" />
+    <Project Path="tests/BoxTrix.Domain.Tests/BoxTrix.Domain.Tests.csproj" />
+  </Folder>
+</Solution>

@@ -24,7 +24,7 @@
         <span class="ip-section-label">Areas</span>
 
         <div class="ip-col-headers ip-row ip-row--area">
-          <span>Name</span><span>W</span><span>H</span><span>D</span><span></span>
+          <span>Name</span><span>W</span><span>H</span><span>D</span><span>Start</span><span>Exit</span><span></span>
         </div>
 
         @for (area of areas.controls; track $index) {
@@ -44,7 +44,33 @@
               type="number" min="0.01" step="any" placeholder="D"
               (keydown.enter)="onAreaDepthEnter($index)"
             />
+            <select class="ip-cell ip-cell--corner" formControlName="accessCorner" aria-label="Start corner">
+              @for (opt of cornerOptions; track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
+              }
+            </select>
+            <button
+              class="ip-corridor-toggle"
+              type="button"
+              [class.is-active]="hasCorridor($index)"
+              (click)="toggleCorridor($index)"
+              [attr.aria-pressed]="hasCorridor($index)"
+              aria-label="Toggle exit corridor"
+              tabindex="-1"
+            >&#x25A0;</button>
             <button class="ip-delete-btn" type="button" (click)="removeArea($index)" aria-label="Remove area" tabindex="-1">&#x2715;</button>
+
+            @if (hasCorridor($index) && corridorGroup($index); as corridor) {
+              <div class="ip-corridor-row" [formGroup]="corridor">
+                <span class="ip-corridor-label">Exit corridor (X · Y · Z · W · H · D)</span>
+                <input class="ip-cell ip-cell--num" formControlName="x"      type="number" min="0" step="any" placeholder="X" />
+                <input class="ip-cell ip-cell--num" formControlName="y"      type="number" min="0" step="any" placeholder="Y" />
+                <input class="ip-cell ip-cell--num" formControlName="z"      type="number" min="0" step="any" placeholder="Z" />
+                <input class="ip-cell ip-cell--num" formControlName="width"  type="number" min="0.01" step="any" placeholder="W" />
+                <input class="ip-cell ip-cell--num" formControlName="height" type="number" min="0.01" step="any" placeholder="H" />
+                <input class="ip-cell ip-cell--num" formControlName="depth"  type="number" min="0.01" step="any" placeholder="D" />
+              </div>
+            }
           </div>
         }
 
@@ -58,7 +84,7 @@
         <span class="ip-section-label">Boxes</span>
 
         <div class="ip-col-headers ip-row ip-row--box">
-          <span>Name</span><span>W</span><span>H</span><span>D</span><span>#</span><span></span>
+          <span>Name</span><span>W</span><span>H</span><span>D</span><span>#</span><span>Kg</span><span></span>
         </div>
 
         @for (box of boxes.controls; track $index) {
@@ -79,6 +105,7 @@
               type="number" min="1" step="1" placeholder="#"
               (keydown.enter)="onBoxQtyEnter($index)"
             />
+            <input class="ip-cell ip-cell--num" formControlName="weight" type="number" min="0" step="any" placeholder="kg" />
             <button class="ip-delete-btn" type="button" (click)="removeBox($index)" aria-label="Remove box" tabindex="-1">&#x2715;</button>
           </div>
         }
