@@ -14,8 +14,7 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "accessCorner": "BottomFrontRight",
-      "exitCorridor": { "x": 0, "y": 0, "z": 0, "width": 20, "height": 45, "depth": 40 }
+      "accessCorner": "BottomFrontLeft"
     },
     {
       "id": "Estante B",
