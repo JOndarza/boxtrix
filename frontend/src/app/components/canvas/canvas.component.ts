@@ -8,6 +8,7 @@ import {
   ViewChild,
   effect,
   inject,
+  signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Area } from '@common/classes/rendered/Area.class';
@@ -32,6 +33,7 @@ import { BoxGeometry } from 'three';
 import { TextGeometryParameters } from 'three/examples/jsm/geometries/TextGeometry.js';
 import { SelectionBox } from 'three/examples/jsm/interactive/SelectionBox.js';
 import { SelectionHelper } from 'three/examples/jsm/interactive/SelectionHelper.js';
+import { FlyControls } from 'three/examples/jsm/controls/FlyControls.js';
 import { Project } from '@common/classes/rendered/Project.class';
 import { LabelManagerService } from '@shared/services/LabelManager.service';
 
@@ -45,7 +47,10 @@ export enum KeyCode {
 @Component({
   standalone: true,
   selector: 'app-canvas',
-  template: `<div #canvas class="canvas"></div>`,
+  template: `
+    <div #canvas class="canvas">
+      @if (flyMode()) { <div class="fly-mode-badge">✈ FLY MODE — \` to exit</div> }
+    </div>`,
   providers: [SceneService, LabelManagerService],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -86,6 +91,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
   private _selectionBox!: SelectionBox;
   private _selectionHelper!: SelectionHelper;
   private _isMultiSelecting = false;
+
+  // Fly mode
+  readonly flyMode = signal(false);
+  private _flyControls: FlyControls | null = null;
 
   // Reactively update background and rebuild scene geometry when theme toggles.
   private readonly _themeEffect = effect(() => {
@@ -225,6 +234,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.canvas.nativeElement.removeEventListener('mousedown', this._onCanvasMouseDown);
     this.canvas.nativeElement.removeEventListener('mouseup', this._onCanvasMouseUp);
     this._sceneService.afterRender = null;
+    this._sceneService.onFrame = null;
+    if (this.flyMode()) this._exitFlyMode();
     this._selectionHelper?.dispose();
     // SceneService and LabelManagerService teardown handled by Angular's
     // component-scoped injector on destroy.
@@ -243,8 +254,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
     }
 
     switch (event.code) {
-      case 'KeyA': this._rewind.back(); break;
-      case 'KeyD': this._rewind.forward(); break;
+      case 'Backquote': this._toggleFlyMode(); return;
+      case 'KeyA': if (!this.flyMode()) this._rewind.back(); break;
+      case 'KeyD': if (!this.flyMode()) this._rewind.forward(); break;
       case 'KeyF': this.focusSelected(); break;
       case 'KeyH': this.frameAll(); break;
       case 'KeyV': this.toggleHelpers(); break;
@@ -405,6 +417,32 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this._areaBoundsVisible = !this._areaBoundsVisible;
     this._areaHelpers.forEach(h => { h.visible = this._areaBoundsVisible; });
     this._sceneService.markDirty();
+  }
+
+  private _toggleFlyMode(): void {
+    this.flyMode() ? this._exitFlyMode() : this._enterFlyMode();
+  }
+
+  private _enterFlyMode(): void {
+    this._sceneService.cameraControls.enabled = false;
+    this._flyControls = new FlyControls(
+      this._sceneService.camera,
+      this._sceneService.renderer.domElement,
+    );
+    this._flyControls.movementSpeed = 30;
+    this._flyControls.rollSpeed = 0.5;
+    this._flyControls.dragToLook = true;
+    this._sceneService.onFrame = (delta) => this._flyControls?.update(delta);
+    this.flyMode.set(true);
+  }
+
+  private _exitFlyMode(): void {
+    this._flyControls?.dispose();
+    this._flyControls = null;
+    this._sceneService.onFrame = null;
+    this._sceneService.cameraControls.enabled = true;
+    this._sceneService.syncCameraState();
+    this.flyMode.set(false);
   }
 
   private _addLabelsForProject(): void {

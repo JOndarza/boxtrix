@@ -4,6 +4,7 @@ import { provideRouter } from '@angular/router';
 import { httpInterceptor } from '@common/guards/http.interceptor';
 import { provideIcons, provideNgIconsConfig } from '@ng-icons/core';
 import {
+  matCameraAlt,
   matFastForward,
   matFastRewind,
   matPause,
@@ -20,7 +21,7 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideHttpClient(withInterceptors([httpInterceptor])),
-    provideIcons({ matSkipPrevious, matFastRewind, matPlayArrow, matPause, matFastForward, matSkipNext, matSettings }),
+    provideIcons({ matSkipPrevious, matFastRewind, matPlayArrow, matPause, matFastForward, matSkipNext, matSettings, matCameraAlt }),
     provideNgIconsConfig({ size: '2rem', color: '#FFF' }),
   ],
 };

@@ -57,6 +57,75 @@
         />
       </div>
 
+      <div class="graphics-row">
+        <span class="graphics-label" id="ao-label">Oclusión ambiental</span>
+        <div class="graphics-presets" role="group" aria-labelledby="ao-label">
+          <button
+            class="preset-btn"
+            [class.active]="settings().showAO"
+            [attr.aria-pressed]="settings().showAO"
+            (click)="toggleAO()"
+          >{{ settings().showAO ? 'Activo' : 'Inactivo' }}</button>
+        </div>
+      </div>
+
+      <div class="graphics-row">
+        <span class="graphics-label" id="bloom-label">Bloom</span>
+        <div class="graphics-presets" role="group" aria-labelledby="bloom-label">
+          <button
+            class="preset-btn"
+            [class.active]="settings().showBloom"
+            [attr.aria-pressed]="settings().showBloom"
+            (click)="toggleBloom()"
+          >{{ settings().showBloom ? 'Activo' : 'Inactivo' }}</button>
+        </div>
+      </div>
+
+      <div class="graphics-row">
+        <span class="graphics-label" id="stats-label">Stats FPS</span>
+        <div class="graphics-presets" role="group" aria-labelledby="stats-label">
+          <button
+            class="preset-btn"
+            [class.active]="showStats()"
+            [attr.aria-pressed]="showStats()"
+            (click)="toggleStats()"
+          >{{ showStats() ? 'Activo' : 'Inactivo' }}</button>
+        </div>
+      </div>
+
+      <div class="graphics-row">
+        <span class="graphics-label" id="clip-label">Plano de corte</span>
+        <div class="graphics-presets" role="group" aria-labelledby="clip-label">
+          <button
+            class="preset-btn"
+            [class.active]="clippingEnabled()"
+            [attr.aria-pressed]="clippingEnabled()"
+            (click)="toggleClipping()"
+          >{{ clippingEnabled() ? 'Activo' : 'Inactivo' }}</button>
+        </div>
+      </div>
+
+      @if (clippingEnabled()) {
+        <div class="graphics-row graphics-row--slider">
+          <div class="graphics-row-top">
+            <label class="graphics-label" for="clipping-y">Altura de corte</label>
+            <span class="graphics-value-badge" aria-live="polite">{{ clippingY() }}</span>
+          </div>
+          <input
+            id="clipping-y"
+            type="range"
+            class="graphics-slider"
+            min="0"
+            max="500"
+            step="5"
+            [value]="clippingY()"
+            [style.--slider-pct]="(clippingY() / 500 * 100) + '%'"
+            (input)="onClippingYInput($event)"
+            aria-label="Altura del plano de corte"
+          />
+        </div>
+      }
+
     </div>
   </div>
 }

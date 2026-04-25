@@ -12,6 +12,8 @@ export enum AppEvent {
 
   RAYCAST = 'RAYCAST',
   CLICKED = 'CLICKED',
+
+  SCREENSHOT = 'SCREENSHOT',
 }
 
 type EventPayloadMap = {
@@ -22,6 +24,7 @@ type EventPayloadMap = {
   [AppEvent.RENDERED]: void;
   [AppEvent.RAYCAST]: string;
   [AppEvent.CLICKED]: string;
+  [AppEvent.SCREENSHOT]: void;
 };
 
 // LOADED uses ReplaySubject(1) so late subscribers (e.g. ContextService

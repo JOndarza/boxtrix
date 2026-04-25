@@ -25,6 +25,15 @@
   </button>
 
   <button
+    class="header-icon-btn"
+    (click)="takeScreenshot()"
+    title="Screenshot"
+    aria-label="Screenshot"
+  >
+    <ng-icon name="matCameraAlt" [size]="'1rem'"></ng-icon>
+  </button>
+
+  <button
     class="header-icon-btn theme-toggle"
     (click)="toggleTheme()"
     [attr.aria-label]="isDark() ? 'Switch to light mode' : 'Switch to dark mode'"

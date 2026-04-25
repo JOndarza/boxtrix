@@ -24,8 +24,11 @@ interface IToneMappingOption {
 export class GraphicsSettingsComponent {
   private readonly _graphics = inject(GraphicsService);
 
-  readonly isPanelOpen = this._graphics.isPanelOpen;
-  readonly settings = this._graphics.settings;
+  readonly isPanelOpen     = this._graphics.isPanelOpen;
+  readonly settings        = this._graphics.settings;
+  readonly showStats       = this._graphics.showStats;
+  readonly clippingEnabled = this._graphics.clippingEnabled;
+  readonly clippingY       = this._graphics.clippingY;
 
   readonly presetOptions: IPresetOption[] = [
     { value: 'performance', label: 'Rendimiento' },
@@ -43,13 +46,9 @@ export class GraphicsSettingsComponent {
   ];
 
   @HostListener('document:keydown.escape')
-  close(): void {
-    this._graphics.isPanelOpen.set(false);
-  }
+  close(): void { this._graphics.isPanelOpen.set(false); }
 
-  selectPreset(preset: PixelRatioPreset): void {
-    this._graphics.setPixelRatioPreset(preset);
-  }
+  selectPreset(preset: PixelRatioPreset): void { this._graphics.setPixelRatioPreset(preset); }
 
   selectToneMapping(event: Event): void {
     this._graphics.setToneMapping(+(event.target as HTMLSelectElement).value as THREE.ToneMapping);
@@ -59,7 +58,14 @@ export class GraphicsSettingsComponent {
     this._graphics.setAmbientIntensity(+(event.target as HTMLInputElement).value);
   }
 
-  formatIntensity(v: number): string {
-    return v.toFixed(1);
+  onClippingYInput(event: Event): void {
+    this._graphics.setClippingY(+(event.target as HTMLInputElement).value);
   }
+
+  formatIntensity(v: number): string { return v.toFixed(1); }
+
+  toggleStats(): void    { this._graphics.toggleStats(); }
+  toggleAO(): void       { this._graphics.toggleAO(); }
+  toggleBloom(): void    { this._graphics.toggleBloom(); }
+  toggleClipping(): void { this._graphics.toggleClipping(); }
 }
