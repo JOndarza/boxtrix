@@ -1,6 +1,7 @@
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, isDevMode, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
+import { provideServiceWorker } from '@angular/service-worker';
 import { httpInterceptor } from '@common/guards/http.interceptor';
 import { provideIcons, provideNgIconsConfig } from '@ng-icons/core';
 import {
@@ -23,5 +24,9 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptors([httpInterceptor])),
     provideIcons({ matSkipPrevious, matFastRewind, matPlayArrow, matPause, matFastForward, matSkipNext, matSettings, matCameraAlt }),
     provideNgIconsConfig({ size: '2rem', color: '#FFF' }),
+    provideServiceWorker('ngsw-worker.js', {
+      enabled: !isDevMode(),
+      registrationStrategy: 'registerWhenStable:30000',
+    }),
   ],
 };

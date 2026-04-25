@@ -46,7 +46,10 @@ ASP.NET Core minimal API targeting **.NET 10**, organised into a Clean Architect
 |---|---|---|
 | Angular | ^21.2.0 | Framework |
 | TypeScript | ~5.9.2 | Language |
-| Three.js | ^0.183.0 | 3D rendering |
+| Three.js | ^0.183.0 | 3D rendering (deferred chunk) |
+| @angular/service-worker | 21.2.8 | PWA service worker (production only) |
+| camera-controls | ^3.1.2 | WebGL camera |
+| three-viewport-gizmo | ^2.2.0 | 3D orientation gizmo |
 | @ng-icons/core | ^33.2.0 | Icon system |
 | @ng-icons/material-icons | ^33.2.0 | Material icon set |
 | rxjs | ~7.8.0 | Reactive state/events |

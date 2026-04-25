@@ -44,3 +44,21 @@
   position: fixed;
   pointer-events: none;
 }
+
+// Placeholder shown while CanvasComponent deferred chunk loads
+.canvas-placeholder {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - var(--footer-height));
+  background: var(--bg-color, #1a1a2e);
+}
+
+.canvas-error {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - var(--footer-height));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-error, #ef4444);
+}

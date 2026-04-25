@@ -1,11 +1,11 @@
 import { Injectable, signal } from '@angular/core';
-import * as THREE from 'three';
+import type { ToneMapping } from 'three';
 
 export type PixelRatioPreset = 'performance' | 'balanced' | 'high' | 'native';
 
 export interface IGraphicsSettings {
   pixelRatioPreset: PixelRatioPreset;
-  toneMapping: THREE.ToneMapping;
+  toneMapping: ToneMapping;
   ambientIntensity: number;
   showAO: boolean;
   showBloom: boolean;
@@ -22,7 +22,7 @@ const KEY = 'boxtrix-graphics';
 
 const DEFAULTS: IGraphicsSettings = {
   pixelRatioPreset: 'high',
-  toneMapping: THREE.NoToneMapping,
+  toneMapping: 0 as ToneMapping, // THREE.NoToneMapping === 0
   ambientIntensity: 0.6,
   showAO: false,
   showBloom: false,
@@ -47,7 +47,7 @@ export class GraphicsService {
     this._persist();
   }
 
-  setToneMapping(m: THREE.ToneMapping): void {
+  setToneMapping(m: ToneMapping): void {
     this._settings.update(s => ({ ...s, toneMapping: m }));
     this._persist();
   }

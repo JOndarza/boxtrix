@@ -2,11 +2,27 @@
   <app-welcome (dismissed)="showWelcome.set(false)"></app-welcome>
 }
 
-<app-keyboard-help></app-keyboard-help>
 <app-input-panel></app-input-panel>
 <app-header></app-header>
-<app-graphics-settings></app-graphics-settings>
 <app-sidebar></app-sidebar>
-<app-stats></app-stats>
 <app-footer></app-footer>
-<app-canvas></app-canvas>
+
+@defer (on immediate) {
+  <app-canvas></app-canvas>
+} @placeholder {
+  <div class="canvas-placeholder"></div>
+} @error {
+  <p class="canvas-error">No se pudo cargar el visor 3D.</p>
+}
+
+@defer (on idle) {
+  <app-graphics-settings></app-graphics-settings>
+}
+
+@defer (on idle) {
+  <app-keyboard-help></app-keyboard-help>
+}
+
+@defer (on idle) {
+  <app-stats></app-stats>
+}

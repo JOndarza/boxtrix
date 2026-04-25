@@ -17,13 +17,14 @@ import { WelcomeComponent } from './components/layout/welcome/welcome.component'
   imports: [
     HeaderComponent,
     FooterComponent,
-    GraphicsSettingsComponent,
     InputPanelComponent,
-    KeyboardHelpComponent,
     SidebarComponent,
-    StatsComponent,
-    CanvasComponent,
     WelcomeComponent,
+    // Deferred: Angular creates lazy chunks for these automatically
+    CanvasComponent,
+    GraphicsSettingsComponent,
+    KeyboardHelpComponent,
+    StatsComponent,
   ],
   selector: 'app-root',
   templateUrl: './app.template.html',
