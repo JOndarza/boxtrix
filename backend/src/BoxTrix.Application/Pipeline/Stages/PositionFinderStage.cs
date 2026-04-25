@@ -1,6 +1,7 @@
 using BoxTrix.Domain.Contracts;
 using BoxTrix.Domain.Entities;
 using BoxTrix.Domain.ValueObjects;
+using Microsoft.Extensions.Logging;
 
 namespace BoxTrix.Application.Pipeline.Stages;
 
@@ -15,10 +16,12 @@ namespace BoxTrix.Application.Pipeline.Stages;
 public sealed class PositionFinderStage : IPipelineStage
 {
     private readonly StabilityValidatorStage _stability;
+    private readonly ILogger<PositionFinderStage> _logger;
 
-    public PositionFinderStage(StabilityValidatorStage stability)
+    public PositionFinderStage(StabilityValidatorStage stability, ILogger<PositionFinderStage> logger)
     {
         _stability = stability;
+        _logger = logger;
     }
 
     public PlacedBox? TryPlace(
@@ -43,9 +46,13 @@ public sealed class PositionFinderStage : IPipelineStage
             }
 
             CommitPlacement(layer, ep, placement);
+            _logger.LogDebug("Placed {Box} at ({X},{Y},{Z}) rotation {Rotation}",
+                candidate.Source.Id, ep.X, ep.Y, ep.Z, candidate.Rotation);
             return placement;
         }
 
+        _logger.LogDebug("No valid position found for {Box} ({W}x{H}x{D})",
+            candidate.Source.Id, candidate.Size.Width, candidate.Size.Height, candidate.Size.Depth);
         return null;
     }
 

@@ -16,7 +16,6 @@ public static class Mappers
     {
         var options = new PackingOptions(
             Units: dto.Constraints?.Units ?? Units.Cm,
-            Stackable: dto.Constraints?.Stackable ?? true,
             MinSupportRatio: dto.Constraints?.MinSupportRatio ?? DefaultMinSupportRatio);
 
         var areas = dto.Areas.Select(a => new RequestArea(

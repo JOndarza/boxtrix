@@ -9,7 +9,7 @@ public sealed class InputValidator : AbstractValidator<InputDto>
     {
         RuleFor(x => x.Id).NotEmpty();
         RuleFor(x => x.Areas).NotNull().Must(a => a.Count > 0).WithMessage("At least one area is required.");
-        RuleFor(x => x.Boxes).NotNull();
+        RuleFor(x => x.Boxes).NotNull().Must(b => b.Count > 0).WithMessage("At least one box is required.");
 
         RuleForEach(x => x.Areas).SetValidator(new AreaValidator());
         RuleForEach(x => x.Boxes).SetValidator(new BoxValidator());

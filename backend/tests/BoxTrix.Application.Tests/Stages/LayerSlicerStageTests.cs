@@ -4,6 +4,7 @@ using BoxTrix.Domain.Entities;
 using BoxTrix.Domain.Enums;
 using BoxTrix.Domain.ValueObjects;
 using FluentAssertions;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace BoxTrix.Application.Tests.Stages;
@@ -15,7 +16,7 @@ public sealed class LayerSlicerStageTests
     public LayerSlicerStageTests()
     {
         var stability = new StabilityValidatorStage();
-        var finder = new PositionFinderStage(stability);
+        var finder = new PositionFinderStage(stability, NullLogger<PositionFinderStage>.Instance);
         _slicer = new LayerSlicerStage(new RotationOptimizerStage(), finder);
     }
 

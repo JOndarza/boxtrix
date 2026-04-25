@@ -17,6 +17,5 @@ public sealed record NormalizedRequest(
 
 public sealed record NormalizedOptions(
     Units Units,
-    bool Stackable,
     double MinSupportRatio,
     long Scale);

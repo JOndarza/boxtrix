@@ -4,6 +4,7 @@ using BoxTrix.Domain.Entities;
 using BoxTrix.Domain.Enums;
 using BoxTrix.Domain.ValueObjects;
 using FluentAssertions;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace BoxTrix.Application.Tests.Stages;
@@ -14,7 +15,7 @@ public sealed class PositionFinderStageTests
 
     public PositionFinderStageTests()
     {
-        _finder = new PositionFinderStage(new StabilityValidatorStage());
+        _finder = new PositionFinderStage(new StabilityValidatorStage(), NullLogger<PositionFinderStage>.Instance);
     }
 
     private static AreaContext BasicCtx(long size = 100)

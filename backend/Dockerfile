@@ -1,7 +1,7 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-COPY BoxTrix.sln Directory.Build.props ./
+COPY BoxTrix.slnx Directory.Build.props ./
 COPY src/BoxTrix.Domain/BoxTrix.Domain.csproj src/BoxTrix.Domain/
 COPY src/BoxTrix.Application/BoxTrix.Application.csproj src/BoxTrix.Application/
 COPY src/BoxTrix.Api/BoxTrix.Api.csproj src/BoxTrix.Api/

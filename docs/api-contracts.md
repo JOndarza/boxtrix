@@ -1,114 +1,141 @@
 # API Contracts
 
-<!-- auto-generated from codebase scan -->
-
 ## Base URL
 
-- **Dev**: `http://localhost:4200`
-- **Frontend origin allowed**: `http://localhost:4100`
+- **Dev (local)**: `http://localhost:4200`
+- **Dev (Docker Compose)**: `http://localhost:4200` (backend container)
+- **Swagger UI**: `http://localhost:4200/swagger` (development only)
 
 ## Auth
 
-JWT via `Authorization` header. Endpoints have `checkJWT` flag — see per-endpoint notes.
-
-```
-Authorization: <jwt-token>
-```
-
-JWT payload structure:
-```json
-{
-  "idSession": "string",
-  "ip": "string"
-}
-```
-
-JWT secret: `SERVER_JWT_PASS` env var (fallback: `"JWT"`).
+JWT is wired but **not currently enforced** on any endpoint. `POST /organize/sort` is public.
 
 ## Endpoints
 
 ### POST /organize/sort
 
-Calculates 3D bin packing — places boxes optimally into storage areas.
+Runs the packing pipeline and returns the optimal placement of boxes inside areas.
 
-**Auth**: none (public, `checkJWT = false`)
+**Auth**: none (public)
 
-**Request body**: `IInput`
+**Request body**
 
-```typescript
+```json
 {
-  id: string;
-  name?: string;
-  detail?: string;
-  areas: Array<{
-    id: string;
-    name?: string;
-    detail?: string;
-    width: number;
-    height: number;
-    depth: number;
-    x: number;
-    y: number;
-    z: number;
-    startPoint?: { x: number; y: number; z: number };
-  }>;
-  boxes: Array<{
-    id: string;
-    name?: string;
-    detail?: string;
-    width: number;
-    height: number;
-    depth: number;
-    weight?: number;
-  }>;
-  constraints?: {
-    units?: Units;           // enum: see Units.enum.ts
-    stackable?: boolean;
-    maxStackHeight?: number;
-    mustBeAccessible?: boolean;
-    switchZforY?: boolean;
-  };
+  "id": "string",
+  "name": "string | null",
+  "detail": "string | null",
+  "areas": [
+    {
+      "id": "string",
+      "name": "string | null",
+      "detail": "string | null",
+      "width": 120,
+      "height": 40,
+      "depth": 35,
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "accessCorner": "BottomFrontLeft",
+      "exitCorridor": {
+        "x": 0, "y": 0, "z": 0,
+        "width": 30, "height": 40, "depth": 35
+      },
+      "maxStackHeight": 80
+    }
+  ],
+  "boxes": [
+    {
+      "id": "string",
+      "name": "string | null",
+      "detail": "string | null",
+      "width": 14,
+      "height": 19,
+      "depth": 10,
+      "weight": 0.3
+    }
+  ],
+  "constraints": {
+    "units": "cm",
+    "maxStackHeight": 80,
+    "minSupportRatio": 0.7
+  }
 }
 ```
 
-**Response**: `IOutput`
+**Field notes**
 
-```typescript
+| Field | Required | Default | Description |
+|---|---|---|---|
+| `areas[].accessCorner` | No | `BottomFrontLeft` | Floor corner where packing origin anchors. Values: `BottomFrontLeft`, `BottomFrontRight`, `BottomBackLeft`, `BottomBackRight`. |
+| `areas[].exitCorridor` | No | none | AABB region that must stay clear (e.g., access path). Must fit inside the area bounding box. |
+| `areas[].maxStackHeight` | No | none | Per-area stack height cap in user units. Overrides `constraints.maxStackHeight`. |
+| `boxes[].weight` | No | none | Box weight in kg. Heavier boxes are sorted first (bottom layer priority). |
+| `constraints.units` | No | `cm` | Unit system: `cm`, `in`, or `mm`. |
+| `constraints.maxStackHeight` | No | none | Global stack height cap. Per-area value takes precedence. |
+| `constraints.minSupportRatio` | No | `0.7` | Minimum fraction of a box's base that must be supported (0–1). |
+
+**Response body**
+
+```json
 {
-  id: string;               // "algorithm_local"
-  areas: Array<{
-    id: string;
-    name?: string;
-    detail?: string;
-    width: number;
-    height: number;
-    depth: number;
-    x: number;
-    y: number;
-    z: number;
-    unplaced: boolean;      // true = UNFITTED virtual area
-    fixedMeans: { width: number; height: number; depth: number };
-    boxes: Array<{
-      id: string;
-      name?: string;
-      detail?: string;
-      position: { x: number; y: number; z: number };
-      rotation: Rotation;   // enum: see Rotation.enum.ts
-    }>;
-  }>;
+  "id": "string",
+  "name": "string | null",
+  "detail": "string | null",
+  "areas": [
+    {
+      "id": "string",
+      "name": "string | null",
+      "detail": "string | null",
+      "width": 120,
+      "height": 40,
+      "depth": 35,
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "unplaced": false,
+      "fixedMeans": { "width": 14, "height": 19, "depth": 10 },
+      "boxes": [
+        {
+          "id": "string",
+          "name": "string | null",
+          "detail": "string | null",
+          "position": { "x": 0, "y": 0, "z": 0 },
+          "rotation": 0,
+          "rotatedSize": { "width": 14, "height": 19, "depth": 10 }
+        }
+      ]
+    }
+  ]
 }
 ```
 
-**Notes**:
-- Areas are processed largest-volume-first
-- Boxes that don't fit any area are collected into a virtual area with `id: "UNFITTED"` and `unplaced: true`
-- `fixedMeans` on each area contains the actual minimized container dimensions used by the algorithm (may be smaller than the declared area dimensions)
-- Boxes within each area are sorted by proximity to the area's origin point
+**Response field notes**
+
+| Field | Description |
+|---|---|
+| `areas[].unplaced` | `true` for the synthetic `UNFITTED` area that collects boxes that could not be placed. |
+| `areas[].fixedMeans` | Minimized container dimensions used by the algorithm (may be smaller than declared area). |
+| `boxes[].rotation` | Applied rotation enum — see `Rotation.enum.ts` in the frontend. |
+| `boxes[].rotatedSize` | Effective box size after rotation is applied. |
+
+**Algorithm behaviour**
+
+- Areas are sorted largest-volume-first before assignment.
+- Boxes are sorted heaviest-first (weight descending) before placement.
+- Positions are chosen via the Extreme Points heuristic (Crainic, Perboli, Tadei 2008), lex order `(Y, Z, X)` — floor fills before stacking.
+- Stability: each placed box must have ≥ `minSupportRatio` of its base supported and its centre of gravity inside the support polygon.
+- Boxes that cannot fit any area are collected into a virtual area with `id: "UNFITTED"` and `unplaced: true`. They are never silently dropped.
+- The `exitCorridor` AABB is excluded from candidate positions in `PositionFinderStage`.
+- Coordinates are returned in user space anchored to the declared `accessCorner`.
+
+**Error responses**
+
+| Status | Cause |
+|---|---|
+| 400 | FluentValidation failure (missing id, non-positive dimensions, corridor outside area, etc.) |
+| 500 | Unhandled exception (domain or algorithm error) |
 
 ## CORS
 
-Allowed origin: `FRONTEND_ORIGIN` env var. Methods: `GET`, `POST`. `credentials: true`.
-
-## Allowed HTTP methods
-
-`GET`, `POST` (as declared in CORS config). Current endpoints use `POST` only.
+Allowed origin: `FRONTEND_ORIGIN` env var. Methods: `GET`, `POST`.

@@ -100,7 +100,7 @@ public sealed class NormalizerStageTests
     }
 
     private static PipelineRequest MakeRequest(IReadOnlyList<RequestArea> areas, IReadOnlyList<RequestBox> boxes) =>
-        new("test", null, areas, boxes, new PackingOptions(Units.Cm, Stackable: true, MinSupportRatio: 0.7));
+        new("test", null, areas, boxes, new PackingOptions(Units.Cm, MinSupportRatio: 0.7));
 
     private static RequestArea Area(string id) =>
         new(id, null, null, new DecimalMeasurements(10, 10, 10), new DecimalPosition(0, 0, 0), Corner.BottomFrontLeft, null, null);

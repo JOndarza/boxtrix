@@ -35,5 +35,4 @@ public sealed record RequestBox(
 
 public sealed record PackingOptions(
     Units Units,
-    bool Stackable,
     double MinSupportRatio);

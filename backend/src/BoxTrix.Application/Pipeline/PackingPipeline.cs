@@ -1,5 +1,6 @@
 using BoxTrix.Application.Pipeline.Stages;
 using BoxTrix.Domain.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace BoxTrix.Application.Pipeline;
 
@@ -22,6 +23,7 @@ public sealed class PackingPipeline : IPacker
     private readonly AreaSelectorStage _areaSelector;
     private readonly UnfittedCollectorStage _unfittedCollector;
     private readonly DenormalizerStage _denormalizer;
+    private readonly ILogger<PackingPipeline> _logger;
 
     public PackingPipeline(
         NormalizerStage normalizer,
@@ -29,7 +31,8 @@ public sealed class PackingPipeline : IPacker
         BoxSorterStage boxSorter,
         AreaSelectorStage areaSelector,
         UnfittedCollectorStage unfittedCollector,
-        DenormalizerStage denormalizer)
+        DenormalizerStage denormalizer,
+        ILogger<PackingPipeline> logger)
     {
         _normalizer = normalizer;
         _areaPreprocessor = areaPreprocessor;
@@ -37,10 +40,14 @@ public sealed class PackingPipeline : IPacker
         _areaSelector = areaSelector;
         _unfittedCollector = unfittedCollector;
         _denormalizer = denormalizer;
+        _logger = logger;
     }
 
     public PipelineResponse Pack(PipelineRequest request)
     {
+        _logger.LogInformation("Packing started — {Areas} area(s), {Boxes} box(es)", request.Areas.Count, request.Boxes.Count);
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+
         var normalized = _normalizer.Normalize(request);
         var contexts = _areaPreprocessor.Preprocess(normalized.Areas);
         var sortedBoxes = _boxSorter.Sort(normalized.Boxes);
@@ -52,10 +59,14 @@ public sealed class PackingPipeline : IPacker
         if (unfittedArea is not null)
         {
             organised.Add(unfittedArea);
+            _logger.LogWarning("{Count} box(es) could not be placed and were routed to UNFITTED", distribution.Unfitted.Count);
         }
 
         var contextById = contexts.ToDictionary(c => c.Source.Id, c => c);
-        return _denormalizer.Denormalize(normalized.Id, normalized.Name, organised, contextById);
+        var response = _denormalizer.Denormalize(normalized.Id, normalized.Name, organised, contextById);
+
+        _logger.LogInformation("Packing finished in {Elapsed}ms", sw.ElapsedMilliseconds);
+        return response;
     }
 }
 

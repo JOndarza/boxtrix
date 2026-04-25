@@ -60,7 +60,6 @@ public sealed class NormalizerStage : IPipelineStage
 
         var options = new NormalizedOptions(
             request.Options.Units,
-            request.Options.Stackable,
             request.Options.MinSupportRatio,
             Scale);
 

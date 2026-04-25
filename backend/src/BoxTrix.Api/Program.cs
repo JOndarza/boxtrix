@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using BoxTrix.Api.Dtos;
 using BoxTrix.Api.Endpoints;
+using BoxTrix.Api.Infrastructure;
 using BoxTrix.Api.Validators;
 using BoxTrix.Application;
 using FluentValidation;
@@ -8,6 +9,8 @@ using FluentValidation;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddBoxTrixApplication();
+builder.Services.AddExceptionHandler<DomainExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 builder.Services.AddScoped<IValidator<InputDto>, InputValidator>();
 
@@ -34,6 +37,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+app.UseExceptionHandler();
 app.UseCors(CorsPolicy);
 app.UseSwagger();
 app.UseSwaggerUI();

@@ -27,7 +27,7 @@ import { AppEvent, EventsService } from './Events.service';
 const DEMO_INPUT: IInput = {
   id: 'mega-demo',
   name: 'Mega Demo — Ultimate Collector Storage',
-  constraints: { units: 'cm', stackable: true, maxStackHeight: 80 },
+  constraints: { units: 'cm', maxStackHeight: 80 },
   areas: [
     // Largest area — processes first; fits most mid-size items.
     // accessCorner=BottomFrontRight: shelf has its access on the right side, so

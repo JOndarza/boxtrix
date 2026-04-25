@@ -177,4 +177,19 @@ public sealed class OrganizeEndpointsTests : IClassFixture<WebApplicationFactory
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
+
+    [Fact]
+    public async Task Returns_400_when_boxes_array_is_empty()
+    {
+        var payload = new
+        {
+            id = "no-boxes",
+            areas = new[] { new { id = "a", width = 10.0, height = 10.0, depth = 10.0, x = 0, y = 0, z = 0 } },
+            boxes = Array.Empty<object>(),
+        };
+
+        var response = await _client.PostAsJsonAsync("/organize/sort", payload);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 }

@@ -21,10 +21,7 @@ export interface IInput extends IIdentification {
 
   constraints?: {
     units?: Units;
-    stackable?: boolean;
     maxStackHeight?: number;
     minSupportRatio?: number;
-    mustBeAccessible?: boolean;
-    switchZforY?: boolean;
   };
 }

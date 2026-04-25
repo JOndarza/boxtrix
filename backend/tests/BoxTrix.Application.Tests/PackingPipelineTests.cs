@@ -15,6 +15,7 @@ public sealed class PackingPipelineTests
     public PackingPipelineTests()
     {
         var services = new ServiceCollection();
+        services.AddLogging();
         services.AddBoxTrixApplication();
         _packer = services.BuildServiceProvider().GetRequiredService<IPacker>();
     }
@@ -148,5 +149,5 @@ public sealed class PackingPipelineTests
         new(id, null, null, new DecimalMeasurements(w, h, d), weight);
 
     private static PackingOptions Options(double minSupportRatio = 0.7) =>
-        new(Units.Cm, Stackable: true, MinSupportRatio: minSupportRatio);
+        new(Units.Cm, MinSupportRatio: minSupportRatio);
 }

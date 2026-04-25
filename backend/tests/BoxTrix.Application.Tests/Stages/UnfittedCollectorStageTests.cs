@@ -2,6 +2,7 @@ using BoxTrix.Application.Pipeline.Stages;
 using BoxTrix.Domain.Entities;
 using BoxTrix.Domain.ValueObjects;
 using FluentAssertions;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace BoxTrix.Application.Tests.Stages;
@@ -13,7 +14,7 @@ public sealed class UnfittedCollectorStageTests
     public UnfittedCollectorStageTests()
     {
         var stability = new StabilityValidatorStage();
-        var finder = new PositionFinderStage(stability);
+        var finder = new PositionFinderStage(stability, NullLogger<PositionFinderStage>.Instance);
         var slicer = new LayerSlicerStage(new RotationOptimizerStage(), finder);
         var compactor = new CompactorStage(stability);
         _collector = new UnfittedCollectorStage(slicer, compactor);

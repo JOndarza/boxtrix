@@ -48,8 +48,5 @@ public sealed record BoxDto(
 
 public sealed record ConstraintsDto(
     Units? Units,
-    bool? Stackable,
     decimal? MaxStackHeight,
-    double? MinSupportRatio,
-    bool? MustBeAccessible,
-    bool? SwitchZforY);
+    double? MinSupportRatio);
