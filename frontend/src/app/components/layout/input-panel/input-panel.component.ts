@@ -1,13 +1,18 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   HostListener,
   inject,
   signal,
+  viewChild,
 } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AreaImportService } from '@common/api/services/AreaImport.service';
+import { IAreaImportResult } from '@common/dtos/AreaImportResult.interface';
 import { CORNER_OPTIONS, Corner } from '@common/enums/Corner.enum';
 import { InputPanelService } from '@shared/services/InputPanel.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   standalone: true,
@@ -17,13 +22,22 @@ import { InputPanelService } from '@shared/services/InputPanel.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InputPanelComponent {
-  private readonly _panel = inject(InputPanelService);
-  private readonly _fb    = inject(FormBuilder);
+  private readonly _panel       = inject(InputPanelService);
+  private readonly _fb          = inject(FormBuilder);
+  private readonly _areaImport  = inject(AreaImportService);
+
+  private readonly _dxfInput = viewChild<ElementRef<HTMLInputElement>>('dxfInput');
 
   readonly isPanelOpen     = this._panel.isPanelOpen;
   readonly units           = this._panel.units;
   readonly validationError = signal<string | null>(null);
   readonly cornerOptions   = CORNER_OPTIONS;
+
+  readonly dxfFile          = signal<File | null>(null);
+  readonly dxfDefaultHeight = signal<string>('240');
+  readonly dxfPreview       = signal<IAreaImportResult[] | null>(null);
+  readonly dxfLoading       = signal(false);
+  readonly dxfError         = signal<string | null>(null);
 
   readonly form = this._fb.group({
     areas: this._fb.array([this._newAreaGroup()]),
@@ -70,6 +84,65 @@ export class InputPanelComponent {
   corridorGroup(i: number): FormGroup | null {
     const ctrl = this.areas.at(i).get('corridor');
     return ctrl?.value === null ? null : (ctrl as FormGroup);
+  }
+
+  // ── DXF import ────────────────────────────────────────────────────────────
+  openDxfImport(): void {
+    this._dxfInput()?.nativeElement.click();
+  }
+
+  onDxfFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    input.value = '';
+    this.dxfFile.set(file);
+    this.dxfPreview.set(null);
+    this.dxfError.set(null);
+  }
+
+  setDxfHeight(event: Event): void {
+    this.dxfDefaultHeight.set((event.target as HTMLInputElement).value);
+  }
+
+  parseDxf(): void {
+    const file = this.dxfFile();
+    if (!file) return;
+    this.dxfLoading.set(true);
+    this.dxfError.set(null);
+    firstValueFrom(this._areaImport.importDxf(file, +(this.dxfDefaultHeight() || '0')))
+      .then(areas => {
+        this.dxfPreview.set(areas);
+        if (areas.length === 0) this.dxfError.set('No closed polylines found in the DXF file.');
+      })
+      .catch(() => {
+        this.dxfError.set('Failed to parse DXF. Ensure the file contains closed polylines.');
+      })
+      .finally(() => {
+        this.dxfLoading.set(false);
+      });
+  }
+
+  confirmDxfImport(): void {
+    const areas = this.dxfPreview();
+    if (!areas?.length) return;
+    for (const area of areas) {
+      const g = this._newAreaGroup();
+      g.patchValue({
+        name:   area.name,
+        width:  String(area.width),
+        height: String(area.height),
+        depth:  String(area.depth),
+      });
+      this.areas.push(g);
+    }
+    this.cancelDxfImport();
+  }
+
+  cancelDxfImport(): void {
+    this.dxfFile.set(null);
+    this.dxfPreview.set(null);
+    this.dxfError.set(null);
+    this.dxfLoading.set(false);
   }
 
   // ── Boxes ──────────────────────────────────────────────────────────────────

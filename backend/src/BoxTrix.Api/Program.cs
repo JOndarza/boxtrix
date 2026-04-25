@@ -44,6 +44,7 @@ app.UseSwaggerUI();
 
 app.MapGet("/", () => Results.Ok(new { name = "BoxTrix API", version = "1.0.0" }));
 app.MapOrganizeEndpoints();
+app.MapAreaImportEndpoints();
 
 app.Run();
 

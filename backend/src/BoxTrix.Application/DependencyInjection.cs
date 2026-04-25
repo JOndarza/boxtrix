@@ -1,5 +1,6 @@
 using BoxTrix.Application.Pipeline;
 using BoxTrix.Application.Pipeline.Stages;
+using BoxTrix.Application.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BoxTrix.Application;
@@ -12,6 +13,7 @@ public static class DependencyInjection
     /// </summary>
     public static IServiceCollection AddBoxTrixApplication(this IServiceCollection services)
     {
+        services.AddSingleton<DxfAreaParserService>();
         services.AddSingleton<NormalizerStage>();
         services.AddSingleton<AreaPreprocessorStage>();
         services.AddSingleton<BoxSorterStage>();

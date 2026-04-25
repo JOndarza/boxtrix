@@ -74,7 +74,66 @@
           </div>
         }
 
-        <button class="ip-add-link" type="button" (click)="addArea()">+ Add area</button>
+        <div class="ip-section-actions">
+          <button class="ip-add-link" type="button" (click)="addArea()">+ Add area</button>
+          <button class="ip-add-link" type="button" (click)="openDxfImport()">&#x2197; Import DXF</button>
+          <input #dxfInput type="file" accept=".dxf" hidden (change)="onDxfFileSelected($event)" />
+        </div>
+
+        <!-- DXF import panel -->
+        @if (dxfFile()) {
+          <div class="ip-dxf-panel">
+            <div class="ip-dxf-header">
+              <span class="ip-dxf-filename">{{ dxfFile()!.name }}</span>
+              <label class="ip-dxf-height-label">
+                Default height
+                <input
+                  class="ip-cell ip-cell--num ip-dxf-height-input"
+                  type="number" min="0.01" step="any" placeholder="H"
+                  [value]="dxfDefaultHeight()"
+                  (input)="setDxfHeight($event)"
+                />
+              </label>
+              <button
+                class="ip-btn ip-btn--ghost ip-dxf-parse-btn"
+                type="button"
+                [disabled]="dxfLoading()"
+                (click)="parseDxf()"
+              >
+                @if (dxfLoading()) { Parsing… } @else { Preview }
+              </button>
+              <button class="ip-close-btn" type="button" (click)="cancelDxfImport()" aria-label="Cancel import">&#x2715;</button>
+            </div>
+
+            @if (dxfError()) {
+              <p class="ip-error" role="alert">{{ dxfError() }}</p>
+            }
+
+            @if (dxfPreview()?.length) {
+              <table class="ip-dxf-table">
+                <thead>
+                  <tr><th>Name</th><th>W</th><th>D</th><th>H</th></tr>
+                </thead>
+                <tbody>
+                  @for (area of dxfPreview()!; track $index) {
+                    <tr>
+                      <td>{{ area.name }}</td>
+                      <td>{{ area.width }}</td>
+                      <td>{{ area.depth }}</td>
+                      <td>{{ area.height }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+              <div class="ip-dxf-confirm">
+                <button class="ip-btn ip-btn--ghost" type="button" (click)="cancelDxfImport()">Cancel</button>
+                <button class="ip-btn ip-btn--primary" type="button" (click)="confirmDxfImport()">
+                  + Add {{ dxfPreview()!.length }} area(s)
+                </button>
+              </div>
+            }
+          </div>
+        }
       </section>
 
       <div class="ip-divider"></div>
