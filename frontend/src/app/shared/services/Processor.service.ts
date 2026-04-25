@@ -241,11 +241,15 @@ export class ProcessorService {
     return (
       organized.boxes?.map((box) => {
         const item = originals.find((i) => i.id === box.id) || ({} as IBox);
+        // The backend sends `rotatedSize` already adjusted for the applied rotation;
+        // using the original `item` dimensions here would render rotated boxes with
+        // their pre-rotation footprint and produce visible overlaps.
+        const means = box.rotatedSize ?? item;
         return new RenderedController(item.id, item.name || '', item.detail || '', {
           type: 'box',
           targetable: true,
           position: { x: box.position.x, y: box.position.y, z: box.position.z },
-          means: item,
+          means,
           rotation: box.rotation,
         });
       }) ?? []
