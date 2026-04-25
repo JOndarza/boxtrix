@@ -30,7 +30,10 @@ import { debounceTime } from 'rxjs';
 import * as THREE from 'three';
 import { BoxGeometry } from 'three';
 import { TextGeometryParameters } from 'three/examples/jsm/geometries/TextGeometry.js';
+import { SelectionBox } from 'three/examples/jsm/interactive/SelectionBox.js';
+import { SelectionHelper } from 'three/examples/jsm/interactive/SelectionHelper.js';
 import { Project } from '@common/classes/rendered/Project.class';
+import { LabelManagerService } from '@shared/services/LabelManager.service';
 
 export enum KeyCode {
   A = 65,
@@ -43,7 +46,7 @@ export enum KeyCode {
   standalone: true,
   selector: 'app-canvas',
   template: `<div #canvas class="canvas"></div>`,
-  providers: [SceneService],
+  providers: [SceneService, LabelManagerService],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CanvasComponent implements OnInit, OnDestroy {
@@ -63,18 +66,26 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   private readonly _keyboardHelp = inject(KeyboardHelpService);
   private readonly _inputPanel   = inject(InputPanelService);
+  private readonly _labels       = inject(LabelManagerService);
 
   private readonly _pointer = new THREE.Vector2();
   private _sceneReady = false;
   private _ambientLight!: THREE.AmbientLight;
   private _hoveredMesh: THREE.Mesh | null = null;
 
-  private readonly _homePos = new THREE.Vector3();
-  private readonly _homeTarget = new THREE.Vector3();
   private _grid: THREE.GridHelper | null = null;
   private _axes: THREE.AxesHelper | null = null;
+  private _box3Helper: THREE.Box3Helper | null = null;
+  private _dimensionArrows: THREE.ArrowHelper[] = [];
+  private _areaHelpers: THREE.Box3Helper[] = [];
   private _helpersVisible = true;
-  private _cameraAnimId: number | null = null;
+  private _areaBoundsVisible = false;
+  private _labelsVisible = false;
+
+  // SelectionBox (Shift + drag)
+  private _selectionBox!: SelectionBox;
+  private _selectionHelper!: SelectionHelper;
+  private _isMultiSelecting = false;
 
   // Reactively update background and rebuild scene geometry when theme toggles.
   private readonly _themeEffect = effect(() => {
@@ -108,13 +119,47 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this._sceneService.markDirty();
   });
 
+  private readonly _statsEffect = effect(() => {
+    const show = this._graphics.showStats();
+    if (!this._sceneReady) return;
+    this._sceneService.setStatsVisible(show);
+  });
+
+  private readonly _aoEffect = effect(() => {
+    const on = this._graphics.settings().showAO;
+    if (!this._sceneReady) return;
+    this._sceneService.setAOEnabled(on);
+  });
+
+  private readonly _bloomEffect = effect(() => {
+    const on = this._graphics.settings().showBloom;
+    if (!this._sceneReady) return;
+    this._sceneService.setBloomEnabled(on);
+  });
+
+  private readonly _clippingEffect = effect(() => {
+    const on = this._graphics.clippingEnabled();
+    if (!this._sceneReady) return;
+    this._sceneService.setClippingEnabled(on);
+  });
+
+  private readonly _clippingYEffect = effect(() => {
+    const y = this._graphics.clippingY();
+    if (!this._sceneReady) return;
+    this._sceneService.setClippingY(y);
+  });
+
   // C2 — bound refs stored so removeEventListener can target the same function
-  private readonly _onWindowResize = (): void =>
+  private readonly _onWindowResize = (): void => {
     this._sceneService.onResize(this.canvas.nativeElement);
+    this._labels.onResize(this.canvas.nativeElement);
+  };
   private readonly _onKeyDown = (e: KeyboardEvent): void => this.handleKeyDown(e);
   private readonly _onCanvasClick = (e: MouseEvent): void => this.handleCanvasClick(e);
   private readonly _onCanvasMouseMove = (e: MouseEvent): void => this.handleCanvasMouseMove(e);
   private readonly _onCanvasMouseLeave = (): void => this.clearHover();
+  private readonly _onCanvasMouseDown = (e: MouseEvent): void => this.handleCanvasMouseDown(e);
+  private readonly _onCanvasMouseUp = (e: MouseEvent): void => this.handleCanvasMouseUp(e);
 
   ngOnInit(): void {
     this._sceneService.init(this.canvas.nativeElement);
@@ -123,6 +168,16 @@ export class CanvasComponent implements OnInit, OnDestroy {
     const gfx = this._graphics.settings();
     this._sceneService.setPixelRatio(PIXEL_RATIO_VALUES[gfx.pixelRatioPreset]());
     this._sceneService.setToneMapping(gfx.toneMapping);
+
+    // Labels CSS2D overlay
+    this._labels.init(this.canvas.nativeElement);
+    this._sceneService.afterRender = () =>
+      this._labels.render(this._sceneService.scene, this._sceneService.camera);
+
+    // SelectionBox for rubber-band multi-select (Shift + drag)
+    this._selectionBox = new SelectionBox(this._sceneService.camera, this._sceneService.scene);
+    this._selectionHelper = new SelectionHelper(this._sceneService.renderer, 'selectBox');
+    this._selectionHelper.enabled = false;
 
     // C1 — takeUntilDestroyed prevents subscriptions from leaking past component lifetime
     this._events
@@ -139,14 +194,26 @@ export class CanvasComponent implements OnInit, OnDestroy {
       .pipe(takeUntilDestroyed(this._destroyRef))
       .subscribe((id) => {
         const obj = this._sceneService.mainGroup.getObjectByProperty('uuid', id);
-        if (obj) this._focus.set(obj);
+        if (obj) {
+          this._focus.set(obj);
+          this._sceneService.setOutlineSelected([obj]);
+          this._sceneService.attachTransform(obj);
+          this._updateBox3Helper(obj);
+        }
       });
+
+    this._events
+      .get(AppEvent.SCREENSHOT)
+      .pipe(takeUntilDestroyed(this._destroyRef))
+      .subscribe(() => this._sceneService.takeScreenshot());
 
     window.addEventListener('resize', this._onWindowResize);
     document.addEventListener('keydown', this._onKeyDown);
     this.canvas.nativeElement.addEventListener('click', this._onCanvasClick);
     this.canvas.nativeElement.addEventListener('mousemove', this._onCanvasMouseMove);
     this.canvas.nativeElement.addEventListener('mouseleave', this._onCanvasMouseLeave);
+    this.canvas.nativeElement.addEventListener('mousedown', this._onCanvasMouseDown);
+    this.canvas.nativeElement.addEventListener('mouseup', this._onCanvasMouseUp);
   }
 
   ngOnDestroy(): void {
@@ -155,9 +222,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.canvas.nativeElement.removeEventListener('click', this._onCanvasClick);
     this.canvas.nativeElement.removeEventListener('mousemove', this._onCanvasMouseMove);
     this.canvas.nativeElement.removeEventListener('mouseleave', this._onCanvasMouseLeave);
-    if (this._cameraAnimId !== null) cancelAnimationFrame(this._cameraAnimId);
-    // SceneService teardown (renderer.dispose, forceContextLoss, scene.clear)
-    // is handled by Angular when it destroys the component-scoped injector.
+    this.canvas.nativeElement.removeEventListener('mousedown', this._onCanvasMouseDown);
+    this.canvas.nativeElement.removeEventListener('mouseup', this._onCanvasMouseUp);
+    this._sceneService.afterRender = null;
+    this._selectionHelper?.dispose();
+    // SceneService and LabelManagerService teardown handled by Angular's
+    // component-scoped injector on destroy.
   }
 
   //#region Input handlers
@@ -178,11 +248,19 @@ export class CanvasComponent implements OnInit, OnDestroy {
       case 'KeyF': this.focusSelected(); break;
       case 'KeyH': this.frameAll(); break;
       case 'KeyV': this.toggleHelpers(); break;
+      case 'KeyG': this._sceneService.setTransformMode('translate'); break;
+      case 'KeyR': this._sceneService.setTransformMode('rotate'); break;
+      case 'KeyL': this.toggleLabels(); break;
+      case 'KeyO': this.toggleAreaBounds(); break;
+      case 'KeyC': this._graphics.toggleClipping(); break;
       case 'Space':
         event.preventDefault();
         this.togglePlay();
         break;
       case 'Escape':
+        this._sceneService.setOutlineSelected([]);
+        this._sceneService.detachTransform();
+        this._updateBox3Helper(null);
         this._focus.clear();
         this._keyboardHelp.close();
         this._inputPanel.close();
@@ -195,7 +273,46 @@ export class CanvasComponent implements OnInit, OnDestroy {
     }
   }
 
+  private handleCanvasMouseDown(event: MouseEvent): void {
+    if (!event.shiftKey) return;
+    const rect = this.canvas.nativeElement.getBoundingClientRect();
+    const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    this._selectionBox.startPoint.set(x, y, 0.5);
+    this._selectionHelper.enabled = true;
+    this._isMultiSelecting = true;
+  }
+
+  private handleCanvasMouseUp(event: MouseEvent): void {
+    if (!this._isMultiSelecting) return;
+    this._isMultiSelecting = false;
+    this._selectionHelper.enabled = false;
+
+    const rect = this.canvas.nativeElement.getBoundingClientRect();
+    const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    this._selectionBox.endPoint.set(x, y, 0.5);
+
+    const picked = this._selectionBox.select().filter(
+      (o) => (o.userData as RenderedController)?.targetable,
+    );
+    if (!picked.length) return;
+
+    this._sceneService.setOutlineSelected(picked);
+    if (picked.length === 1) {
+      this._focus.set(picked[0]);
+      this._sceneService.attachTransform(picked[0]);
+      this._updateBox3Helper(picked[0]);
+    } else {
+      this._focus.clear();
+      this._sceneService.detachTransform();
+      this._updateBox3Helper(null);
+    }
+    this._sceneService.markDirty();
+  }
+
   private handleCanvasClick(event: MouseEvent): void {
+    if (this._isMultiSelecting) return;
     // M4 — use canvas bounding rect so coordinates are correct when the
     // sidebar overlaps part of the viewport
     const rect = this.canvas.nativeElement.getBoundingClientRect();
@@ -210,7 +327,11 @@ export class CanvasComponent implements OnInit, OnDestroy {
     );
     if (!filter.length) return;
 
-    this._focus.set(filter[0].object);
+    const picked = filter[0].object;
+    this._focus.set(picked);
+    this._sceneService.setOutlineSelected([picked]);
+    this._sceneService.attachTransform(picked);
+    this._updateBox3Helper(picked);
   }
 
   private handleCanvasMouseMove(event: MouseEvent): void {
@@ -228,6 +349,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     if (this._hoveredMesh) this._clearHoverEmissive(this._hoveredMesh);
     this._hoveredMesh = hit;
     if (hit) this._applyHoverEmissive(hit);
+    this._sceneService.setOutlineHover(hit ? [hit] : []);
     this._sceneService.markDirty();
   }
 
@@ -235,6 +357,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     if (!this._hoveredMesh) return;
     this._clearHoverEmissive(this._hoveredMesh);
     this._hoveredMesh = null;
+    this._sceneService.setOutlineHover([]);
     this._sceneService.markDirty();
   }
 
@@ -242,20 +365,11 @@ export class CanvasComponent implements OnInit, OnDestroy {
     const obj = this._focus.obj3D;
     if (!obj) return;
     const box = new THREE.Box3().setFromObject(obj);
-    const center = box.getCenter(new THREE.Vector3());
-    const size = box.getSize(new THREE.Vector3());
-    const maxDim = Math.max(size.x, size.y, size.z);
-    const fov = this._sceneService.camera.fov * (Math.PI / 180);
-    const distance = (maxDim / 2 / Math.tan(fov / 2)) * 1.5;
-    const dir = this._sceneService.camera.position
-      .clone()
-      .sub(this._sceneService.controls.target)
-      .normalize();
-    this._animateCameraTo(center.clone().addScaledVector(dir, distance), center, 500);
+    this._sceneService.fitToBox(box);
   }
 
   private frameAll(): void {
-    this._animateCameraTo(this._homePos.clone(), this._homeTarget.clone(), 500);
+    this._sceneService.resetCamera();
   }
 
   private jumpToArea(n: number): void {
@@ -263,24 +377,16 @@ export class CanvasComponent implements OnInit, OnDestroy {
     if (!areas?.length) return;
     const area = areas[n - 1];
     if (!area?.obj3D) return;
-
     const box = new THREE.Box3().setFromObject(area.obj3D as unknown as THREE.Object3D);
-    const center = box.getCenter(new THREE.Vector3());
-    const size = box.getSize(new THREE.Vector3());
-    const maxDim = Math.max(size.x, size.y, size.z);
-    const fov = this._sceneService.camera.fov * (Math.PI / 180);
-    const distance = (maxDim / 2 / Math.tan(fov / 2)) * 1.8;
-    const dir = this._sceneService.camera.position
-      .clone()
-      .sub(this._sceneService.controls.target)
-      .normalize();
-    this._animateCameraTo(center.clone().addScaledVector(dir, distance), center, 450);
+    this._sceneService.fitToBox(box);
   }
 
   private toggleHelpers(): void {
     this._helpersVisible = !this._helpersVisible;
     if (this._grid) this._grid.visible = this._helpersVisible;
     if (this._axes) this._axes.visible = this._helpersVisible;
+    if (this._box3Helper) this._box3Helper.visible = this._helpersVisible;
+    this._dimensionArrows.forEach(a => { a.visible = this._helpersVisible; });
     this._sceneService.markDirty();
   }
 
@@ -288,33 +394,101 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this._rewind.togglePlay();
   }
 
-  private _animateCameraTo(
-    targetPos: THREE.Vector3,
-    targetLookAt: THREE.Vector3,
-    duration: number,
-  ): void {
-    if (this._cameraAnimId !== null) cancelAnimationFrame(this._cameraAnimId);
 
-    const startPos = this._sceneService.camera.position.clone();
-    const startTarget = this._sceneService.controls.target.clone();
-    const startTime = performance.now();
-    const camera = this._sceneService.camera;
-    const controls = this._sceneService.controls;
+  private toggleLabels(): void {
+    this._labelsVisible = !this._labelsVisible;
+    this._labels.setVisible(this._labelsVisible);
+    this._sceneService.markDirty();
+  }
 
-    const tick = (now: number): void => {
-      const t = Math.min((now - startTime) / duration, 1);
-      const e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-      camera.position.lerpVectors(startPos, targetPos, e);
-      controls.target.lerpVectors(startTarget, targetLookAt, e);
-      controls.update();
-      this._sceneService.markDirty();
-      if (t < 1) {
-        this._cameraAnimId = requestAnimationFrame(tick);
-      } else {
-        this._cameraAnimId = null;
-      }
-    };
-    this._cameraAnimId = requestAnimationFrame(tick);
+  private toggleAreaBounds(): void {
+    this._areaBoundsVisible = !this._areaBoundsVisible;
+    this._areaHelpers.forEach(h => { h.visible = this._areaBoundsVisible; });
+    this._sceneService.markDirty();
+  }
+
+  private _addLabelsForProject(): void {
+    this._context.project?.areas.forEach(area => {
+      area.items.forEach(item => {
+        if (item.obj3D) this._labels.addLabel(item.obj3D as THREE.Object3D);
+      });
+    });
+  }
+
+  private _buildAreaHelpers(): void {
+    this._context.project?.areas
+      .filter(a => a.name !== 'UNFITTED')
+      .forEach(area => {
+        if (!area.items.length) return;
+        const box = new THREE.Box3();
+        area.items.forEach(item => {
+          if (item.obj3D) box.expandByObject(item.obj3D as THREE.Object3D);
+        });
+        if (box.isEmpty()) return;
+        const helper = new THREE.Box3Helper(box, new THREE.Color(0x00ffff));
+        helper.visible = this._areaBoundsVisible;
+        this._sceneService.addToScene(helper);
+        this._areaHelpers.push(helper);
+      });
+  }
+
+  private _clearAreaHelpers(): void {
+    this._areaHelpers.forEach(h => {
+      this._sceneService.scene.remove(h);
+      h.geometry.dispose();
+    });
+    this._areaHelpers = [];
+  }
+
+  private _updateBox3Helper(obj: THREE.Object3D | null): void {
+    if (this._box3Helper) {
+      this._sceneService.scene.remove(this._box3Helper);
+      this._box3Helper.geometry.dispose();
+      this._box3Helper = null;
+    }
+    if (obj && this._helpersVisible) {
+      const box = new THREE.Box3().setFromObject(obj);
+      this._box3Helper = new THREE.Box3Helper(box, new THREE.Color(0xffffff));
+      this._sceneService.addToScene(this._box3Helper);
+    }
+    this._updateDimensionArrows(obj);
+    this._sceneService.markDirty();
+  }
+
+  private _updateDimensionArrows(obj: THREE.Object3D | null): void {
+    this._dimensionArrows.forEach(a => {
+      this._sceneService.scene.remove(a);
+      a.dispose();
+    });
+    this._dimensionArrows = [];
+    if (!obj || !this._helpersVisible) return;
+
+    const box = new THREE.Box3().setFromObject(obj);
+    const size = new THREE.Vector3();
+    box.getSize(size);
+    const min = box.min;
+
+    const color = 0xffff00;
+    const headRatio = 0.12;
+
+    // Width  → +X from min corner
+    const arrowX = new THREE.ArrowHelper(
+      new THREE.Vector3(1, 0, 0), min, size.x, color,
+      size.x * headRatio, size.x * headRatio * 0.5,
+    );
+    // Height → +Y from min corner
+    const arrowY = new THREE.ArrowHelper(
+      new THREE.Vector3(0, 1, 0), min, size.y, color,
+      size.y * headRatio, size.y * headRatio * 0.5,
+    );
+    // Depth  → +Z from min corner
+    const arrowZ = new THREE.ArrowHelper(
+      new THREE.Vector3(0, 0, 1), min, size.z, color,
+      size.z * headRatio, size.z * headRatio * 0.5,
+    );
+
+    this._dimensionArrows = [arrowX, arrowY, arrowZ];
+    this._sceneService.addToScene(...this._dimensionArrows);
   }
 
   private _applyHoverEmissive(mesh: THREE.Mesh): void {
@@ -359,28 +533,34 @@ export class CanvasComponent implements OnInit, OnDestroy {
   private load(): void {
     if (!this._context.project) return;
 
+    this._labels.clearLabels();
+    this._clearAreaHelpers();
+    this._sceneService.setOutlineSelected([]);
+    this._sceneService.detachTransform();
+    this._updateBox3Helper(null);
     const mainGroup = this._sceneService.resetMainGroup();
 
     this.setScene(mainGroup, this._context.project);
+    this._addLabelsForProject();
+    this._buildAreaHelpers();
 
     const data = this.getMinMax(this._context.project);
 
     // Position camera equidistant on all three axes so the initial view shows
     // the XYZ volume (top + front + side visible), not just the XZ plane.
     const d = Math.max(data.means.width, data.maxHeight, data.means.depth) * 2;
-    this._sceneService.camera.position.set(
+    const camPos = new THREE.Vector3(
       data.massCenter.x + d,
       data.massCenter.y + d,
       data.massCenter.z + d,
     );
-    this._sceneService.controls.target.set(
+    const camTarget = new THREE.Vector3(
       data.massCenter.x,
       data.massCenter.y,
       data.massCenter.z,
     );
-
-    this._homePos.copy(this._sceneService.camera.position);
-    this._homeTarget.copy(this._sceneService.controls.target);
+    this._sceneService.setCamera(camPos, camTarget);
+    this._sceneService.saveCameraState();
 
     this.addGrid(data);
     this.addLight();
@@ -627,10 +807,45 @@ export class CanvasComponent implements OnInit, OnDestroy {
     outerColor?: string,
   ) {
     const dark = this._theme.isDark();
+
+    // Container object — the THREE.js parent that box meshes attach to.
+    // Positioned using the backend fixedMeans so that box local-→world math
+    // (getFixedDataOnParent) continues to work correctly.
     item.setColor(innerColor ?? (dark ? '#ff2222' : '#b91c1c'));
     const fixed = this.drawWire(item);
     parent.add(fixed.obj3d);
 
+    // Inner (red) visual wire — shows the actual used-space bbox in user-space
+    // coordinates, computed from the placed items instead of the canonical
+    // fixedMeans that the backend returns (canonical ≠ user-space for flipped
+    // access corners such as BottomFrontRight or BottomBackLeft).
+    const items = item.items;
+    if (items.length > 0) {
+      const minX = Math.min(...items.map(i => i.position.x));
+      const minY = Math.min(...items.map(i => i.position.y));
+      const minZ = Math.min(...items.map(i => i.position.z));
+      const maxX = Math.max(...items.map(i => i.position.x + i.fixedMeans.width));
+      const maxY = Math.max(...items.map(i => i.position.y + i.fixedMeans.height));
+      const maxZ = Math.max(...items.map(i => i.position.z + i.fixedMeans.depth));
+
+      const bboxW = maxX - minX;
+      const bboxH = maxY - minY;
+      const bboxD = maxZ - minZ;
+
+      const innerMat = new THREE.LineBasicMaterial({ color: item.color });
+      const innerGeom = new THREE.EdgesGeometry(new BoxGeometry(bboxW, bboxH, bboxD));
+      const innerWire = new THREE.LineSegments(innerGeom, innerMat);
+
+      // Position relative to the parent (scene group), not to the container.
+      innerWire.position.set(
+        item.position.x + minX + bboxW / 2,
+        item.position.y + minY + bboxH / 2,
+        item.position.z + minZ + bboxD / 2,
+      );
+      parent.add(innerWire);
+    }
+
+    // Outer (yellow) wire — full declared area dimensions.
     const clone = new RenderedController('', '', '', {
       type: 'area',
       targetable: false,
