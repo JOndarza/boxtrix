@@ -270,6 +270,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
         this.togglePlay();
         break;
       case 'Escape':
+        if (this.flyMode()) { this._exitFlyMode(); return; }
         this._sceneService.setOutlineSelected([]);
         this._sceneService.detachTransform();
         this._updateBox3Helper(null);
@@ -324,7 +325,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   private handleCanvasClick(event: MouseEvent): void {
-    if (this._isMultiSelecting) return;
+    if (this._isMultiSelecting || this.flyMode()) return;
     // M4 — use canvas bounding rect so coordinates are correct when the
     // sidebar overlaps part of the viewport
     const rect = this.canvas.nativeElement.getBoundingClientRect();
@@ -347,6 +348,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   private handleCanvasMouseMove(event: MouseEvent): void {
+    if (this.flyMode()) return;
     const rect = this.canvas.nativeElement.getBoundingClientRect();
     this._pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     this._pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;

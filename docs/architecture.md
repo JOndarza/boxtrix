@@ -89,7 +89,7 @@ The `PackingPipeline` orchestrator wires eleven stages registered as singletons.
 | `common/classes/rendered/` | Three.js scene objects: `Area` (now carries `exitCorridor`), `Rendered`, `RenderedController`, `Project`, `Bases` |
 | `common/dtos/` | Shared TypeScript interfaces mirroring backend contracts |
 | `common/enums/` | `Rotation`, `Corner`, `Units` (mirror of backend enums) |
-| `shared/services/` | Cross-feature: `ProcessorService`, `ContextService`, `EventsService`, `RewindManagerService`, `FocusManagerService`, `TextManagerService`, `ConstantsService`, `ThemeService`, `GraphicsService`, `KeyboardHelpService`, `InputPanelService` |
+| `shared/services/` | Cross-feature: `ProcessorService`, `ContextService`, `EventsService`, `RewindManagerService`, `FocusManagerService`, `TextManagerService`, `ConstantsService`, `ThemeService`, `GraphicsService`, `KeyboardHelpService`, `InputPanelService`, `SceneService` (component-scoped WebGL owner), `LabelManagerService` (component-scoped CSS2DRenderer) |
 
 ## Data flow
 
@@ -119,10 +119,13 @@ User input (input-panel)
 - **Corner-anchored packing**: `AreaPreprocessor` maps the user's `accessCorner` to (0, 0, 0); the `Denormalizer` mirrors X/Z so user-space coordinates remain anchored to the chosen corner
 - **Forbidden regions**: `IArea.exitCorridor` (AABB) is honoured by the `PositionFinder`; the frontend renders it as a translucent red mesh
 - **Unfitted boxes**: never silently dropped — they go to a virtual `UNFITTED` area with `unplaced = true`
-- **Frontend events**: `AppEvent` enum (`LOADING`, `LOADED`, `RENDERING`, `RENDERED`, `RAYCAST`, `CLICKED`); `EventsService` provides typed `Subject<T>` per event
-- **3D selection**: `FocusManagerService.set()` fires `AppEvent.RAYCAST`; the sidebar subscribes to highlight the matching list item
-- **User preferences**: `ThemeService` and `GraphicsService` use `signal()` + inline `localStorage`; never `StorageService` for preferences
+- **Frontend events**: `AppEvent` enum (`LOADING`, `LOADED`, `RENDERING`, `RENDERED`, `RAYCAST`, `CLICKED`, `SCREENSHOT`); `EventsService` provides typed `Subject<T>` per event
+- **3D selection**: `FocusManagerService.set()` fires `AppEvent.RAYCAST`; the sidebar subscribes to highlight the matching list item; `AppEvent.SCREENSHOT` is fired from `HeaderComponent` and consumed by `CanvasComponent`
+- **User preferences**: `ThemeService` and `GraphicsService` use `signal()` + inline `localStorage`; never `StorageService` for preferences; `showAO` and `showBloom` are persisted; `showStats`, `clippingEnabled`, `clippingY` are session-only
 - **WebGL quality**: `SceneService.setPixelRatio` / `setToneMapping` apply runtime renderer changes; `CanvasComponent` wires `GraphicsService` signals via `effect()` guarded by `_sceneReady`
+- **EffectComposer pass chain**: `RenderPass → GTAOPass (optional) → UnrealBloomPass (optional) → OutlinePass×2 (selected / hovered) → SMAAPass`; composer replaces the direct `renderer.render()` call
+- **Camera controls**: `camera-controls` v3 (`@yomotsu`) replaces `OrbitControls`; `SceneService` exposes `animateTo`, `fitToBox`, `saveCameraState`, `resetCamera`, `syncCameraState`; `ViewportGizmo` attaches to the same instance; `FlyControls` activates on `` ` `` and suspends `CameraControls` while active
+- **CSS2D labels**: `LabelManagerService` owns a `CSS2DRenderer` overlay (absolute-positioned over the WebGL canvas); `SceneService.afterRender` callback renders it every frame; `SceneService.onFrame(delta)` callback runs `FlyControls.update(delta)` when fly mode is active
 
 ## Dependency rules
 

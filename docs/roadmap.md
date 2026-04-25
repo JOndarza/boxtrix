@@ -31,8 +31,21 @@ The in-house packing pipeline and 3D frontend renderer are live. The backend was
 - Fixed inner bbox wireframe position for flipped access corners
 - Karma specs: InputPanelService (13 cases), Area.class (4 cases), ProcessorService (5 cases)
 - Demo simplified: all areas use BottomFrontLeft so boxes visibly pack from the left corner
-- CSS2D label overlay (LabelManagerService)
-- Graphics settings: AO, Bloom, clipping plane, pixel ratio, stats, screenshot
+
+### 3D scene gizmos (2026-04-25)
+
+- `camera-controls` v3 replaces OrbitControls: smooth animated `fitToBox`, `reset`, `setLookAt` transitions on F / H / 1-9
+- FlyControls walk-through mode (`` ` `` toggle, `Esc` to exit); blue badge while active; blocks hover/click during flight
+- `EffectComposer` pass chain: GTAOPass (ambient occlusion) → UnrealBloomPass → OutlinePass×2 (selected white / hovered grey) → SMAAPass; AO and Bloom toggleable from Graphics panel (persisted)
+- `TransformControls`: drag/rotate selected box (G = translate, R = rotate)
+- `SelectionBox` + `SelectionHelper`: Shift + drag rubber-band for multi-select
+- `Box3Helper` on selected box + 3× `ArrowHelper` (yellow W/H/D dimension arrows from min corner)
+- `Box3Helper` per fitted area showing packed-items bounding box (O key)
+- `LabelManagerService`: CSS2DRenderer HTML labels over every box (L key)
+- Clipping plane with `PlaneHelper` and live Y slider in Graphics panel (C key)
+- Screenshot button in header (`AppEvent.SCREENSHOT` → `renderer.toDataURL()` download)
+- Stats.js FPS overlay toggled from Graphics panel
+- Keyboard shortcuts panel updated with all 12 new shortcuts
 
 ### Known gaps / not started
 
