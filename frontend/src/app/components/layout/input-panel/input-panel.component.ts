@@ -3,6 +3,7 @@ import {
   Component,
   ElementRef,
   HostListener,
+  computed,
   effect,
   inject,
   signal,
@@ -35,7 +36,7 @@ export class InputPanelComponent {
   readonly validationError = signal<string | null>(null);
   readonly cornerOptions   = CORNER_OPTIONS;
 
-  get weightUnit(): string { return this._panel.units() === 'in' ? 'lb' : 'kg'; }
+  readonly weightUnit = computed(() => this._panel.units() === 'in' ? 'lb' : 'kg');
 
   constructor() {
     effect(() => {

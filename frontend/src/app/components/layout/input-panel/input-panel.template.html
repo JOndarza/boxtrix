@@ -147,7 +147,7 @@
         <span class="ip-section-label">Boxes</span>
 
         <div class="ip-col-headers ip-row ip-row--box">
-          <span>Name</span><span>W</span><span>H</span><span>D</span><span>#</span><span>{{ weightUnit }}</span><span></span>
+          <span>Name</span><span>W</span><span>H</span><span>D</span><span>#</span><span>{{ weightUnit() }}</span><span></span>
         </div>
 
         @for (box of boxes.controls; track $index) {
@@ -168,7 +168,7 @@
               type="number" min="1" step="1" placeholder="#"
               (keydown.enter)="onBoxQtyEnter($index)"
             />
-            <input class="ip-cell ip-cell--num" formControlName="weight" type="number" min="0" step="any" placeholder="kg" />
+            <input class="ip-cell ip-cell--num" formControlName="weight" type="number" min="0" step="any" [placeholder]="weightUnit()" />
             <button class="ip-delete-btn" type="button" (click)="removeBox($index)" aria-label="Remove box">&#x2715;</button>
           </div>
         }
