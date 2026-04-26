@@ -35,6 +35,8 @@ export class InputPanelComponent {
   readonly validationError = signal<string | null>(null);
   readonly cornerOptions   = CORNER_OPTIONS;
 
+  get weightUnit(): string { return this._panel.units() === 'in' ? 'lb' : 'kg'; }
+
   constructor() {
     effect(() => {
       const input = this._panel.pendingLoad();
