@@ -881,18 +881,21 @@ export class CanvasComponent implements OnInit, OnDestroy {
       parent.add(innerWire);
     }
 
-    // Outer (yellow) wire — full declared area dimensions.
-    const clone = new RenderedController('', '', '', {
-      type: 'area',
-      targetable: false,
-      means: item.means,
-      position: item.position,
-      rotation: Rotation.WHD,
-    });
-    clone.setColor(outerColor ?? (dark ? '#ffee00' : '#92400e'));
+    // Outer wire — full declared area dimensions. Skipped when outerColor is
+    // not provided (e.g. UNFITTED areas have no meaningful declared bbox).
+    if (outerColor !== undefined) {
+      const clone = new RenderedController('', '', '', {
+        type: 'area',
+        targetable: false,
+        means: item.means,
+        position: item.position,
+        rotation: Rotation.WHD,
+      });
+      clone.setColor(outerColor ?? (dark ? '#ffee00' : '#92400e'));
 
-    const normal = this.drawWire(clone);
-    parent.add(normal.obj3d);
+      const normal = this.drawWire(clone);
+      parent.add(normal.obj3d);
+    }
 
     return fixed;
   }
