@@ -5,18 +5,42 @@
   overflow: hidden;
 }
 
-// CSS2DRenderer box labels
+// CSS2DRenderer box labels — styled to match sidebar sequence items
 .scene-label {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
-  font-size: 0.65rem;
-  color: #fff;
-  background: rgba(0, 0, 0, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px 4px 7px;
   border-radius: 3px;
-  padding: 1px 5px;
   white-space: nowrap;
   pointer-events: none;
   transform: translateX(-50%);
+  background: rgba(22, 24, 29, 0.96);
+  border: 1px solid var(--border-default);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+
+  [data-theme='light'] & {
+    background: rgba(255, 255, 255, 0.97);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  }
+}
+
+.scene-label__swatch {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+
+  [data-theme='light'] & {
+    border-color: rgba(0, 0, 0, 0.2);
+  }
+}
+
+.scene-label__name {
+  font-size: 0.82rem;
+  line-height: 1.35;
+  color: var(--text-primary);
 }
 
 // Fly mode indicator

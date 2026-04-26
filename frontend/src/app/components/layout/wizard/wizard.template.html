@@ -1,0 +1,111 @@
+<div class="wizard-backdrop"></div>
+
+<div class="wizard-card">
+
+  <!-- Step indicator -->
+  <div class="wizard-stepper" aria-label="Setup steps">
+    <div class="wizard-step" [class.wizard-step--active]="step() === 1" [class.wizard-step--done]="step() > 1">
+      <span class="wizard-step__bubble">1</span>
+      <span class="wizard-step__label">Load</span>
+    </div>
+    <div class="wizard-step-line"></div>
+    <div class="wizard-step" [class.wizard-step--active]="step() === 2">
+      <span class="wizard-step__bubble">2</span>
+      <span class="wizard-step__label">Review</span>
+    </div>
+  </div>
+
+  <!-- ── Step 1: Load ─────────────────────────────────────────────────────── -->
+  @if (step() === 1) {
+    <header class="wizard-header">
+      <span class="wizard-logo" aria-hidden="true">■</span>
+      <h1 class="wizard-title">BoxTrix</h1>
+      <p class="wizard-tagline">3D Space Optimizer</p>
+    </header>
+
+    <div class="wizard-divider"></div>
+
+    <p class="wizard-description">
+      Calculate the optimal placement of your collectible boxes into storage areas
+      using 3D bin packing algorithms. Upload a <strong>.json</strong> file with
+      your areas and boxes to get started.
+    </p>
+
+    @if (parseError()) {
+      <p class="wizard-error" role="alert">{{ parseError() }}</p>
+    }
+
+    <div class="wizard-actions">
+      <label for="wizard-file-upload" class="wizard-upload-btn">
+        Upload JSON file
+      </label>
+      <input
+        id="wizard-file-upload"
+        type="file"
+        accept=".json"
+        class="visually-hidden"
+        (change)="onFileSelected($event)"
+        aria-label="Upload JSON configuration file"
+      />
+
+      <button class="wizard-demo-btn" (click)="loadDemo()" aria-label="Load a demo with sample boxes and shelves">
+        Try demo &nbsp;▶
+      </button>
+    </div>
+  }
+
+  <!-- ── Step 2: Review ───────────────────────────────────────────────────── -->
+  @if (step() === 2 && pendingInput()) {
+    <div class="wizard-review">
+      @if (pendingInput()!.name) {
+        <p class="wizard-review__project-name">{{ pendingInput()!.name }}</p>
+      }
+
+      <section class="wizard-review__section">
+        <h2 class="wizard-review__section-title">
+          Areas
+          <span class="wizard-review__count">{{ pendingInput()!.areas.length }}</span>
+        </h2>
+        <ul class="wizard-review__list">
+          @for (area of pendingInput()!.areas; track area.id) {
+            <li class="wizard-review__item">
+              <span class="wizard-review__item-name">{{ area.id }}</span>
+              <span class="wizard-review__item-dims">
+                {{ area.width }} × {{ area.height }} × {{ area.depth }}
+                <span class="wizard-review__units">{{ pendingInput()!.constraints?.units ?? 'cm' }}</span>
+              </span>
+            </li>
+          }
+        </ul>
+      </section>
+
+      <section class="wizard-review__section">
+        <h2 class="wizard-review__section-title">
+          Boxes
+          <span class="wizard-review__count">{{ pendingInput()!.boxes.length }}</span>
+        </h2>
+        <ul class="wizard-review__list wizard-review__list--boxes">
+          @for (box of pendingInput()!.boxes; track box.id) {
+            <li class="wizard-review__item">
+              <span class="wizard-review__item-name">{{ box.id }}</span>
+              <span class="wizard-review__item-dims">
+                {{ box.width }} × {{ box.height }} × {{ box.depth }}
+                <span class="wizard-review__units">{{ pendingInput()!.constraints?.units ?? 'cm' }}</span>
+              </span>
+            </li>
+          }
+        </ul>
+      </section>
+    </div>
+
+    <div class="wizard-actions wizard-actions--review">
+      <button class="wizard-back-btn" (click)="back()" aria-label="Go back to file upload">
+        ← Back
+      </button>
+      <button class="wizard-run-btn" (click)="onRun()" aria-label="Run the packing algorithm">
+        Run packing →
+      </button>
+    </div>
+  }
+
+</div>

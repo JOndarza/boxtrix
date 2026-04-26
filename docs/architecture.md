@@ -84,7 +84,7 @@ The `PackingPipeline` orchestrator wires eleven stages registered as singletons.
 
 | Folder | Role |
 |---|---|
-| `components/` | Standalone UI components: `canvas` (Three.js scene), `sidebar`, `header`, `footer`, `layout/input-panel`, `layout/keyboard-help` |
+| `components/` | Standalone UI components: `canvas` (Three.js scene), `sidebar`, `header`, `footer`, `layout/wizard` (onboarding flow), `layout/loading-overlay`, `layout/input-panel`, `layout/keyboard-help` |
 | `common/api/` | Typed HTTP service (`OrganizeService extends ApiServiceBase`) |
 | `common/classes/rendered/` | Three.js scene objects: `Area` (now carries `exitCorridor`), `Rendered`, `RenderedController`, `Project`, `Bases` |
 | `common/dtos/` | Shared TypeScript interfaces mirroring backend contracts |
@@ -120,14 +120,16 @@ User input (input-panel)
 - **Forbidden regions**: `IArea.exitCorridor` (AABB) is honoured by the `PositionFinder`; the frontend renders it as a translucent red mesh
 - **Unfitted boxes**: never silently dropped — they go to a virtual `UNFITTED` area with `unplaced = true`
 - **Frontend events**: `AppEvent` enum (`LOADING`, `LOADED`, `RENDERING`, `RENDERED`, `RAYCAST`, `CLICKED`, `SCREENSHOT`); `EventsService` provides typed `Subject<T>` per event
-- **3D selection**: `FocusManagerService.set()` fires `AppEvent.RAYCAST`; the sidebar subscribes to highlight the matching list item; `AppEvent.SCREENSHOT` is fired from `HeaderComponent` and consumed by `CanvasComponent`
+- **3D selection**: `FocusManagerService.set()` fires `AppEvent.RAYCAST`; the sidebar subscribes to highlight the matching list item and calls `scrollIntoView({ block: 'nearest' })` — fitted and unfitted items both participate; `AppEvent.SCREENSHOT` is fired from `HeaderComponent` and consumed by `CanvasComponent`
+- **Sidebar step sync**: `SidebarComponent` subscribes to `RewindManagerService.updated` (debounced 50 ms) and scrolls to `[data-step="N"]` on each step change, keeping the active box visible without selecting it
 - **Bundle splitting**: `CanvasComponent` (Three.js + post-processing) is loaded via Angular `@defer (on immediate)` — it lands in a separate lazy chunk (~990 KB), reducing the initial bundle from ~1.3 MB to ~440 KB. `GraphicsSettingsComponent`, `KeyboardHelpComponent`, and `StatsComponent` are deferred with `on idle`. Components still appear in `AppComponent.imports[]` so the Angular compiler can resolve them; the esbuild bundler detects they are only used in `@defer` blocks and emits them as separate chunks
 - **PWA**: `@angular/service-worker` is enabled in production builds (`angular.json → serviceWorker: "ngsw-config.json"`). Asset caching uses `prefetch` strategy for the app shell (JS/CSS chunks) and `lazy` for the font JSON. The `organize/sort` API endpoint is covered with `freshness` strategy (network-first, 5 s timeout). SW is registered via `provideServiceWorker` with `registerWhenStable:30000` to avoid competing with WebGL init
 - **User preferences**: `ThemeService` and `GraphicsService` use `signal()` + inline `localStorage`; never `StorageService` for preferences; `showAO` and `showBloom` are persisted; `showStats`, `clippingEnabled`, `clippingY` are session-only
 - **WebGL quality**: `SceneService.setPixelRatio` / `setToneMapping` apply runtime renderer changes; `CanvasComponent` wires `GraphicsService` signals via `effect()` guarded by `_sceneReady`
 - **EffectComposer pass chain**: `RenderPass → GTAOPass (optional) → UnrealBloomPass (optional) → OutlinePass×2 (selected / hovered) → SMAAPass`; composer replaces the direct `renderer.render()` call
 - **Camera controls**: `camera-controls` v3 (`@yomotsu`) replaces `OrbitControls`; `SceneService` exposes `animateTo`, `fitToBox`, `saveCameraState`, `resetCamera`, `syncCameraState`; `ViewportGizmo` attaches to the same instance; `FlyControls` activates on `` ` `` and suspends `CameraControls` while active
-- **CSS2D labels**: `LabelManagerService` owns a `CSS2DRenderer` overlay (absolute-positioned over the WebGL canvas); `SceneService.afterRender` callback renders it every frame; `SceneService.onFrame(delta)` callback runs `FlyControls.update(delta)` when fly mode is active
+- **CSS2D labels**: `LabelManagerService` owns a `CSS2DRenderer` overlay (absolute-positioned over the WebGL canvas); labels are step-aware — only the label for the box at `rewind.step` is shown (`label.visible`), all labels hide at `rewind.maxStep`; `checkVisibility` skips `CSS2DObject` instances so Three.js does not override label visibility; labels render as a flex row (color swatch + name) matching the sidebar item style; `SceneService.afterRender` callback renders it every frame
+- **Onboarding wizard**: `WizardComponent` (full-screen overlay, 2 steps) replaces the former `WelcomeComponent`; step 1 — upload JSON via `ProcessorService.parseJson()` (local parse, no backend call); step 2 — read-only review of areas and boxes; "Run packing" calls `ProcessorService.sort()` and dismisses the wizard; `LoadingOverlayComponent` (z-index 150) shows a spinner until `AppEvent.RENDERED` fires; demo bypasses the wizard entirely
 
 ## Dependency rules
 

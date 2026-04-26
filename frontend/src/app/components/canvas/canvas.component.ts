@@ -36,6 +36,7 @@ import { SelectionHelper } from 'three/examples/jsm/interactive/SelectionHelper.
 import { FlyControls } from 'three/examples/jsm/controls/FlyControls.js';
 import { Project } from '@common/classes/rendered/Project.class';
 import { LabelManagerService } from '@shared/services/LabelManager.service';
+import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
 export enum KeyCode {
   A = 65,
@@ -85,8 +86,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
   private _areaHelpers: THREE.Box3Helper[] = [];
   private _helpersVisible = true;
   private _areaBoundsVisible = false;
-  private _labelsVisible = false;
-
   // SelectionBox (Shift + drag)
   private _selectionBox!: SelectionBox;
   private _selectionHelper!: SelectionHelper;
@@ -262,7 +261,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
       case 'KeyV': this.toggleHelpers(); break;
       case 'KeyG': this._sceneService.setTransformMode('translate'); break;
       case 'KeyR': this._sceneService.setTransformMode('rotate'); break;
-      case 'KeyL': this.toggleLabels(); break;
       case 'KeyO': this.toggleAreaBounds(); break;
       case 'KeyC': this._graphics.toggleClipping(); break;
       case 'Space':
@@ -409,12 +407,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
 
-  private toggleLabels(): void {
-    this._labelsVisible = !this._labelsVisible;
-    this._labels.setVisible(this._labelsVisible);
-    this._sceneService.markDirty();
-  }
-
   private toggleAreaBounds(): void {
     this._areaBoundsVisible = !this._areaBoundsVisible;
     this._areaHelpers.forEach(h => { h.visible = this._areaBoundsVisible; });
@@ -453,6 +445,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
         if (item.obj3D) this._labels.addLabel(item.obj3D as THREE.Object3D);
       });
     });
+    this._labels.updateStep(this._rewind.step, this._rewind.maxStep);
   }
 
   private _buildAreaHelpers(): void {
@@ -551,10 +544,13 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this._sceneService.mainGroup.children.forEach((x) =>
       this.checkVisibility(x, x.userData as RenderedController),
     );
+    this._labels.updateStep(this._rewind.step, this._rewind.maxStep);
     this._sceneService.markDirty();
   }
 
   private checkVisibility(obj: THREE.Object3D, data: RenderedController): void {
+    // CSS2DObjects are step-managed by LabelManager — don't override their visibility
+    if (obj instanceof CSS2DObject) return;
     // userData is {} (empty Object3D) when no RenderedController has been assigned
     if (!data || !('id' in data)) {
       obj.visible = true;

@@ -15,6 +15,7 @@ import { RenderedController } from '@common/classes/rendered/Rendered.controller
 import { ContextService } from '@shared/services/Context.service';
 import { AppEvent, EventsService } from '@shared/services/Events.service';
 import { ProcessorService } from '@shared/services/Processor.service';
+import { RewindManagerService } from '@shared/services/RewindManager.service';
 import { debounceTime } from 'rxjs';
 
 const UNFITTED = 'UNFITTED';
@@ -39,6 +40,7 @@ export class SidebarComponent implements OnInit {
   private readonly _events = inject(EventsService);
   private readonly _processor = inject(ProcessorService);
   private readonly _context = inject(ContextService);
+  private readonly _rewind = inject(RewindManagerService);
   private readonly _destroyRef = inject(DestroyRef);
   private readonly _cdr = inject(ChangeDetectorRef);
 
@@ -89,6 +91,10 @@ export class SidebarComponent implements OnInit {
       .get(AppEvent.RAYCAST)
       .pipe(debounceTime(50), takeUntilDestroyed(this._destroyRef))
       .subscribe((id) => this.selectItem(id));
+
+    this._rewind.updated
+      .pipe(debounceTime(50), takeUntilDestroyed(this._destroyRef))
+      .subscribe(() => this._scrollToStep(this._rewind.step));
 
     this._events
       .get(AppEvent.LOADING)
@@ -179,7 +185,21 @@ export class SidebarComponent implements OnInit {
 
   private selectItem(id: string): void {
     this.detail?.fitted.forEach((x) => (x.selected = x.id === id));
+    this.detail?.unfitted.forEach((x) => (x.selected = x.id === id));
     this._cdr.markForCheck();
+    setTimeout(() => this._scrollToSelected());
+  }
+
+  private _scrollToSelected(): void {
+    const body = this._el.nativeElement.querySelector('.sidebar-body') as HTMLElement;
+    const el = body?.querySelector('[aria-selected="true"]') as HTMLElement;
+    el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  private _scrollToStep(step: number): void {
+    const body = this._el.nativeElement.querySelector('.sidebar-body') as HTMLElement;
+    const el = body?.querySelector(`[data-step="${step}"]`) as HTMLElement;
+    el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
 
   private _applyWidth(px: number, animated: boolean): void {

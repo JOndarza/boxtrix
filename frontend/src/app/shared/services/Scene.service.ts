@@ -78,7 +78,7 @@ export class SceneService implements OnDestroy {
     this._scene = new THREE.Scene();
     this._scene.background = new THREE.Color('#000');
 
-    this._camera = new THREE.PerspectiveCamera(80, width / height, 0.1, 10000);
+    this._camera = new THREE.PerspectiveCamera(90, width / height, 0.1, 100000);
     this._camera.position.set(-50, 50, -50);
 
     this._controls = new CameraControls(this._camera, this._renderer.domElement);

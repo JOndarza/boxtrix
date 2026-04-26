@@ -41,6 +41,7 @@
               class="sequence-item"
               role="option"
               tabindex="0"
+              [attr.data-step]="item.globalStep"
               [class.selected]="item.selected"
               [attr.aria-selected]="item.selected"
               (click)="clicked(item)"
@@ -70,7 +71,17 @@
       </div>
       <ul class="sequence" role="list" aria-label="Unfitted items">
         @for (item of detail.unfitted; track item.id) {
-          <li class="sequence-item unfitted-item">
+          <li class="sequence-item unfitted-item"
+              role="option"
+              tabindex="0"
+              [attr.aria-selected]="item.selected"
+              [class.selected]="item.selected"
+              (click)="clicked(item)"
+              (keydown.enter)="clicked(item)"
+              (keydown.space)="$event.preventDefault(); clicked(item)"
+              (keydown.arrowdown)="$event.preventDefault(); navigateItem($event, 1)"
+              (keydown.arrowup)="$event.preventDefault(); navigateItem($event, -1)"
+          >
             <div class="item-row">
               <span class="item-name">{{ item.name }}</span>
             </div>

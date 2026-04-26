@@ -142,6 +142,15 @@ export class ProcessorService {
     }
   }
 
+  parseJson(file: File): Promise<IInput> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsText(file);
+      reader.onload = () => resolve(JSON.parse(reader.result as string) as IInput);
+      reader.onerror = () => reject(reader.error);
+    });
+  }
+
   async sort(input: IInput): Promise<void> {
     this.cleanInput(input);
 

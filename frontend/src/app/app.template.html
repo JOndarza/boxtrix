@@ -1,6 +1,8 @@
-@if (showWelcome()) {
-  <app-welcome (dismissed)="showWelcome.set(false)"></app-welcome>
+@if (showWizard()) {
+  <app-wizard (dismissed)="showWizard.set(false)"></app-wizard>
 }
+
+<app-loading-overlay></app-loading-overlay>
 
 <app-input-panel></app-input-panel>
 <app-header></app-header>

@@ -19,7 +19,8 @@
 @use './layout/header';
 @use './layout/sidebar';
 @use './layout/stats';
-@use './layout/welcome';
+@use './layout/wizard';
+@use './layout/loading-overlay';
 @use './layout/graphics-settings';
 @use './layout/keyboard-help';
 @use './layout/input-panel';
