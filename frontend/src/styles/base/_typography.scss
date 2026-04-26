@@ -1,3 +1,2 @@
-// Roboto as primary typeface + JetBrains Mono for data readouts
-// font-display=swap avoids invisible text while fonts load (CSS v2 API)
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=JetBrains+Mono:wght@400;700&display=swap');
+// Roboto + JetBrains Mono are loaded via <link> in index.html (parallel, preconnected).
+// No @import here — CSS @import is render-blocking and sequential.
