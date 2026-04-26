@@ -159,6 +159,9 @@
     letter-spacing: 0.08em;
     color: var(--text-tertiary);
     padding: 0 4px;
+
+    // Numeric columns are right-aligned to match ip-cell--num inputs
+    &:not(:first-child) { text-align: right; }
   }
 }
 
