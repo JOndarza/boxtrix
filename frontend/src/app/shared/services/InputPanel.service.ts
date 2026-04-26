@@ -86,24 +86,25 @@ export class InputPanelService {
   }
 
   buildInput(areaRows: AreaRow[], boxRows: BoxRow[]): IInput {
+    const r3 = (v: string) => Math.round(+v * 1000) / 1000;
     const validAreas = areaRows.filter((r) => +r.width > 0 && +r.height > 0 && +r.depth > 0);
     const validBoxes = boxRows.filter((r)  => +r.width > 0 && +r.height > 0 && +r.depth > 0);
 
     const areas: IArea[] = validAreas.map((r, i) => {
       const area: IArea = {
         id: r.name.trim() || `Area ${i + 1}`,
-        width: +r.width, height: +r.height, depth: +r.depth,
+        width: r3(r.width), height: r3(r.height), depth: r3(r.depth),
         x: 0, y: 0, z: 0,
         accessCorner: r.accessCorner ?? Corner.BottomFrontLeft,
       };
 
       if (r.corridor) {
         const c = r.corridor;
-        const w = +c.width;
-        const h = +c.height;
-        const d = +c.depth;
+        const w = r3(c.width);
+        const h = r3(c.height);
+        const d = r3(c.depth);
         if (w > 0 && h > 0 && d > 0) {
-          area.exitCorridor = { x: +c.x, y: +c.y, z: +c.z, width: w, height: h, depth: d };
+          area.exitCorridor = { x: r3(c.x), y: r3(c.y), z: r3(c.z), width: w, height: h, depth: d };
         }
       }
       return area;
@@ -117,7 +118,7 @@ export class InputPanelService {
       for (let q = 0; q < qty; q++) {
         const box: IBox = {
           id: qty > 1 ? `${baseName} #${q + 1}` : baseName,
-          width: +r.width, height: +r.height, depth: +r.depth,
+          width: r3(r.width), height: r3(r.height), depth: r3(r.depth),
         };
         if (weight > 0) box.weight = weight;
         boxes.push(box);

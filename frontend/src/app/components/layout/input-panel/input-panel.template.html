@@ -50,12 +50,12 @@
               [placeholder]="'Area ' + ($index + 1)"
               autocomplete="off"
             />
-            <input class="ip-cell ip-cell--num" formControlName="width"  type="number" min="0.01" step="any" placeholder="W" />
-            <input class="ip-cell ip-cell--num" formControlName="height" type="number" min="0.01" step="any" placeholder="H" />
+            <input class="ip-cell ip-cell--num" formControlName="width"  type="number" min="0.01" step="0.001" placeholder="W" />
+            <input class="ip-cell ip-cell--num" formControlName="height" type="number" min="0.01" step="0.001" placeholder="H" />
             <input
               class="ip-cell ip-cell--num"
               formControlName="depth"
-              type="number" min="0.01" step="any" placeholder="D"
+              type="number" min="0.01" step="0.001" placeholder="D"
               (keydown.enter)="onAreaDepthEnter($index)"
             />
             <select class="ip-cell ip-cell--corner" formControlName="accessCorner" aria-label="Start corner">
@@ -77,12 +77,12 @@
             @if (hasCorridor($index) && corridorGroup($index); as corridor) {
               <div class="ip-corridor-row" [formGroup]="corridor">
                 <span class="ip-corridor-label">Exit corridor (X · Y · Z · W · H · D)</span>
-                <input class="ip-cell ip-cell--num" formControlName="x"      type="number" min="0" step="any" placeholder="X" />
-                <input class="ip-cell ip-cell--num" formControlName="y"      type="number" min="0" step="any" placeholder="Y" />
-                <input class="ip-cell ip-cell--num" formControlName="z"      type="number" min="0" step="any" placeholder="Z" />
-                <input class="ip-cell ip-cell--num" formControlName="width"  type="number" min="0.01" step="any" placeholder="W" />
-                <input class="ip-cell ip-cell--num" formControlName="height" type="number" min="0.01" step="any" placeholder="H" />
-                <input class="ip-cell ip-cell--num" formControlName="depth"  type="number" min="0.01" step="any" placeholder="D" />
+                <input class="ip-cell ip-cell--num" formControlName="x"      type="number" min="0" step="0.001" placeholder="X" />
+                <input class="ip-cell ip-cell--num" formControlName="y"      type="number" min="0" step="0.001" placeholder="Y" />
+                <input class="ip-cell ip-cell--num" formControlName="z"      type="number" min="0" step="0.001" placeholder="Z" />
+                <input class="ip-cell ip-cell--num" formControlName="width"  type="number" min="0.01" step="0.001" placeholder="W" />
+                <input class="ip-cell ip-cell--num" formControlName="height" type="number" min="0.01" step="0.001" placeholder="H" />
+                <input class="ip-cell ip-cell--num" formControlName="depth"  type="number" min="0.01" step="0.001" placeholder="D" />
               </div>
             }
           </div>
@@ -103,7 +103,7 @@
                 Default height
                 <input
                   class="ip-cell ip-cell--num ip-dxf-height-input"
-                  type="number" min="0.01" step="any" placeholder="H"
+                  type="number" min="0.01" step="0.001" placeholder="H"
                   [value]="dxfDefaultHeight()"
                   (input)="setDxfHeight($event)"
                 />
@@ -169,16 +169,16 @@
               [placeholder]="'Box ' + ($index + 1)"
               autocomplete="off"
             />
-            <input class="ip-cell ip-cell--num" formControlName="width"  type="number" min="0.01" step="any" placeholder="W" />
-            <input class="ip-cell ip-cell--num" formControlName="height" type="number" min="0.01" step="any" placeholder="H" />
-            <input class="ip-cell ip-cell--num" formControlName="depth"  type="number" min="0.01" step="any" placeholder="D" />
+            <input class="ip-cell ip-cell--num" formControlName="width"  type="number" min="0.01" step="0.001" placeholder="W" />
+            <input class="ip-cell ip-cell--num" formControlName="height" type="number" min="0.01" step="0.001" placeholder="H" />
+            <input class="ip-cell ip-cell--num" formControlName="depth"  type="number" min="0.01" step="0.001" placeholder="D" />
             <input
               class="ip-cell ip-cell--num"
               formControlName="qty"
               type="number" min="1" step="1" placeholder="#"
               (keydown.enter)="onBoxQtyEnter($index)"
             />
-            <input class="ip-cell ip-cell--num" formControlName="weight" type="number" min="0" step="any" [placeholder]="weightUnit()" />
+            <input class="ip-cell ip-cell--num" formControlName="weight" type="number" min="0" step="0.001" [placeholder]="weightUnit()" />
             <button class="ip-delete-btn" type="button" (click)="removeBox($index)" aria-label="Remove box">&#x2715;</button>
           </div>
         }
