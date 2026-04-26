@@ -283,17 +283,16 @@
   justify-content: center;
   width: 24px;
   height: 24px;
-  background: var(--bg-2);
-  border: 1px solid var(--border-default);
+  background: rgba(248, 113, 113, 0.08);
+  border: 1px solid rgba(248, 113, 113, 0.3);
   border-radius: $control-radius;
-  color: var(--text-tertiary);
+  color: var(--status-unfit);
   font-size: 0.7rem;
   cursor: pointer;
   transition: color 0.12s, background 0.12s, border-color 0.12s;
 
   &:hover {
-    color: var(--status-unfit);
-    background: rgba(248, 113, 113, 0.12);
+    background: rgba(248, 113, 113, 0.2);
     border-color: var(--status-unfit);
   }
 }
@@ -303,19 +302,18 @@
   align-self: flex-start;
   margin-top: 0.35rem;
   padding: 0.25rem 0.6rem;
-  background: var(--bg-2);
-  border: 1px solid var(--border-default);
+  background: rgba(110, 231, 183, 0.08);
+  border: 1px solid rgba(110, 231, 183, 0.3);
   border-radius: $control-radius;
-  color: var(--text-secondary);
+  color: var(--status-fit);
   font-size: 0.75rem;
   font-family: inherit;
   cursor: pointer;
   transition: color 0.12s, border-color 0.12s, background 0.12s;
 
   &:hover {
-    color: var(--accent);
-    border-color: var(--accent);
-    background: var(--accent-subtle);
+    background: rgba(110, 231, 183, 0.18);
+    border-color: var(--status-fit);
   }
 }
 
