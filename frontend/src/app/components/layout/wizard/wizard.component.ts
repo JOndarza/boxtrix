@@ -7,13 +7,15 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { IInput } from '@common/dtos/Input.interface';
+import { InputPanelComponent } from '@components/layout/input-panel/input-panel.component';
 import { AppEvent, EventsService } from '@shared/services/Events.service';
+import { InputPanelService } from '@shared/services/InputPanel.service';
 import { ProcessorService } from '@shared/services/Processor.service';
 import { take } from 'rxjs';
 
 @Component({
   standalone: true,
+  imports: [InputPanelComponent],
   selector: 'app-wizard',
   templateUrl: './wizard.template.html',
   host: { class: 'app-wizard' },
@@ -21,17 +23,15 @@ import { take } from 'rxjs';
 })
 export class WizardComponent {
   private readonly _processor = inject(ProcessorService);
-  private readonly _events = inject(EventsService);
+  private readonly _events    = inject(EventsService);
+  private readonly _inputPanel = inject(InputPanelService);
   private readonly _destroyRef = inject(DestroyRef);
 
   readonly dismissed = output<void>();
-
-  readonly step = signal<1 | 2>(1);
-  readonly pendingInput = signal<IInput | null>(null);
+  readonly step       = signal<1 | 2>(1);
   readonly parseError = signal<string | null>(null);
 
   constructor() {
-    // Auto-dismiss if a render completes from an external trigger (e.g. sidebar re-upload)
     this._events
       .get(AppEvent.RENDERED)
       .pipe(take(1), takeUntilDestroyed(this._destroyRef))
@@ -39,6 +39,8 @@ export class WizardComponent {
   }
 
   dismiss(): void {
+    this._inputPanel.wizardMode.set(false);
+    this._inputPanel.close();
     this.dismissed.emit();
   }
 
@@ -54,7 +56,8 @@ export class WizardComponent {
     this.parseError.set(null);
     try {
       const input = await this._processor.parseJson(files[0]);
-      this.pendingInput.set(input);
+      this._inputPanel.loadFromInput(input);
+      this._inputPanel.wizardMode.set(true);
       this.step.set(2);
     } catch {
       this.parseError.set('Could not parse the file. Make sure it is a valid BoxTrix JSON.');
@@ -62,15 +65,9 @@ export class WizardComponent {
   }
 
   back(): void {
+    this._inputPanel.wizardMode.set(false);
+    this._inputPanel.close();
     this.step.set(1);
-    this.pendingInput.set(null);
     this.parseError.set(null);
-  }
-
-  onRun(): void {
-    const input = this.pendingInput();
-    if (!input) return;
-    this._processor.sort(input);
-    this.dismiss();
   }
 }

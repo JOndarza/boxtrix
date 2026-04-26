@@ -1,21 +1,6 @@
 <div class="wizard-backdrop"></div>
 
-<div class="wizard-card">
-
-  <!-- Step indicator — only shown on step 2 so the welcome screen stays clean -->
-  @if (step() === 2) {
-    <div class="wizard-stepper" aria-label="Setup steps">
-      <div class="wizard-step wizard-step--done">
-        <span class="wizard-step__bubble">1</span>
-        <span class="wizard-step__label">Load</span>
-      </div>
-      <div class="wizard-step-line"></div>
-      <div class="wizard-step wizard-step--active">
-        <span class="wizard-step__bubble">2</span>
-        <span class="wizard-step__label">Review</span>
-      </div>
-    </div>
-  }
+<div class="wizard-card" [class.wizard-card--fullscreen]="step() === 2">
 
   <!-- ── Step 1: Load ─────────────────────────────────────────────────────── -->
   @if (step() === 1) {
@@ -56,58 +41,14 @@
     </div>
   }
 
-  <!-- ── Step 2: Review ───────────────────────────────────────────────────── -->
-  @if (step() === 2 && pendingInput()) {
-    <div class="wizard-review">
-      @if (pendingInput()!.name) {
-        <p class="wizard-review__project-name">{{ pendingInput()!.name }}</p>
-      }
-
-      <section class="wizard-review__section">
-        <h2 class="wizard-review__section-title">
-          Areas
-          <span class="wizard-review__count">{{ pendingInput()!.areas.length }}</span>
-        </h2>
-        <ul class="wizard-review__list">
-          @for (area of pendingInput()!.areas; track area.id) {
-            <li class="wizard-review__item">
-              <span class="wizard-review__item-name">{{ area.id }}</span>
-              <span class="wizard-review__item-dims">
-                {{ area.width }} × {{ area.height }} × {{ area.depth }}
-                <span class="wizard-review__units">{{ pendingInput()!.constraints?.units ?? 'cm' }}</span>
-              </span>
-            </li>
-          }
-        </ul>
-      </section>
-
-      <section class="wizard-review__section">
-        <h2 class="wizard-review__section-title">
-          Boxes
-          <span class="wizard-review__count">{{ pendingInput()!.boxes.length }}</span>
-        </h2>
-        <ul class="wizard-review__list wizard-review__list--boxes">
-          @for (box of pendingInput()!.boxes; track box.id) {
-            <li class="wizard-review__item">
-              <span class="wizard-review__item-name">{{ box.id }}</span>
-              <span class="wizard-review__item-dims">
-                {{ box.width }} × {{ box.height }} × {{ box.depth }}
-                <span class="wizard-review__units">{{ pendingInput()!.constraints?.units ?? 'cm' }}</span>
-              </span>
-            </li>
-          }
-        </ul>
-      </section>
-    </div>
-
-    <div class="wizard-actions wizard-actions--review">
+  <!-- ── Step 2: Edit in InputPanel ──────────────────────────────────────── -->
+  @if (step() === 2) {
+    <div class="wizard-edit-bar">
       <button class="wizard-back-btn" (click)="back()" aria-label="Go back to file upload">
         ← Back
       </button>
-      <button class="wizard-run-btn" (click)="onRun()" aria-label="Run the packing algorithm">
-        Run packing →
-      </button>
     </div>
+    <app-input-panel></app-input-panel>
   }
 
 </div>

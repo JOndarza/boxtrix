@@ -1,7 +1,9 @@
 @if (isPanelOpen()) {
-  <div class="ip-backdrop" (click)="close()" aria-hidden="true"></div>
+  @if (!isWizardMode()) {
+    <div class="ip-backdrop" (click)="close()" aria-hidden="true"></div>
+  }
 
-  <div class="ip-panel" role="dialog" aria-label="New packing" [formGroup]="form">
+  <div class="ip-panel" [class.ip-panel--wizard]="isWizardMode()" role="dialog" aria-label="New packing" [formGroup]="form">
 
     <!-- ── Header ─────────────────────────────────────────────────────── -->
     <header class="ip-header">
@@ -12,7 +14,9 @@
           <option value="in">in</option>
           <option value="mm">mm</option>
         </select>
-        <button class="ip-close-btn" type="button" (click)="close()" aria-label="Close panel">&#x2715;</button>
+        @if (!isWizardMode()) {
+          <button class="ip-close-btn" type="button" (click)="close()" aria-label="Close panel">&#x2715;</button>
+        }
       </div>
     </header>
 

@@ -54,9 +54,18 @@ export class InputPanelService {
 
   readonly isPanelOpen = signal(false);
   readonly units = signal<'cm' | 'in' | 'mm'>('cm');
+  readonly wizardMode = signal(false);
+  readonly pendingLoad = signal<IInput | null>(null);
 
   toggle(): void { this.isPanelOpen.update((v) => !v); }
   close(): void  { this.isPanelOpen.set(false); }
+  open(): void   { this.isPanelOpen.set(true); }
+
+  loadFromInput(input: IInput): void {
+    if (input.constraints?.units) this.units.set(input.constraints.units as 'cm' | 'in' | 'mm');
+    this.pendingLoad.set(input);
+    this.open();
+  }
 
   run(areas: AreaRow[], boxes: BoxRow[]): void {
     const input = this.buildInput(areas, boxes);

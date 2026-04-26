@@ -3,6 +3,7 @@ import {
   Component,
   ElementRef,
   HostListener,
+  effect,
   inject,
   signal,
   viewChild,
@@ -29,9 +30,53 @@ export class InputPanelComponent {
   private readonly _dxfInput = viewChild<ElementRef<HTMLInputElement>>('dxfInput');
 
   readonly isPanelOpen     = this._panel.isPanelOpen;
+  readonly isWizardMode    = this._panel.wizardMode;
   readonly units           = this._panel.units;
   readonly validationError = signal<string | null>(null);
   readonly cornerOptions   = CORNER_OPTIONS;
+
+  constructor() {
+    effect(() => {
+      const input = this._panel.pendingLoad();
+      if (!input) return;
+
+      while (this.areas.length) this.areas.removeAt(0);
+      for (const area of input.areas ?? []) {
+        const g = this._newAreaGroup();
+        g.patchValue({
+          name:         area.id,
+          width:        String(area.width),
+          height:       String(area.height),
+          depth:        String(area.depth),
+          accessCorner: area.accessCorner ?? Corner.BottomFrontLeft,
+        });
+        if (area.exitCorridor) {
+          const c = area.exitCorridor;
+          g.get('corridor')?.setValue({
+            x: String(c.x), y: String(c.y), z: String(c.z),
+            width: String(c.width), height: String(c.height), depth: String(c.depth),
+          });
+        }
+        this.areas.push(g);
+      }
+
+      while (this.boxes.length) this.boxes.removeAt(0);
+      for (const box of input.boxes ?? []) {
+        const g = this._newBoxGroup();
+        g.patchValue({
+          name:   box.id,
+          width:  String(box.width),
+          height: String(box.height),
+          depth:  String(box.depth),
+          qty:    '1',
+          weight: String(box.weight ?? ''),
+        });
+        this.boxes.push(g);
+      }
+
+      this._panel.pendingLoad.set(null);
+    });
+  }
 
   readonly dxfFile          = signal<File | null>(null);
   readonly dxfDefaultHeight = signal<string>('240');

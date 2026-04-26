@@ -1,10 +1,10 @@
 @if (showWizard()) {
   <app-wizard (dismissed)="showWizard.set(false)"></app-wizard>
+} @else {
+  <app-input-panel></app-input-panel>
 }
 
 <app-loading-overlay></app-loading-overlay>
-
-<app-input-panel></app-input-panel>
 <app-header></app-header>
 <app-sidebar></app-sidebar>
 <app-footer></app-footer>
