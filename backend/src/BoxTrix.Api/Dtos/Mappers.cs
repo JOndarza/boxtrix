@@ -63,5 +63,13 @@ public static class Mappers
                     b.Rotation,
                     new MeasurementsDto(b.RotatedSize.Width, b.RotatedSize.Height, b.RotatedSize.Depth)))
                 .ToArray()))
-            .ToArray());
+            .ToArray(),
+            new StatsDto(
+                response.Stats.AvailableVolume,
+                response.Stats.OccupiedVolume,
+                response.Stats.UnplacedVolume,
+                response.Stats.WastedVolume,
+                response.Stats.EfficiencyPct,
+                response.Stats.PlacedCount,
+                response.Stats.UnplacedCount));
 }

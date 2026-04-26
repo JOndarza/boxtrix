@@ -200,7 +200,7 @@ export class ProcessorService {
 
   private handle(input: IInput, output: IOutput): Project {
     const areas = this.mapAreas(input, output);
-    return new Project(areas, input.constraints?.units ?? 'cm');
+    return new Project(areas, input.constraints?.units ?? 'cm', output.stats);
   }
 
   private mapAreas(input: IInput, output: IOutput): Area[] {

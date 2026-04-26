@@ -52,7 +52,41 @@ public sealed class DenormalizerStage : IPipelineStage
                 boxes));
         }
 
-        return new PipelineResponse(id, name, responseAreas);
+        return new PipelineResponse(id, name, responseAreas, ComputeStats(responseAreas));
+    }
+
+    private static PipelineStats ComputeStats(IReadOnlyList<ResponseArea> areas)
+    {
+        decimal availableVolume = 0m;
+        decimal occupiedVolume = 0m;
+        decimal unplacedVolume = 0m;
+        int placedCount = 0;
+        int unplacedCount = 0;
+
+        foreach (var area in areas)
+        {
+            if (area.Unplaced)
+            {
+                unplacedCount += area.Boxes.Count;
+                foreach (var box in area.Boxes)
+                    unplacedVolume += box.RotatedSize.Width * box.RotatedSize.Height * box.RotatedSize.Depth;
+            }
+            else
+            {
+                availableVolume += area.Size.Width * area.Size.Height * area.Size.Depth;
+                placedCount += area.Boxes.Count;
+                foreach (var box in area.Boxes)
+                    occupiedVolume += box.RotatedSize.Width * box.RotatedSize.Height * box.RotatedSize.Depth;
+            }
+        }
+
+        var wastedVolume = availableVolume - occupiedVolume;
+        var efficiencyPct = availableVolume > 0
+            ? Math.Round(occupiedVolume / availableVolume * 100m, 1)
+            : 0m;
+
+        return new PipelineStats(availableVolume, occupiedVolume, unplacedVolume,
+            wastedVolume, efficiencyPct, placedCount, unplacedCount);
     }
 
     private static Position ApplyInverseFlip(Position pos, Measurements size, Measurements bounds, bool flipX, bool flipZ)

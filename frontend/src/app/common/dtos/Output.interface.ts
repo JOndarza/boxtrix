@@ -16,6 +16,17 @@ export interface IOrganizedArea extends IArea {
   boxes: IOrganizedBox[];
 }
 
+export interface IStats {
+  availableVolume: number;
+  occupiedVolume: number;
+  unplacedVolume: number;
+  wastedVolume: number;
+  efficiencyPct: number;
+  placedCount: number;
+  unplacedCount: number;
+}
+
 export interface IOutput extends IIdentification {
   areas: IOrganizedArea[];
+  stats: IStats;
 }

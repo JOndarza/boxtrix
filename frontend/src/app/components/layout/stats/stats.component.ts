@@ -11,8 +11,6 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ContextService } from '@shared/services/Context.service';
 import { AppEvent, EventsService } from '@shared/services/Events.service';
 
-const UNFITTED = 'UNFITTED';
-
 @Component({
   standalone: true,
   imports: [DecimalPipe],
@@ -35,51 +33,13 @@ export class StatsComponent implements OnInit {
     return this._context.project?.units ?? 'cm';
   }
 
-  /** Total volume of all storage areas (excl. virtual UNFITTED area). */
-  get availableVol(): number {
-    return (
-      this._context.project?.areas
-        .filter((a) => a.name !== UNFITTED)
-        .reduce((s, a) => s + a.means.width * a.means.height * a.means.depth, 0) ?? 0
-    );
-  }
-
-  /** Volume of all fitted boxes (post-rotation dimensions). */
-  get occupiedVol(): number {
-    return (
-      this._context.detail?.fitted.reduce(
-        (s, b) => s + b.fixedMeans.width * b.fixedMeans.height * b.fixedMeans.depth,
-        0,
-      ) ?? 0
-    );
-  }
-
-  /** Volume of items that could not be placed. */
-  get unfittedVol(): number {
-    return (
-      this._context.detail?.unfitted.reduce(
-        (s, b) => s + b.fixedMeans.width * b.fixedMeans.height * b.fixedMeans.depth,
-        0,
-      ) ?? 0
-    );
-  }
-
-  get wastedVol(): number {
-    return Math.max(0, this.availableVol - this.occupiedVol);
-  }
-
-  get efficiencyPct(): number {
-    if (!this.availableVol) return 0;
-    return Math.round((this.occupiedVol / this.availableVol) * 100);
-  }
-
-  get fittedCount(): number {
-    return this._context.detail?.fitted.length ?? 0;
-  }
-
-  get unfittedCount(): number {
-    return this._context.detail?.unfitted.length ?? 0;
-  }
+  get availableVol(): number   { return this._context.project?.stats.availableVolume ?? 0; }
+  get occupiedVol(): number    { return this._context.project?.stats.occupiedVolume  ?? 0; }
+  get unfittedVol(): number    { return this._context.project?.stats.unplacedVolume  ?? 0; }
+  get wastedVol(): number      { return this._context.project?.stats.wastedVolume    ?? 0; }
+  get efficiencyPct(): number  { return this._context.project?.stats.efficiencyPct   ?? 0; }
+  get fittedCount(): number    { return this._context.project?.stats.placedCount     ?? 0; }
+  get unfittedCount(): number  { return this._context.project?.stats.unplacedCount   ?? 0; }
 
   ngOnInit(): void {
     this._events

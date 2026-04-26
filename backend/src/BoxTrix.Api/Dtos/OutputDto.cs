@@ -7,11 +7,21 @@ namespace BoxTrix.Api.Dtos;
 /// already in user units and in the user's coordinate system (the pipeline
 /// undoes the corner-driven flip on the way out).
 /// </summary>
+public sealed record StatsDto(
+    decimal AvailableVolume,
+    decimal OccupiedVolume,
+    decimal UnplacedVolume,
+    decimal WastedVolume,
+    decimal EfficiencyPct,
+    int PlacedCount,
+    int UnplacedCount);
+
 public sealed record OutputDto(
     string Id,
     string? Name,
     string? Detail,
-    IReadOnlyList<OrganizedAreaDto> Areas);
+    IReadOnlyList<OrganizedAreaDto> Areas,
+    StatsDto Stats);
 
 public sealed record OrganizedAreaDto(
     string Id,
