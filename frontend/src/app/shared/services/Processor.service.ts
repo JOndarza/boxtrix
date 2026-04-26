@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { OrganizeService } from '@common/api/services/Organize.service';
 import { Area } from '@common/classes/rendered/Area.class';
@@ -121,6 +121,9 @@ export class ProcessorService {
   private readonly _events = inject(EventsService);
   private readonly _organize = inject(OrganizeService);
 
+  /** Last IInput used in a successful sort — preserved for re-editing from scene. */
+  readonly lastInput = signal<IInput | null>(null);
+
   loadDemo(): void {
     this._events.get(AppEvent.LOADING).next();
     // structuredClone needed: sort() mutates ids/names in-place; a shallow spread would
@@ -153,6 +156,9 @@ export class ProcessorService {
 
   async sort(input: IInput): Promise<void> {
     this.cleanInput(input);
+
+    // Preserve original before UUID mutation so re-opening from scene pre-fills the form
+    this.lastInput.set(structuredClone(input));
 
     input.id = newId();
     input.areas?.forEach((x) => {
