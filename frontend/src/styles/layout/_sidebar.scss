@@ -49,7 +49,7 @@ $app-sidebar-margin: 0.5rem;
   border-radius: 0 4px 4px 0;
 
   color: var(--text-tertiary);
-  font-size: 0.7rem;
+  font-size: 1rem;
   line-height: 1;
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
@@ -147,12 +147,12 @@ $app-sidebar-margin: 0.5rem;
 
     .empty-title {
       font-weight: 500;
-      font-size: 0.9rem;
+      font-size: 1rem;
       margin: 0;
     }
 
     .empty-hint {
-      font-size: 0.78rem;
+      font-size: 0.875rem;
       margin: 0;
       line-height: 1.5;
       color: var(--text-tertiary);
@@ -169,7 +169,7 @@ $app-sidebar-margin: 0.5rem;
       border: 1px solid var(--border-default);
       background: var(--bg-3);
       color: var(--text-secondary);
-      font-size: 0.78rem;
+      font-size: 0.875rem;
       font-family: inherit;
       cursor: pointer;
       transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
@@ -195,7 +195,7 @@ $app-sidebar-margin: 0.5rem;
   .upload-error {
     width: 100%;
     color: var(--status-unfit);
-    font-size: 0.78rem;
+    font-size: 0.875rem;
     text-align: center;
     margin: 0.25rem 0;
     padding: 0 0.5rem;
@@ -216,7 +216,7 @@ $app-sidebar-margin: 0.5rem;
     }
 
     .section-label {
-      font-size: 0.65rem;
+      font-size: 0.95rem;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.12em;
@@ -226,7 +226,7 @@ $app-sidebar-margin: 0.5rem;
     .section-count {
       font-family: 'JetBrains Mono', monospace;
       font-variant-numeric: tabular-nums;
-      font-size: 0.65rem;
+      font-size: 0.95rem;
       color: var(--text-tertiary);
       background: var(--bg-3);
       padding: 1px 6px;
@@ -260,7 +260,7 @@ $app-sidebar-margin: 0.5rem;
     }
 
     .area-name {
-      font-size: 0.78rem;
+      font-size: 0.875rem;
       font-weight: 500;
       color: var(--text-primary);
       overflow: hidden;
@@ -272,7 +272,7 @@ $app-sidebar-margin: 0.5rem;
       flex-shrink: 0;
       font-family: 'JetBrains Mono', monospace;
       font-variant-numeric: tabular-nums;
-      font-size: 0.68rem;
+      font-size: 0.95rem;
       font-weight: 600;
       color: var(--status-fit);
 
@@ -284,7 +284,7 @@ $app-sidebar-margin: 0.5rem;
     .area-dims {
       font-family: 'JetBrains Mono', monospace;
       font-variant-numeric: tabular-nums;
-      font-size: 0.65rem;
+      font-size: 0.95rem;
       color: var(--text-tertiary);
       margin-top: 2px;
       white-space: nowrap;
@@ -317,7 +317,7 @@ $app-sidebar-margin: 0.5rem;
         flex-shrink: 0;
         font-family: 'JetBrains Mono', monospace;
         font-variant-numeric: tabular-nums;
-        font-size: 0.68rem;
+        font-size: 0.95rem;
         color: var(--text-tertiary);
         min-width: 1.5rem;
         text-align: right;
@@ -334,7 +334,7 @@ $app-sidebar-margin: 0.5rem;
       }
 
       .item-name {
-        font-size: 0.82rem;
+        font-size: 1rem;
         line-height: 1.35;
         color: var(--text-primary);
         // Two-line clamp — shows full name for most items without infinite growth
@@ -351,7 +351,7 @@ $app-sidebar-margin: 0.5rem;
         padding-left: calc(1.5rem + 8px + 0.4rem + 0.4rem);
         font-family: 'JetBrains Mono', monospace;
         font-variant-numeric: tabular-nums;
-        font-size: 0.66rem;
+        font-size: 0.95rem;
         color: var(--text-tertiary);
         white-space: nowrap;
       }
@@ -394,7 +394,7 @@ $app-sidebar-margin: 0.5rem;
     border-radius: $panel-radius;
     border: 1px solid var(--border-default);
     cursor: pointer;
-    font-size: 0.82rem;
+    font-size: 1rem;
     font-family: inherit;
     color: var(--text-secondary);
     background: var(--bg-3);

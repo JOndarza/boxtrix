@@ -70,7 +70,7 @@
 }
 
 .ip-title {
-  font-size: 0.65rem;
+  font-size: 0.95rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -87,7 +87,7 @@
   display: flex;
   align-items: center;
   gap: 0.3rem;
-  font-size: 0.6rem;
+  font-size: 1rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -98,7 +98,7 @@
 .ip-units-select {
   height: 24px;
   padding: 0 0.3rem;
-  font-size: 0.72rem;
+  font-size: 1rem;
   font-family: 'JetBrains Mono', monospace;
   color: var(--text-secondary);
   background: var(--bg-3);
@@ -119,7 +119,7 @@
   border: none;
   border-radius: $control-radius;
   color: var(--text-tertiary);
-  font-size: 0.8rem;
+  font-size: 1rem;
   cursor: pointer;
   transition: color 0.15s, background 0.15s;
 
@@ -150,7 +150,7 @@
 }
 
 .ip-section-label {
-  font-size: 0.65rem;
+  font-size: 0.95rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -163,7 +163,7 @@
   pointer-events: none;
 
   span {
-    font-size: 0.62rem;
+    font-size: 1rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -204,7 +204,7 @@
 }
 
 .ip-corridor-label {
-  font-size: 0.6rem;
+  font-size: 1rem;
   letter-spacing: 0.06em;
   color: var(--text-tertiary);
   text-transform: uppercase;
@@ -220,7 +220,7 @@
   border: 1px solid transparent;
   border-radius: $control-radius;
   color: var(--text-tertiary);
-  font-size: 0.7rem;
+  font-size: 1rem;
   cursor: pointer;
   transition: color 0.12s, border-color 0.12s, background 0.12s;
 
@@ -235,7 +235,7 @@
 .ip-cell--corner {
   height: 32px;
   padding: 0 4px;
-  font-size: 0.72rem;
+  font-size: 1rem;
   font-family: inherit;
   color: var(--text-primary);
   background: var(--bg-2);
@@ -252,7 +252,7 @@
   height: 32px;
   width: 100%;
   padding: 0 6px;
-  font-size: 0.82rem;
+  font-size: 1rem;
   font-family: inherit;
   color: var(--text-primary);
   background: var(--bg-2);
@@ -297,7 +297,7 @@
   border: 1px solid rgba(248, 113, 113, 0.3);
   border-radius: $control-radius;
   color: var(--status-unfit);
-  font-size: 0.7rem;
+  font-size: 1rem;
   cursor: pointer;
   transition: color 0.12s, background 0.12s, border-color 0.12s;
 
@@ -316,7 +316,7 @@
   border: 1px solid rgba(110, 231, 183, 0.3);
   border-radius: $control-radius;
   color: var(--status-fit);
-  font-size: 0.75rem;
+  font-size: 0.95rem;
   font-family: inherit;
   cursor: pointer;
   transition: color 0.12s, border-color 0.12s, background 0.12s;
@@ -338,7 +338,7 @@
 }
 
 .ip-error {
-  font-size: 0.72rem;
+  font-size: 1rem;
   color: var(--status-unfit);
   margin: 0;
 }
@@ -376,7 +376,7 @@
 
 .ip-dxf-filename {
   flex: 1;
-  font-size: 0.72rem;
+  font-size: 1rem;
   color: var(--text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -387,7 +387,7 @@
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  font-size: 0.65rem;
+  font-size: 0.95rem;
   color: var(--text-tertiary);
   flex-shrink: 0;
 }
@@ -400,7 +400,7 @@
   flex-shrink: 0;
   height: 26px;
   padding: 0 0.6rem;
-  font-size: 0.72rem;
+  font-size: 1rem;
 
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
@@ -408,12 +408,12 @@
 .ip-dxf-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.72rem;
+  font-size: 1rem;
 
   th {
     text-align: left;
     color: var(--text-tertiary);
-    font-size: 0.6rem;
+    font-size: 1rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -425,7 +425,7 @@
     padding: 0.15rem 0.3rem;
     color: var(--text-primary);
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.72rem;
+    font-size: 1rem;
   }
 
   tr:not(:last-child) td { border-bottom: 1px solid var(--border-subtle); }
@@ -437,7 +437,7 @@
   gap: 0.4rem;
   margin-top: 0.2rem;
 
-  .ip-btn { height: 28px; font-size: 0.72rem; }
+  .ip-btn { height: 28px; font-size: 1rem; }
   .ip-btn--primary { flex: 1; }
 }
 
@@ -445,7 +445,7 @@
 .ip-btn {
   height: 32px;
   padding: 0 0.85rem;
-  font-size: 0.78rem;
+  font-size: 0.875rem;
   font-family: inherit;
   border-radius: $control-radius;
   cursor: pointer;

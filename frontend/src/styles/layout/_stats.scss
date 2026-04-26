@@ -33,7 +33,7 @@
 
 // ── Labels ────────────────────────────────────────────────────────────────────
 .stats-label {
-  font-size: 0.6rem;
+  font-size: 1rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -55,7 +55,7 @@
 
   &--muted {
     color: var(--text-tertiary);
-    font-size: 0.85rem;
+    font-size: 0.95rem;
     font-weight: 400;
   }
 
@@ -87,7 +87,7 @@
 }
 
 .stats-unit {
-  font-size: 0.65rem;
+  font-size: 0.95rem;
   font-weight: 400;
   color: var(--text-tertiary);
   margin-left: 1px;

@@ -31,7 +31,7 @@
 }
 
 .graphics-panel-title {
-  font-size: 0.65rem;
+  font-size: 0.95rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -63,7 +63,7 @@
 }
 
 .graphics-label {
-  font-size: 0.72rem;
+  font-size: 1rem;
   color: var(--text-secondary);
   font-weight: 500;
   display: block;
@@ -78,7 +78,7 @@
 .preset-btn {
   flex: 1;
   padding: 3px 0;
-  font-size: 0.65rem;
+  font-size: 0.95rem;
   font-family: inherit;
   line-height: 1.4;
   text-align: center;
@@ -107,7 +107,7 @@
 .graphics-select {
   width: 100%;
   padding: 4px 24px 4px 6px;
-  font-size: 0.75rem;
+  font-size: 0.95rem;
   font-family: inherit;
 
   background: var(--bg-3);
@@ -190,7 +190,7 @@
 // ── Value badge ───────────────────────────────────────────────────────────────
 .graphics-value-badge {
   font-variant-numeric: tabular-nums;
-  font-size: 0.68rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--accent);
   background: var(--accent-subtle);
