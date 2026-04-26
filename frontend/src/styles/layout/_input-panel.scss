@@ -225,11 +225,13 @@
   font-size: 0.72rem;
   font-family: inherit;
   color: var(--text-primary);
-  background: transparent;
-  border: 1px solid transparent;
+  background: var(--bg-2);
+  border: 1px solid var(--border-subtle);
   border-radius: $control-radius;
+  transition: border-color 0.12s, background 0.12s;
 
-  &:focus { outline: none; border-color: var(--accent); background: var(--bg-2); }
+  &:hover { border-color: var(--border-default); }
+  &:focus { outline: none; border-color: var(--accent); background: var(--bg-3); }
 }
 
 // ── Cells ─────────────────────────────────────────────────────────────────────
@@ -240,18 +242,20 @@
   font-size: 0.82rem;
   font-family: inherit;
   color: var(--text-primary);
-  background: transparent;
-  border: 1px solid transparent;
+  background: var(--bg-2);
+  border: 1px solid var(--border-subtle);
   border-radius: $control-radius;
   transition: border-color 0.12s, background 0.12s;
   box-sizing: border-box;
 
-  &::placeholder { color: var(--border-strong); }
+  &::placeholder { color: var(--text-tertiary); }
+
+  &:hover { border-color: var(--border-default); }
 
   &:focus {
     outline: none;
     border-color: var(--accent);
-    background: var(--bg-2);
+    background: var(--bg-3);
   }
 
   &.ip-cell--invalid { border-color: var(--status-unfit) !important; }
