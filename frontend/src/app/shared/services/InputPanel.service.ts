@@ -58,9 +58,13 @@ export class InputPanelService {
   readonly wizardMode = signal(false);
   readonly pendingLoad = signal<IInput | null>(null);
 
-  toggle(): void { this.isPanelOpen.update((v) => !v); }
-  close(): void  { this.isPanelOpen.set(false); }
-  open(): void   { this.isPanelOpen.set(true); }
+  toggle(): void {
+    const opening = !this.isPanelOpen();
+    this.isPanelOpen.update((v) => !v);
+    if (opening) this.wizardMode.set(true);
+  }
+  close(): void  { this.isPanelOpen.set(false); this.wizardMode.set(false); }
+  open(): void   { this.isPanelOpen.set(true);  this.wizardMode.set(true); }
 
   loadFromInput(input: IInput): void {
     if (input.constraints?.units) this.units.set(input.constraints.units as 'cm' | 'in' | 'mm');

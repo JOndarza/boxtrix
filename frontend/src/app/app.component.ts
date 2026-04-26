@@ -12,6 +12,7 @@ import { LoadingOverlayComponent } from './components/layout/loading-overlay/loa
 import { SidebarComponent } from './components/layout/sidebar/sidebar.component';
 import { StatsComponent } from './components/layout/stats/stats.component';
 import { WizardComponent } from './components/layout/wizard/wizard.component';
+import { InputPanelService } from './shared/services/InputPanel.service';
 
 @Component({
   standalone: true,
@@ -35,10 +36,16 @@ import { WizardComponent } from './components/layout/wizard/wizard.component';
 })
 export class AppComponent {
   private readonly _communication = inject(CommunicationService);
+  private readonly _inputPanel    = inject(InputPanelService);
 
-  readonly showWizard = signal(true);
+  readonly showWizard  = signal(true);
+  readonly isPanelOpen = this._inputPanel.isPanelOpen;
 
   constructor() {
     this._communication.setOriginAPI(environment.originApi);
+  }
+
+  closePanel(): void {
+    this._inputPanel.close();
   }
 }
