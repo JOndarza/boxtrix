@@ -8,6 +8,8 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { InputPanelComponent } from '@components/layout/input-panel/input-panel.component';
+import { LegendComponent } from '@components/layout/legend/legend.component';
+import { downloadFile } from '@common/functions/download.function';
 import { AppEvent, EventsService } from '@shared/services/Events.service';
 import { InputPanelService } from '@shared/services/InputPanel.service';
 import { ProcessorService } from '@shared/services/Processor.service';
@@ -15,7 +17,7 @@ import { take } from 'rxjs';
 
 @Component({
   standalone: true,
-  imports: [InputPanelComponent],
+  imports: [InputPanelComponent, LegendComponent],
   selector: 'app-wizard',
   templateUrl: './wizard.template.html',
   host: { class: 'app-wizard' },
@@ -69,5 +71,18 @@ export class WizardComponent {
     this._inputPanel.close();
     this.step.set(1);
     this.parseError.set(null);
+  }
+
+  downloadTemplate(): void {
+    const template = {
+      id: 'my-project',
+      areas: [{ id: 'shelf-1', width: 100, height: 50, depth: 30, x: 0, y: 0, z: 0 }],
+      boxes: [
+        { id: 'box-1', width: 20, height: 15, depth: 10 },
+        { id: 'box-2', width: 25, height: 12, depth: 8 },
+      ],
+      constraints: { units: 'cm' },
+    };
+    downloadFile(JSON.stringify(template, null, 2), 'boxtrix-template.json');
   }
 }

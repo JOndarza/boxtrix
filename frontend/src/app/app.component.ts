@@ -8,6 +8,7 @@ import { GraphicsSettingsComponent } from './components/layout/graphics-settings
 import { HeaderComponent } from './components/layout/header/header.component';
 import { InputPanelComponent } from './components/layout/input-panel/input-panel.component';
 import { KeyboardHelpComponent } from './components/layout/keyboard-help/keyboard-help.component';
+import { LegendComponent } from './components/layout/legend/legend.component';
 import { LoadingOverlayComponent } from './components/layout/loading-overlay/loading-overlay.component';
 import { SidebarComponent } from './components/layout/sidebar/sidebar.component';
 import { StatsComponent } from './components/layout/stats/stats.component';
@@ -20,6 +21,7 @@ import { InputPanelService } from './shared/services/InputPanel.service';
     HeaderComponent,
     FooterComponent,
     InputPanelComponent,
+    LegendComponent,
     SidebarComponent,
     WizardComponent,
     LoadingOverlayComponent,

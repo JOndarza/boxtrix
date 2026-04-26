@@ -190,17 +190,15 @@ export class SidebarComponent implements OnInit {
     setTimeout(() => this._scrollToSelected());
   }
 
-  private _scrollToSelected(): void {
-    const body = this._el.nativeElement.querySelector('.sidebar-body') as HTMLElement;
-    const el = body?.querySelector('[aria-selected="true"]') as HTMLElement;
+  private _scrollTo(selector: string): void {
+    const el = this._el.nativeElement
+      .querySelector('.sidebar-body')
+      ?.querySelector(selector) as HTMLElement | null;
     el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
 
-  private _scrollToStep(step: number): void {
-    const body = this._el.nativeElement.querySelector('.sidebar-body') as HTMLElement;
-    const el = body?.querySelector(`[data-step="${step}"]`) as HTMLElement;
-    el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-  }
+  private _scrollToSelected(): void { this._scrollTo('[aria-selected="true"]'); }
+  private _scrollToStep(step: number): void { this._scrollTo(`[data-step="${step}"]`); }
 
   private _applyWidth(px: number, animated: boolean): void {
     const el = this._el.nativeElement as HTMLElement;

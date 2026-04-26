@@ -1,4 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
+import { downloadFile } from '@common/functions/download.function';
 import { Corner } from '@common/enums/Corner.enum';
 import { IArea, IBox, IInput } from '@common/dtos/Input.interface';
 import { ProcessorService } from './Processor.service';
@@ -79,14 +80,7 @@ export class InputPanelService {
   }
 
   exportJson(areas: AreaRow[], boxes: BoxRow[]): void {
-    const input = this.buildInput(areas, boxes);
-    const blob = new Blob([JSON.stringify(input, null, 2)], { type: 'application/json' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href     = url;
-    a.download = 'boxtrix-packing.json';
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadFile(JSON.stringify(this.buildInput(areas, boxes), null, 2), 'boxtrix-packing.json');
   }
 
   buildInput(areaRows: AreaRow[], boxRows: BoxRow[]): IInput {
