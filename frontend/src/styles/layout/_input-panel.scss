@@ -283,29 +283,30 @@
   justify-content: center;
   width: 24px;
   height: 24px;
-  background: none;
-  border: none;
+  background: var(--bg-2);
+  border: 1px solid var(--border-default);
   border-radius: $control-radius;
-  color: var(--border-strong);
-  font-size: 0.65rem;
+  color: var(--text-tertiary);
+  font-size: 0.7rem;
   cursor: pointer;
-  transition: color 0.12s, background 0.12s;
+  transition: color 0.12s, background 0.12s, border-color 0.12s;
 
   &:hover {
     color: var(--status-unfit);
     background: rgba(248, 113, 113, 0.12);
+    border-color: var(--status-unfit);
   }
 }
 
 // ── Add link ──────────────────────────────────────────────────────────────────
 .ip-add-link {
   align-self: flex-start;
-  margin-top: 0.25rem;
-  padding: 0.2rem 0.4rem;
-  background: none;
-  border: 1px solid transparent;
+  margin-top: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  background: var(--bg-2);
+  border: 1px solid var(--border-default);
   border-radius: $control-radius;
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   font-size: 0.75rem;
   font-family: inherit;
   cursor: pointer;
