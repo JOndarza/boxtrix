@@ -2,18 +2,20 @@
 
 <div class="wizard-card">
 
-  <!-- Step indicator -->
-  <div class="wizard-stepper" aria-label="Setup steps">
-    <div class="wizard-step" [class.wizard-step--active]="step() === 1" [class.wizard-step--done]="step() > 1">
-      <span class="wizard-step__bubble">1</span>
-      <span class="wizard-step__label">Load</span>
+  <!-- Step indicator — only shown on step 2 so the welcome screen stays clean -->
+  @if (step() === 2) {
+    <div class="wizard-stepper" aria-label="Setup steps">
+      <div class="wizard-step wizard-step--done">
+        <span class="wizard-step__bubble">1</span>
+        <span class="wizard-step__label">Load</span>
+      </div>
+      <div class="wizard-step-line"></div>
+      <div class="wizard-step wizard-step--active">
+        <span class="wizard-step__bubble">2</span>
+        <span class="wizard-step__label">Review</span>
+      </div>
     </div>
-    <div class="wizard-step-line"></div>
-    <div class="wizard-step" [class.wizard-step--active]="step() === 2">
-      <span class="wizard-step__bubble">2</span>
-      <span class="wizard-step__label">Review</span>
-    </div>
-  </div>
+  }
 
   <!-- ── Step 1: Load ─────────────────────────────────────────────────────── -->
   @if (step() === 1) {
