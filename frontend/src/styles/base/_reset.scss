@@ -15,6 +15,40 @@ code,
   font-family: 'JetBrains Mono', monospace;
 }
 
+// ── Global scrollbar — thin, minimal, visible on hover ────────────────────────
+* {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 0.2s ease;
+
+  &:hover {
+    scrollbar-color: var(--border-default) transparent;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 2px;
+  transition: background 0.2s ease;
+}
+
+*:hover::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong) !important;
+}
+
 // C3 — visible focus ring for keyboard navigation (suppressed for mouse via :focus-visible)
 *:focus-visible {
   outline: 2px solid var(--accent);

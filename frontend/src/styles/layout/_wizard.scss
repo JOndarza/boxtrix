@@ -50,9 +50,7 @@
     box-shadow: 0 24px 64px rgba(0, 0, 0, 0.12), 0 0 0 1px var(--border-subtle);
   }
 
-  &::-webkit-scrollbar { width: 4px; }
-  &::-webkit-scrollbar-track { background: transparent; }
-  &::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 2px; }
+  // Scrollbar inherits global styles from _reset.scss
 }
 
 // ── Stepper ───────────────────────────────────────────────────────────────────
@@ -364,9 +362,6 @@
     overflow-y: auto;
     padding-right: 4px;
 
-    &::-webkit-scrollbar { width: 3px; }
-    &::-webkit-scrollbar-track { background: transparent; }
-    &::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 2px; }
   }
 }
 
@@ -478,11 +473,6 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  scrollbar-width: thin;
-  scrollbar-color: var(--border-default) transparent;
-
-  &::-webkit-scrollbar { width: 3px; }
-  &::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 2px; }
 }
 
 .wizard-legend__section { display: flex; flex-direction: column; gap: 0.6rem; }
