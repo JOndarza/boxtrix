@@ -680,7 +680,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
         parent,
         unfittedArea,
         dark ? '#ef4444' : '#b91c1c',
-        dark ? '#f87171' : '#dc2626',
       );
       unfittedArea.setObj3D(container.obj3d);
 
@@ -856,7 +855,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
     // fixedMeans that the backend returns (canonical ≠ user-space for flipped
     // access corners such as BottomFrontRight or BottomBackLeft).
     const items = item.items;
-    if (items.length > 0) {
+    const hasFittedItems = items.some(i => i.globalStep >= 0);
+    if (hasFittedItems) {
       const minX = Math.min(...items.map(i => i.position.x));
       const minY = Math.min(...items.map(i => i.position.y));
       const minZ = Math.min(...items.map(i => i.position.z));
