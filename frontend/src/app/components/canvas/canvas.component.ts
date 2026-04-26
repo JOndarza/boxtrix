@@ -680,6 +680,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
         parent,
         unfittedArea,
         dark ? '#ef4444' : '#b91c1c',
+        null,
       );
       unfittedArea.setObj3D(container.obj3d);
 
@@ -839,7 +840,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     parent: THREE.Object3D,
     item: RenderedController,
     innerColor?: string,
-    outerColor?: string,
+    outerColor?: string | null,
   ) {
     const dark = this._theme.isDark();
 
@@ -881,9 +882,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
       parent.add(innerWire);
     }
 
-    // Outer wire — full declared area dimensions. Skipped when outerColor is
-    // not provided (e.g. UNFITTED areas have no meaningful declared bbox).
-    if (outerColor !== undefined) {
+    // Outer wire — full declared area dimensions.
+    // Pass null explicitly to suppress it (e.g. UNFITTED has no declared bbox).
+    if (outerColor !== null) {
       const clone = new RenderedController('', '', '', {
         type: 'area',
         targetable: false,
