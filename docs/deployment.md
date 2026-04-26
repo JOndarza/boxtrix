@@ -34,6 +34,12 @@ Default port: **4100** (configured in `angular.json` `serve.options.port`).
 docker compose -f docker-compose.dev.yml up
 ```
 
+Force-recreate containers (use after config or Dockerfile changes):
+
+```bash
+docker compose -f docker-compose.dev.yml up --force-recreate
+```
+
 - Backend container: port 4200 (host) ← 4200 (container)
 - Frontend container: port 4400 (host) ← 4100 (container)
 
