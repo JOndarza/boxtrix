@@ -676,12 +676,13 @@ export class CanvasComponent implements OnInit, OnDestroy {
       unfittedArea.position.set({ x: maxX + gap, y: 0, z: 0 });
 
       const dark = this._theme.isDark();
-      const container = this.drawContainer(
-        parent,
-        unfittedArea,
-        dark ? '#ef4444' : '#b91c1c',
-        null,
-      );
+      const unfittedColor = dark ? '#ef4444' : '#b91c1c';
+      const container = this.drawContainer(parent, unfittedArea, unfittedColor, null);
+
+      // Hide the backend's arbitrary virtual-area wireframe — it doesn't
+      // represent the actual unplaced volume. We'll draw the tight bbox below.
+      (container.obj3d.material as THREE.LineBasicMaterial).visible = false;
+
       unfittedArea.setObj3D(container.obj3d);
 
       unfittedArea.items.forEach((item) => {
@@ -699,6 +700,33 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
         item.setObj3D(box.obj3d);
       });
+
+      // Tight bounding box around the actual unfitted items — this matches
+      // the UNPLACED VOLUME statistic shown in the sidebar.
+      const uItems = unfittedArea.items;
+      if (uItems.length > 0) {
+        const minX = Math.min(...uItems.map(i => i.position.x));
+        const minY = Math.min(...uItems.map(i => i.position.y));
+        const minZ = Math.min(...uItems.map(i => i.position.z));
+        const maxX = Math.max(...uItems.map(i => i.position.x + i.fixedMeans.width));
+        const maxY = Math.max(...uItems.map(i => i.position.y + i.fixedMeans.height));
+        const maxZ = Math.max(...uItems.map(i => i.position.z + i.fixedMeans.depth));
+
+        const bboxW = maxX - minX;
+        const bboxH = maxY - minY;
+        const bboxD = maxZ - minZ;
+
+        const tightWire = new THREE.LineSegments(
+          new THREE.EdgesGeometry(new BoxGeometry(bboxW, bboxH, bboxD)),
+          new THREE.LineBasicMaterial({ color: unfittedColor }),
+        );
+        tightWire.position.set(
+          unfittedArea.position.x + minX + bboxW / 2,
+          unfittedArea.position.y + minY + bboxH / 2,
+          unfittedArea.position.z + minZ + bboxD / 2,
+        );
+        parent.add(tightWire);
+      }
     }
   }
 
