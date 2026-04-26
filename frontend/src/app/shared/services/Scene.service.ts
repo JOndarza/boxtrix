@@ -39,6 +39,10 @@ export class SceneService implements OnDestroy {
   private _smaaPass!: SMAAPass;
 
   // ── Gizmos ────────────────────────────────────────────────────────────────
+  // ViewportGizmo reads controls.target (OrbitControls API) but CameraControls
+  // exposes getTarget() instead. This buffer is shimmed as a getter so the
+  // gizmo gets a live Vector3 and the crash on _onPointerDown is avoided.
+  private readonly _gizmoTarget = new THREE.Vector3();
   private _transform!: TransformControls;
   private _stats!: Stats;
   private _clippingPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), 0);
@@ -86,8 +90,15 @@ export class SceneService implements OnDestroy {
       size: 96,
       offset: { top: 90 },
     });
-    // ViewportGizmo types only declare OrbitControls but supports CameraControls at runtime
     this._viewportGizmo.attachControls(this._controls as unknown as OrbitControls);
+    // CameraControls dispatches 'update' instead of the 'change' OrbitControls API
+    // that ViewportGizmo expects. Bridge the gap so the gizmo tracks the camera.
+    // Also fix gizmo.target: CameraControls has no .target property (uses getTarget()),
+    // so attachControls leaves it undefined — point it at _gizmoTarget so _onPointerDown
+    // never crashes and the animate loop keeps it in sync via getTarget().
+    this._controls.getTarget(this._gizmoTarget);
+    this._viewportGizmo.target = this._gizmoTarget;
+    this._controls.addEventListener('update', () => this._viewportGizmo.update(false));
 
     // ── EffectComposer pass chain ─────────────────────────────────────────
     // Bloom before outlines so outline edges stay crisp.
@@ -309,7 +320,10 @@ export class SceneService implements OnDestroy {
   private _animate = (): void => {
     const delta = this._clock.getDelta();
     const cameraChanged = this._controls.update(delta);
-    if (cameraChanged) this._dirty = true;
+    if (cameraChanged) {
+      this._dirty = true;
+      this._controls.getTarget(this._gizmoTarget);
+    }
     if (this.onFrame) {
       this.onFrame(delta);
       this._dirty = true;
