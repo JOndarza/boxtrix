@@ -40,19 +40,17 @@
     background: transparent;
 
     // Center and cap content width so 1fr doesn't stretch to full viewport
-    .ip-body {
-      max-width: 780px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 0.75rem 2rem;
-    }
-
+    .ip-header,
+    .ip-body,
     .ip-footer {
       max-width: 780px;
       width: 100%;
       margin: 0 auto;
-      padding: 0.75rem 2rem;
     }
+
+    .ip-header { padding: 0.6rem 2rem 0.5rem; }
+    .ip-body   { padding: 0.75rem 2rem; }
+    .ip-footer { padding: 0.75rem 2rem; }
 
     // Wider, proportional columns at full-screen width
     .ip-row--area { grid-template-columns: minmax(0, 1fr) 72px 72px 72px 136px 32px 28px; }
@@ -83,6 +81,18 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
+}
+
+.ip-units-label {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+  cursor: default;
 }
 
 .ip-units-select {
