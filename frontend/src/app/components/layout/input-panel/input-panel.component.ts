@@ -33,10 +33,15 @@ export class InputPanelComponent {
   readonly isPanelOpen     = this._panel.isPanelOpen;
   readonly isWizardMode    = this._panel.wizardMode;
   readonly units           = this._panel.units;
+  readonly weightUnits     = this._panel.weightUnits;
   readonly validationError = signal<string | null>(null);
   readonly cornerOptions   = CORNER_OPTIONS;
 
-  readonly weightUnit = computed(() => this._panel.units() === 'in' ? 'lb' : 'kg');
+  readonly weightUnit = computed(() => this._panel.weightUnits());
+
+  setWeightUnits(event: Event): void {
+    this._panel.weightUnits.set((event.target as HTMLSelectElement).value as 'kg' | 'lb');
+  }
 
   constructor() {
     effect(() => {

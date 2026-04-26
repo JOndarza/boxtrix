@@ -9,10 +9,14 @@
     <header class="ip-header">
       <span class="ip-title">New packing</span>
       <div class="ip-header-right">
-        <select class="ip-units-select" [value]="units()" (change)="setUnits($event)" aria-label="Units">
+        <select class="ip-units-select" [value]="units()" (change)="setUnits($event)" aria-label="Dimension units">
           <option value="cm">cm</option>
           <option value="in">in</option>
           <option value="mm">mm</option>
+        </select>
+        <select class="ip-units-select" [value]="weightUnits()" (change)="setWeightUnits($event)" aria-label="Weight units">
+          <option value="kg">kg</option>
+          <option value="lb">lb</option>
         </select>
         @if (!isWizardMode()) {
           <button class="ip-close-btn" type="button" (click)="close()" aria-label="Close panel">&#x2715;</button>

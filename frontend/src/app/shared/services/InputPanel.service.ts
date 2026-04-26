@@ -54,6 +54,7 @@ export class InputPanelService {
 
   readonly isPanelOpen = signal(false);
   readonly units = signal<'cm' | 'in' | 'mm'>('cm');
+  readonly weightUnits = signal<'kg' | 'lb'>('kg');
   readonly wizardMode = signal(false);
   readonly pendingLoad = signal<IInput | null>(null);
 
