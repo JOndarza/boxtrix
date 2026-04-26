@@ -8,8 +8,8 @@
   bottom: calc(var(--footer-height) + 0.5rem);
   right: 0.5rem;
 
-  width: 200px;
-  padding: 0.75rem;
+  width: 230px;
+  padding: 0.75rem 1rem;
 
   display: flex;
   flex-direction: column;
@@ -33,11 +33,12 @@
 
 // ── Labels ────────────────────────────────────────────────────────────────────
 .stats-label {
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.07em;
   color: var(--text-tertiary);
+  white-space: nowrap;
 }
 
 // ── Values ────────────────────────────────────────────────────────────────────
