@@ -38,6 +38,26 @@
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     background: transparent;
+
+    // Center and cap content width so 1fr doesn't stretch to full viewport
+    .ip-body {
+      max-width: 780px;
+      width: 100%;
+      align-self: center;
+      padding: 0.75rem 2rem;
+    }
+
+    .ip-footer {
+      max-width: 780px;
+      width: 100%;
+      align-self: center;
+      padding: 0.75rem 2rem;
+    }
+
+    // Wider, proportional columns at full-screen width
+    .ip-row--area { grid-template-columns: minmax(0, 1fr) 72px 72px 72px 136px 32px 28px; }
+    .ip-row--box  { grid-template-columns: minmax(0, 1fr) 72px 72px 72px 52px  84px 28px; }
+    .ip-corridor-row { grid-template-columns: 1fr 72px 72px 72px 72px 72px 72px; }
   }
 }
 
@@ -120,12 +140,12 @@
 }
 
 .ip-section-label {
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--accent);
-  padding: 0.4rem 0 0.2rem;
+  padding: 0.5rem 0 0.25rem;
 }
 
 // ── Column headers ────────────────────────────────────────────────────────────
@@ -133,8 +153,8 @@
   pointer-events: none;
 
   span {
-    font-size: 0.58rem;
-    font-weight: 600;
+    font-size: 0.62rem;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: var(--text-tertiary);
@@ -147,9 +167,13 @@
   display: grid;
   gap: 3px;
   align-items: center;
+  border-radius: $control-radius;
+  transition: background 0.1s;
 
-  &--area { grid-template-columns: 1fr 46px 46px 46px 96px 22px 20px; }
-  &--box  { grid-template-columns: 1fr 46px 46px 46px 36px 50px 20px; }
+  &:not(.ip-col-headers):hover { background: var(--bg-3); }
+
+  &--area { grid-template-columns: 1fr 46px 46px 46px 96px 26px 24px; }
+  &--box  { grid-template-columns: 1fr 46px 46px 46px 36px 50px 24px; }
 }
 
 // ── Corridor sub-row (appears under an area when its corridor is enabled)
@@ -196,7 +220,7 @@
 }
 
 .ip-cell--corner {
-  height: 28px;
+  height: 32px;
   padding: 0 4px;
   font-size: 0.72rem;
   font-family: inherit;
@@ -205,15 +229,15 @@
   border: 1px solid transparent;
   border-radius: $control-radius;
 
-  &:focus { outline: none; border-color: var(--border-default); background: var(--bg-2); }
+  &:focus { outline: none; border-color: var(--accent); background: var(--bg-2); }
 }
 
 // ── Cells ─────────────────────────────────────────────────────────────────────
 .ip-cell {
-  height: 28px;
+  height: 32px;
   width: 100%;
   padding: 0 6px;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-family: inherit;
   color: var(--text-primary);
   background: transparent;
@@ -222,11 +246,11 @@
   transition: border-color 0.12s, background 0.12s;
   box-sizing: border-box;
 
-  &::placeholder { color: var(--text-tertiary); }
+  &::placeholder { color: var(--border-strong); }
 
   &:focus {
     outline: none;
-    border-color: var(--border-default);
+    border-color: var(--accent);
     background: var(--bg-2);
   }
 
@@ -250,39 +274,41 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   background: none;
   border: none;
   border-radius: $control-radius;
-  color: transparent;
+  color: var(--border-strong);
   font-size: 0.65rem;
   cursor: pointer;
   transition: color 0.12s, background 0.12s;
 
-  .ip-row:hover & {
-    color: var(--text-tertiary);
-  }
-
   &:hover {
-    color: var(--status-unfit) !important;
-    background: rgba(248, 113, 113, 0.1);
+    color: var(--status-unfit);
+    background: rgba(248, 113, 113, 0.12);
   }
 }
 
 // ── Add link ──────────────────────────────────────────────────────────────────
 .ip-add-link {
   align-self: flex-start;
-  margin-top: 0.2rem;
-  padding: 0.1rem 0;
+  margin-top: 0.25rem;
+  padding: 0.2rem 0.4rem;
   background: none;
-  border: none;
+  border: 1px solid transparent;
+  border-radius: $control-radius;
   color: var(--text-tertiary);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
+  font-family: inherit;
   cursor: pointer;
-  transition: color 0.12s;
+  transition: color 0.12s, border-color 0.12s, background 0.12s;
 
-  &:hover { color: var(--accent); }
+  &:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--accent-subtle);
+  }
 }
 
 // ── Footer ────────────────────────────────────────────────────────────────────

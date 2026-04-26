@@ -62,7 +62,7 @@
               aria-label="Toggle exit corridor"
               tabindex="-1"
             >&#x25A0;</button>
-            <button class="ip-delete-btn" type="button" (click)="removeArea($index)" aria-label="Remove area" tabindex="-1">&#x2715;</button>
+            <button class="ip-delete-btn" type="button" (click)="removeArea($index)" aria-label="Remove area">&#x2715;</button>
 
             @if (hasCorridor($index) && corridorGroup($index); as corridor) {
               <div class="ip-corridor-row" [formGroup]="corridor">
@@ -169,7 +169,7 @@
               (keydown.enter)="onBoxQtyEnter($index)"
             />
             <input class="ip-cell ip-cell--num" formControlName="weight" type="number" min="0" step="any" placeholder="kg" />
-            <button class="ip-delete-btn" type="button" (click)="removeBox($index)" aria-label="Remove box" tabindex="-1">&#x2715;</button>
+            <button class="ip-delete-btn" type="button" (click)="removeBox($index)" aria-label="Remove box">&#x2715;</button>
           </div>
         }
 
